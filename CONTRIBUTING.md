@@ -1,0 +1,155 @@
+# Contributing to MCP-AQL Specification
+
+Thank you for your interest in contributing to the MCP-AQL specification. This document outlines the process for contributing to the protocol specification.
+
+## Ways to Contribute
+
+### Reporting Issues
+
+Use GitHub Issues to report:
+
+- **Specification Bugs**: Ambiguities, contradictions, or errors in the specification
+- **Editorial Issues**: Typos, unclear language, or documentation improvements
+- **Implementation Concerns**: Practical difficulties in implementing the specification
+
+When reporting an issue, please include:
+
+- The specific section or document affected
+- A clear description of the problem
+- Suggested resolution (if applicable)
+
+### Discussions
+
+For broader topics that do not constitute a specific issue, use GitHub Discussions:
+
+- Propose new features or extensions
+- Discuss design philosophy or architectural decisions
+- Seek clarification on specification intent
+- Coordinate with other implementers
+
+### Pull Requests
+
+Pull requests are welcome for:
+
+- Editorial corrections and clarifications
+- Documentation improvements
+- Conformance test additions
+- Specification proposals (see process below)
+
+## Specification Change Process
+
+Changes to the MCP-AQL specification follow a structured process to ensure stability and consensus.
+
+### 1. Proposal
+
+Submit a proposal by opening an issue with the `proposal` label containing:
+
+- **Title**: Clear, descriptive name for the change
+- **Motivation**: Why the change is needed
+- **Specification**: Detailed proposed changes to the specification text
+- **Impact**: Effects on existing implementations
+- **Alternatives Considered**: Other approaches evaluated
+
+### 2. Discussion
+
+- Proposals remain open for community discussion for a minimum of 14 days
+- Maintainers and community members provide feedback
+- The proposal may be revised based on discussion
+
+### 3. Review
+
+- A maintainer will conduct a formal review
+- The proposal must address all substantive feedback
+- Technical accuracy and specification consistency are verified
+
+### 4. Acceptance
+
+Proposals are accepted when:
+
+- Consensus is reached among maintainers
+- All blocking concerns are resolved
+- The change aligns with specification goals
+
+Accepted proposals proceed to implementation via pull request.
+
+### 5. Integration
+
+- Changes are merged into the draft specification
+- The changelog is updated
+- Version numbers are incremented according to semantic versioning
+
+## Style Guidelines for Specification Documents
+
+### Language
+
+- Use precise, unambiguous language
+- Define technical terms on first use
+- Write in present tense for normative statements
+- Use American English spelling
+
+### Normative Keywords
+
+Follow RFC 2119 for normative language:
+
+- **MUST** / **MUST NOT**: Absolute requirements
+- **SHOULD** / **SHOULD NOT**: Strong recommendations
+- **MAY**: Optional features
+
+### Document Structure
+
+- Use hierarchical heading levels (H1 for title, H2 for major sections)
+- Include a table of contents for documents exceeding 500 words
+- Number sections for cross-referencing in longer documents
+- Provide code examples in fenced code blocks with language identifiers
+
+### Code Examples
+
+- Use JavaScript/JSON syntax for protocol examples
+- Include comments to explain non-obvious elements
+- Ensure all examples are syntactically valid
+- Test examples against the conformance suite when applicable
+
+### Tables
+
+- Use Markdown tables for structured data
+- Include header rows
+- Align columns for readability in source
+
+## Code of Conduct
+
+All participants in the MCP-AQL community are expected to conduct themselves professionally and respectfully. We are committed to providing a welcoming and harassment-free environment for everyone.
+
+In particular:
+
+- Be respectful of differing viewpoints and experiences
+- Accept constructive criticism gracefully
+- Focus on what is best for the specification and community
+- Show empathy toward other community members
+
+Unacceptable behavior may result in removal from project spaces at the discretion of maintainers.
+
+## License
+
+### Specification License
+
+This specification is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+
+By contributing to this specification, you agree that your contributions will be licensed under AGPL-3.0.
+
+### Commercial Licensing
+
+Organizations requiring a license without AGPL obligations may obtain commercial licensing. Contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
+
+### Contributor License Agreement
+
+For substantial contributions, contributors may be asked to sign a Contributor License Agreement (CLA) to ensure the project maintains the ability to offer dual licensing.
+
+## Getting Help
+
+- **Questions**: Open a GitHub Discussion
+- **Bugs**: Open a GitHub Issue
+- **Security**: Report security concerns privately to [security@mcpaql.org](mailto:security@mcpaql.org)
+
+## Acknowledgments
+
+Contributors who make significant contributions to the specification will be acknowledged in the specification documents and changelog.
