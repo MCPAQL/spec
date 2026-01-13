@@ -28,11 +28,23 @@ This document summarizes baseline terms for a commercial license to MCP-AQL mate
 
 This includes competing implementations of the Toolchain and/or competing translation layers/adapters/runtimes implementing the same approach.
 
+### 2.4 Affiliate
+
+“Affiliate” means any entity that directly or indirectly controls, is controlled by, or is under common control with another entity, where “control” means ownership of more than 50% of the voting securities or the power to direct management and policies.
+
 ## 3. Scope of commercial license grant
 
 Subject to these terms, Licensor grants Licensee a non-exclusive, non-transferable, non-sublicensable license to use, modify, and distribute the Licensed Materials, without the obligations that would otherwise apply under the open source licenses (e.g., AGPL).
 
-Unless otherwise agreed in writing, this commercial license grant is limited to Licensee and its controlled affiliates (if any) solely for Licensee’s internal use and for distribution of Licensee’s products/services, and may not be resold or sublicensed as a standalone license to third parties.
+Unless otherwise agreed in writing, this commercial license grant may not be resold or sublicensed as a standalone license to third parties.
+
+### 3.1 Contractors
+
+Licensee may allow its contractors and service providers to access the Licensed Materials solely to provide services to Licensee, provided that:
+
+- they are bound by written confidentiality and non-use obligations at least as protective as these terms,
+- they receive no independent rights to use the Licensed Materials, and
+- they may not reuse the Licensed Materials to create or assist in creating a Competitive Product or Service.
 
 ## 4. Self-serve free commercial license (under $1,000,000 USD revenue)
 
@@ -40,11 +52,20 @@ If Licensee has **less than $1,000,000 USD in annual revenue**, Licensee may obt
 
 The revenue threshold is based on Licensee’s annual revenue (not a specific product’s revenue).
 
+**Entity scope (self-serve tier)**: the self-serve free commercial license applies only to the single legal entity that makes the self-certification. It does not automatically extend to Affiliates.
+
 ## 5. Paid commercial license (at/over $1,000,000 USD revenue) or custom terms
 
 If Licensee has **$1,000,000 USD or more** in annual revenue, or needs custom terms, Licensee must contact Licensor to obtain a paid commercial license.
 
 Contact: `licensing@mcpaql.org`
+
+Paid commercial agreements may optionally expand scope to:
+
+- **Controlled affiliates** of Licensee, or
+- an entire **corporate group** (entities under common control),
+
+as priced and agreed in writing.
 
 ## 6. No reverse engineering
 
