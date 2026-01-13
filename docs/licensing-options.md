@@ -22,6 +22,7 @@ This document contains options and analysis, but MCP-AQL also has **current, imp
 - **Code/tooling repos**: **AGPL-3.0** (`LICENSE`) with commercial licensing available (`COMMERCIAL-LICENSE.md`).
 - **Commercial license policy (documented)**:
   - Self-serve free commercial license option for organizations under **$1,000,000 USD annual revenue** via self-certification (`COMMERCIAL-LICENSE.md`).
+  - Commercial license terms include restrictions such as **no reverse engineering** and **no competitive re-implementation** (`spec/COMMERCIAL-LICENSE-TERMS.md`).
 - **Generator output policy (adopted)**:
   - **No output exception** (see Section **17** and `adapter-generator/OUTPUT-POLICY.md`).
   - Generated adapters must emit provenance and include `NOTICE.md`, `COMMERCIAL-LICENSE.md`, and `MCPAQL-PROVENANCE.json` (Section **17**).
