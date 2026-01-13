@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this specification, please cite it as below."
+title: "MCP-AQL Specification"
+type: document
+authors:
+  - family-names: "Darling"
+    given-names: "Mick"
+    email: "mick@mickdarling.com"
+url: "https://github.com/MCPAQL/spec"
+license: "CC-BY-4.0"
+

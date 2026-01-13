@@ -2,6 +2,10 @@
 
 Thank you for your interest in contributing to the MCP-AQL specification. This document outlines the process for contributing to the protocol specification.
 
+## Contributor License Agreement
+
+By submitting a contribution (including a pull request), you agree to the MCP-AQL CLA in `spec/CLA.md`.
+
 ## Ways to Contribute
 
 ### Reporting Issues
@@ -132,13 +136,23 @@ Unacceptable behavior may result in removal from project spaces at the discretio
 
 ### Specification License
 
-This specification is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0).
+This repository uses split licensing:
 
-By contributing to this specification, you agree that your contributions will be licensed under AGPL-3.0.
+- **Specification text (docs)**: Creative Commons Attribution 4.0 International (CC BY 4.0). See `LICENSE-DOCS`.
+- **Code and other software artifacts (if any)**: GNU Affero General Public License v3.0 (AGPL-3.0). See `LICENSE`.
+
+For clarity:
+
+- Documentation contributions (e.g., files under `spec/docs/` and other narrative documentation) are under **CC BY 4.0**.
+- Schema/test/code contributions (e.g., `spec/schemas/`, `spec/tests/`, and any code/scripts) are under **AGPL-3.0**.
+
+By contributing, you agree that your contributions will be licensed under the same terms as the part of the repository you are contributing to (docs under CC BY 4.0; code under AGPL-3.0).
+
+For authoritative path-based scope rules, see `spec/LICENSING.md`.
 
 ### Commercial Licensing
 
-Organizations requiring a license without AGPL obligations may obtain commercial licensing. Contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
+Organizations requiring a license without AGPL obligations may obtain commercial licensing. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
 
 ### Contributor License Agreement
 

@@ -107,10 +107,16 @@ We welcome contributions to the specification. Please see [CONTRIBUTING.md](CONT
 
 ## License
 
-This specification is dual-licensed:
+This repository uses split licensing:
 
-- **Open Source**: [GNU Affero General Public License v3.0](LICENSE)
-- **Commercial**: Contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for commercial licensing without AGPL obligations
+- **Specification text (docs)**: Creative Commons Attribution 4.0 International (CC BY 4.0). See `LICENSE-DOCS`.
+  - Applies to: `spec/docs/`, `spec/README.md`, and other narrative documentation content.
+- **Code and other software artifacts**: GNU Affero General Public License v3.0 (AGPL-3.0). See `LICENSE`.
+  - Applies to: `spec/schemas/`, `spec/tests/`, and any code/scripts included in this repository.
+
+For the authoritative path-based scope rules, see `spec/LICENSING.md`.
+
+Commercial licenses are available. See `COMMERCIAL-LICENSE.md` or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org).
 
 ## Acknowledgments
 
