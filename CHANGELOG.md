@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CI workflows for documentation quality (markdown lint, link check, spell check)
+- CI workflow for JSON Schema validation
+- CI workflow for changelog enforcement
+- Git flow branching strategy with `develop` branch
+- Issue templates (bug report, feature request, RFC proposal)
+- Pull request template with checklist
+- CODEOWNERS file for review auto-assignment
+- Process documentation:
+  - RFC process for specification changes
+  - Breaking change policy
+  - Versioning strategy
+- Initial JSON schemas for operation input/result formats
+
+### Changed
+
+- Made specification fully generic (removed DollhouseMCP-specific terminology)
+- Changed operations.md from prescriptive list to design guide
+- Clarified that only `introspect` operation is required by protocol
+- Updated token efficiency examples to be generic
+
 ## [1.0.0-draft] - 2026-01-05
 
 ### Added
