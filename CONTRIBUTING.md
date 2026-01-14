@@ -40,6 +40,43 @@ Pull requests are welcome for:
 - Conformance test additions
 - Specification proposals (see process below)
 
+## Branching Strategy
+
+This repository uses a git flow branching model:
+
+### Branch Types
+
+| Branch | Purpose | Merges To |
+|--------|---------|-----------|
+| `main` | Stable releases only | - |
+| `develop` | Integration branch | `main` (releases) |
+| `feature/*` | New features | `develop` |
+| `fix/*` | Bug fixes | `develop` |
+| `docs/*` | Documentation changes | `develop` |
+| `rfc/*` | Specification proposals | `develop` |
+| `release/*` | Release preparation | `main` |
+
+### Workflow
+
+1. **Feature Development**: Create `feature/your-feature` from `develop`
+2. **Pull Request**: Open PR to merge into `develop`
+3. **Review**: CI must pass, requires approval
+4. **Merge**: Squash merge into `develop`
+5. **Release**: When ready, create `release/vX.Y.Z` branch, then merge to `main`
+
+### Branch Protection
+
+The following protection rules apply (when enabled):
+
+**`main` branch:**
+- Require pull request reviews (1 approval)
+- Require status checks to pass
+- Require branches to be up to date
+- No direct pushes
+
+**`develop` branch:**
+- Require status checks to pass
+
 ## Specification Change Process
 
 Changes to the MCP-AQL specification follow a structured process to ensure stability and consensus.
