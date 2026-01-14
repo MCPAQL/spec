@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-05
+**Last Updated:** 2026-01-14
 
 ## Abstract
 
@@ -15,7 +15,8 @@ This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoi
 3. [Permission Model](#3-permission-model)
 4. [Endpoint Modes](#4-endpoint-modes)
 5. [Operation Routing](#5-operation-routing)
-6. [Conformance Requirements](#6-conformance-requirements)
+6. [Classification Guidelines](#6-classification-guidelines)
+7. [Conformance Requirements](#7-conformance-requirements)
 
 ---
 
@@ -31,13 +32,20 @@ The CRUDE pattern provides semantic grouping of operations by their effect on sy
 
 ### 1.2 Rationale for EXECUTE
 
-Traditional CRUD patterns assume operations are primarily concerned with data persistence. However, MCP servers often provide executable elements (agents, workflows, pipelines) that require:
+Traditional CRUD patterns assume operations are primarily concerned with data persistence. However, many services provide executable functionality (jobs, workflows, tasks, processes) that require:
 
-- **Non-idempotent operations** - Calling `execute_agent` twice creates two separate executions
+- **Non-idempotent operations** - Calling `run_job` twice creates two separate executions
 - **Lifecycle management** - Start, monitor, update progress, complete
-- **Runtime state** - Distinct from element definitions
+- **Runtime state** - Distinct from stored data
 
 The EXECUTE endpoint addresses these requirements explicitly.
+
+### 1.3 Adapter Responsibility
+
+Each adapter implementing MCP-AQL:
+- Defines its own operations
+- Classifies each operation into the appropriate CRUDE endpoint
+- Documents its operation-to-endpoint mapping via introspection
 
 ---
 
@@ -55,13 +63,13 @@ Operations that add new state without removing or modifying existing state.
 - Additive only
 - May fail if duplicate state would be created
 
-**Core Operations:**
+**Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `create_element` | Create a new element |
-| `import_element` | Import an element from external data |
-| `activate_element` | Activate an element for use |
-| `addEntry` | Add an entry to a memory element |
+| `create_user` | Create a new user account |
+| `upload_file` | Upload a new file |
+| `add_comment` | Add a comment to a resource |
+| `register_webhook` | Register a new webhook |
 
 ### 2.2 READ Endpoint
 
@@ -75,16 +83,15 @@ Operations that query state without modification.
 - No side effects on stored state
 - Safe to call repeatedly (idempotent)
 
-**Core Operations:**
+**Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `list_elements` | List elements with optional filtering |
-| `get_element` | Retrieve a specific element by name |
-| `search` | Search across elements |
-| `introspect` | Discover available operations and types |
-| `render` | Render a template with variables |
-| `export_element` | Export an element to portable format |
-| `get_active_elements` | List currently active elements |
+| `list_users` | List users with filtering |
+| `get_document` | Retrieve a document by ID |
+| `search` | Search across resources |
+| `introspect` | Discover available operations |
+| `get_status` | Get current system status |
+| `export_data` | Export data to portable format |
 
 ### 2.3 UPDATE Endpoint
 
@@ -98,11 +105,13 @@ Operations that modify existing state.
 - Requires existing state to modify
 - May be destructive to prior values
 
-**Core Operations:**
+**Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `edit_element` | Modify an existing element |
-| `deactivate_element` | Deactivate an active element |
+| `update_user` | Modify user properties |
+| `rename_file` | Rename an existing file |
+| `set_config` | Update configuration |
+| `move_resource` | Move resource to new location |
 
 ### 2.4 DELETE Endpoint
 
@@ -116,33 +125,35 @@ Operations that remove state permanently.
 - Irreversible without backup
 - MAY require confirmation
 
-**Core Operations:**
+**Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `delete_element` | Permanently delete an element |
-| `clear` | Clear all entries from a memory element |
+| `delete_user` | Permanently delete a user |
+| `remove_file` | Remove a file |
+| `purge_cache` | Clear cached data |
+| `unregister_webhook` | Remove a webhook |
 
 ### 2.5 EXECUTE Endpoint
 
 **Identifier:** `EXECUTE`
 **MCP Tool Name:** `mcp_aql_execute`
 
-Operations that manage the runtime execution lifecycle of executable elements.
+Operations that manage the runtime execution lifecycle.
 
 **Characteristics:**
 - Stateful (maintains execution context)
 - Non-idempotent (each call may create new state)
-- Potentially destructive (agent actions may modify external state)
+- Potentially destructive (may modify external state)
 - Lifecycle-oriented
 
-**Core Operations:**
+**Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `execute_agent` | Start execution of an agent |
-| `get_execution_state` | Query current execution progress |
-| `update_execution_state` | Record step completion or progress |
-| `complete_execution` | Signal execution completion |
-| `continue_execution` | Resume from saved state |
+| `run_job` | Start a background job |
+| `cancel_task` | Cancel a running task |
+| `get_execution_status` | Query execution progress |
+| `resume_workflow` | Resume a paused workflow |
+| `trigger_build` | Trigger a build process |
 
 ---
 
@@ -172,12 +183,26 @@ EXECUTE     false        true
 - `true`: Operation may remove or irreversibly modify state
 - `false`: Operation only adds or queries state
 
-### 3.3 Confirmation Requirements
+### 3.3 MCP Tool Annotations
+
+When registering MCP tools, adapters SHOULD include permission hints:
+
+```json
+{
+  "name": "mcp_aql_read",
+  "annotations": {
+    "readOnlyHint": true,
+    "destructiveHint": false
+  }
+}
+```
+
+### 3.4 Confirmation Requirements
 
 Implementations MAY require explicit confirmation for:
 - All DELETE operations
 - EXECUTE operations with external side effects
-- UPDATE operations that modify critical configuration
+- UPDATE operations that modify critical data
 
 ---
 
@@ -199,6 +224,7 @@ mcp_aql_execute  - EXECUTE operations
 - Endpoint-level permission control
 - Client can selectively expose endpoints
 - Clear semantic separation
+- Platform permission hints
 
 **Typical Token Cost:** ~4,300 tokens for tool registration
 
@@ -223,7 +249,7 @@ Implementations MUST support at least one mode. Implementations SHOULD support b
 
 The recommended environment variable for mode selection:
 ```
-MCP_INTERFACE_MODE=crude|single
+MCP_AQL_ENDPOINT_MODE=crude|single
 ```
 
 ---
@@ -232,18 +258,7 @@ MCP_INTERFACE_MODE=crude|single
 
 ### 5.1 Routing Rules
 
-Each operation MUST be routed to exactly one endpoint. Implementations MUST reject operations sent to incorrect endpoints.
-
-**Example Routing Table:**
-```
-Operation          Endpoint
----------          --------
-create_element     CREATE
-list_elements      READ
-edit_element       UPDATE
-delete_element     DELETE
-execute_agent      EXECUTE
-```
+Each operation MUST be routed to exactly one endpoint. Implementations MUST reject operations sent to incorrect endpoints in CRUDE mode.
 
 ### 5.2 Route Validation
 
@@ -258,7 +273,7 @@ When an operation is received:
 ```json
 {
   "success": false,
-  "error": "Operation 'create_element' must be called via mcp_aql_create, not mcp_aql_read"
+  "error": "Operation 'create_user' must be called via mcp_aql_create, not mcp_aql_read"
 }
 ```
 
@@ -269,30 +284,96 @@ In Single mode, the implementation:
 2. Internally routes to the correct handler based on operation
 3. Enforces the same semantic rules as CRUDE mode
 
+### 5.4 Server-Side Authority
+
+> "LLM instructions are suggestions. Adapter policies are enforcement."
+
+The adapter is authoritative for operation routing. Clients cannot bypass routing rules by sending operations to different endpoints.
+
 ---
 
-## 6. Conformance Requirements
+## 6. Classification Guidelines
 
-### 6.1 MUST Requirements
+### 6.1 How to Classify Operations
+
+When building an adapter, classify each operation by asking:
+
+1. **Does it only read data?** → READ
+2. **Does it add new data without modifying existing?** → CREATE
+3. **Does it modify existing data?** → UPDATE
+4. **Does it remove data permanently?** → DELETE
+5. **Does it manage runtime execution?** → EXECUTE
+
+### 6.2 Decision Tree
+
+```
+                    Does it modify state?
+                          /     \
+                        No       Yes
+                        |         |
+                      READ    Is it additive only?
+                               /     \
+                             Yes      No
+                             |         |
+                          CREATE   Does it remove data?
+                                     /     \
+                                   Yes      No
+                                   |         |
+                                DELETE   Is it runtime/lifecycle?
+                                            /     \
+                                          Yes      No
+                                          |         |
+                                       EXECUTE   UPDATE
+```
+
+### 6.3 Edge Cases
+
+**Upsert Operations:**
+- If creates when not exists, updates when exists: Prefer CREATE
+- Document behavior in operation description
+
+**Soft Delete:**
+- If marks as deleted but doesn't remove: Could be UPDATE
+- If removes from normal queries: Prefer DELETE
+- Document behavior clearly
+
+**Triggering Actions:**
+- If triggers external action (email, webhook): EXECUTE
+- If just saves data that will trigger later: CREATE
+
+**Import Operations:**
+- If imports without overwriting: CREATE
+- If may overwrite existing: Discuss in operation description
+
+### 6.4 Documentation Requirement
+
+Adapters MUST document their operation classification via introspection. Each operation's endpoint MUST be discoverable.
+
+---
+
+## 7. Conformance Requirements
+
+### 7.1 MUST Requirements
 
 Conforming implementations MUST:
 
-1. Implement all five CRUDE endpoints or the single unified endpoint
-2. Route operations to their correct endpoints according to the routing table
+1. Implement all five CRUDE endpoints OR the single unified endpoint
+2. Route operations to their correct endpoints according to classification
 3. Return errors for operations sent to incorrect endpoints (CRUDE mode)
 4. Apply permission flags accurately for each endpoint
-5. Support the core operations listed for each endpoint
+5. Implement the `introspect` operation (READ endpoint)
 
-### 6.2 SHOULD Requirements
+### 7.2 SHOULD Requirements
 
 Conforming implementations SHOULD:
 
 1. Support both CRUDE and Single endpoint modes
 2. Provide configuration for mode selection
 3. Implement confirmation for destructive operations
-4. Log all EXECUTE operations for audit purposes
+4. Log EXECUTE operations for audit purposes
+5. Include MCP tool annotations for permissions
 
-### 6.3 MAY Requirements
+### 7.3 MAY Requirements
 
 Conforming implementations MAY:
 
@@ -300,11 +381,11 @@ Conforming implementations MAY:
 2. Implement additional permission levels
 3. Provide endpoint-level access control lists
 4. Support operation-level confirmation requirements
+5. Implement rate limiting per endpoint
 
 ---
 
 ## References
 
 - [MCP-AQL Specification v1.0.0-draft](versions/v1.0.0-draft.md)
-- [Operations Reference](operations.md)
 - [Introspection Specification](introspection.md)

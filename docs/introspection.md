@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-05
+**Last Updated:** 2026-01-14
 
 ## Abstract
 
@@ -28,8 +28,8 @@ The introspection system enables AI models to discover available operations at r
 
 - **On-demand discovery** - Query only what's needed
 - **Self-documenting API** - API describes itself without external documentation
-- **Token efficiency** - Avoid parsing 50+ tool schemas (~29,600 tokens)
-- **Dynamic capability detection** - Discover server-specific extensions
+- **Token efficiency** - Avoid parsing many tool schemas
+- **Dynamic capability detection** - Discover adapter-specific operations
 
 ### 1.2 Design Principles
 
@@ -38,13 +38,17 @@ The introspection system enables AI models to discover available operations at r
 3. **Completeness** - Sufficient information to construct valid requests
 4. **Efficiency** - Minimal response size while maintaining usefulness
 
+### 1.3 Adapter-Defined Content
+
+The introspection system returns information about the adapter's operations and types. Different adapters will expose different operations - MCP-AQL defines the introspection mechanism, not the operations themselves.
+
 ---
 
 ## 2. Introspection Query Types
 
 ### 2.1 The `introspect` Operation
 
-All introspection is performed through the `introspect` operation on the READ endpoint.
+All introspection is performed through the `introspect` operation on the READ endpoint. This is the only operation that MCP-AQL requires all adapters to implement.
 
 **Request Format:**
 ```json
@@ -93,7 +97,7 @@ Summary information for an operation in list responses:
 
 ```typescript
 interface OperationInfo {
-  name: string;        // Operation identifier (e.g., "create_element")
+  name: string;        // Operation identifier (e.g., "create_user")
   endpoint: string;    // CRUDE endpoint (e.g., "CREATE")
   description: string; // Brief description
 }
@@ -126,7 +130,7 @@ Parameter definition:
 ```typescript
 interface ParameterInfo {
   name: string;        // Parameter name (snake_case)
-  type: string;        // Type name (e.g., "string", "ElementType")
+  type: string;        // Type name (e.g., "string", "number", adapter-defined types)
   required: boolean;   // Whether parameter is required
   description: string; // Parameter description
   default?: unknown;   // Default value if any
@@ -171,23 +175,37 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
-**Response:**
+**Response (example from a user management adapter):**
 ```json
 {
   "success": true,
   "data": {
     "operations": [
       {
-        "name": "create_element",
+        "name": "create_user",
         "endpoint": "CREATE",
-        "description": "Create a new element of any type"
+        "description": "Create a new user account"
       },
       {
-        "name": "list_elements",
+        "name": "list_users",
         "endpoint": "READ",
-        "description": "List elements with filtering and pagination"
+        "description": "List users with filtering and pagination"
+      },
+      {
+        "name": "update_user",
+        "endpoint": "UPDATE",
+        "description": "Update user properties"
+      },
+      {
+        "name": "delete_user",
+        "endpoint": "DELETE",
+        "description": "Permanently delete a user"
+      },
+      {
+        "name": "introspect",
+        "endpoint": "READ",
+        "description": "Discover available operations and types"
       }
-      // ... additional operations
     ]
   }
 }
@@ -201,7 +219,7 @@ interface TypeDetails extends TypeInfo {
   "operation": "introspect",
   "params": {
     "query": "operations",
-    "name": "create_element"
+    "name": "create_user"
   }
 }
 ```
@@ -212,59 +230,42 @@ interface TypeDetails extends TypeInfo {
   "success": true,
   "data": {
     "operation": {
-      "name": "create_element",
+      "name": "create_user",
       "endpoint": "CREATE",
       "mcpTool": "mcp_aql_create",
-      "description": "Create a new element of any type",
+      "description": "Create a new user account",
       "permissions": {
         "readOnly": false,
         "destructive": false
       },
       "parameters": [
         {
-          "name": "element_name",
+          "name": "email",
           "type": "string",
           "required": true,
-          "description": "Element name"
+          "description": "User's email address"
         },
         {
-          "name": "element_type",
-          "type": "ElementType",
-          "required": true,
-          "description": "Element type"
-        },
-        {
-          "name": "description",
+          "name": "name",
           "type": "string",
           "required": true,
-          "description": "Element description"
+          "description": "User's display name"
         },
         {
-          "name": "instructions",
-          "type": "string",
+          "name": "role",
+          "type": "UserRole",
           "required": false,
-          "description": "Behavioral instructions (REQUIRED for personas)"
-        },
-        {
-          "name": "content",
-          "type": "string",
-          "required": false,
-          "description": "Element content (REQUIRED for agents, skills, templates)"
-        },
-        {
-          "name": "metadata",
-          "type": "object",
-          "required": false,
-          "description": "Additional metadata"
+          "default": "user",
+          "description": "User's role in the system"
         }
       ],
       "returns": {
-        "name": "Element",
+        "name": "User",
         "kind": "object",
-        "description": "Newly created element"
+        "description": "Newly created user"
       },
       "examples": [
-        "{ operation: \"create_element\", element_type: \"persona\", params: { element_name: \"MyPersona\", description: \"A helpful assistant\", instructions: \"You are helpful.\" } }"
+        "{ operation: \"create_user\", params: { email: \"alice@example.com\", name: \"Alice\" } }"
       ]
     }
   }
@@ -308,26 +309,26 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
-**Response:**
+**Response (example from a user management adapter):**
 ```json
 {
   "success": true,
   "data": {
     "types": [
       {
-        "name": "ElementType",
+        "name": "UserRole",
         "kind": "enum",
-        "description": "Available element types"
+        "description": "User role levels"
+      },
+      {
+        "name": "User",
+        "kind": "object",
+        "description": "User account object"
       },
       {
         "name": "CRUDEndpoint",
         "kind": "enum",
         "description": "CRUDE endpoint identifiers"
-      },
-      {
-        "name": "OperationInput",
-        "kind": "object",
-        "description": "Standard input structure for operations"
       },
       {
         "name": "OperationResult",
@@ -347,7 +348,7 @@ interface TypeDetails extends TypeInfo {
   "operation": "introspect",
   "params": {
     "query": "types",
-    "name": "ElementType"
+    "name": "UserRole"
   }
 }
 ```
@@ -358,10 +359,10 @@ interface TypeDetails extends TypeInfo {
   "success": true,
   "data": {
     "type": {
-      "name": "ElementType",
+      "name": "UserRole",
       "kind": "enum",
-      "description": "Available element types",
-      "values": ["persona", "skill", "template", "agent", "memory", "ensemble"]
+      "description": "User role levels",
+      "values": ["admin", "user", "guest"]
     }
   }
 }
@@ -373,7 +374,7 @@ interface TypeDetails extends TypeInfo {
   "operation": "introspect",
   "params": {
     "query": "types",
-    "name": "OperationInput"
+    "name": "User"
   }
 }
 ```
@@ -384,27 +385,33 @@ interface TypeDetails extends TypeInfo {
   "success": true,
   "data": {
     "type": {
-      "name": "OperationInput",
+      "name": "User",
       "kind": "object",
-      "description": "Standard input structure for all MCP-AQL operations",
+      "description": "User account object",
       "fields": [
         {
-          "name": "operation",
+          "name": "id",
           "type": "string",
           "required": true,
-          "description": "The operation to perform"
+          "description": "Unique user identifier"
         },
         {
-          "name": "element_type",
-          "type": "ElementType",
-          "required": false,
-          "description": "Element type for element operations"
+          "name": "email",
+          "type": "string",
+          "required": true,
+          "description": "User's email address"
         },
         {
-          "name": "params",
-          "type": "object",
-          "required": false,
-          "description": "Operation-specific parameters"
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Display name"
+        },
+        {
+          "name": "role",
+          "type": "UserRole",
+          "required": true,
+          "description": "User's role"
         }
       ]
     }
@@ -412,18 +419,19 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
-### 5.3 Core Type Definitions
+### 5.3 Protocol Types
 
-Implementations MUST define these core types:
+MCP-AQL defines these protocol-level types that adapters SHOULD include:
 
 | Type Name | Kind | Description |
 |-----------|------|-------------|
-| `ElementType` | enum | Element types: persona, skill, template, agent, memory, ensemble |
 | `CRUDEndpoint` | enum | Endpoints: CREATE, READ, UPDATE, DELETE, EXECUTE |
 | `OperationInput` | object | Standard input structure |
 | `OperationResult` | union | Success or failure result |
 | `OperationSuccess` | object | Successful result with data |
 | `OperationFailure` | object | Failed result with error |
+
+Adapters define their own domain-specific types in addition to these.
 
 ---
 
@@ -438,10 +446,10 @@ Step 1: List operations (~50 tokens response)
    { operation: "introspect", params: { query: "operations" } }
 
 Step 2: Get details for relevant operation (~100 tokens response)
-   { operation: "introspect", params: { query: "operations", name: "create_element" } }
+   { operation: "introspect", params: { query: "operations", name: "create_user" } }
 
 Step 3: Execute operation
-   { operation: "create_element", ... }
+   { operation: "create_user", params: { ... } }
 ```
 
 ### 6.2 Comparison with Discrete Tools
@@ -469,9 +477,8 @@ Conforming implementations MUST:
 1. Implement the `introspect` operation on the READ endpoint
 2. Support both `operations` and `types` query types
 3. Return OperationInfo for all supported operations
-4. Return TypeDetails for all core types
-5. Include accurate parameter information with required flags
-6. Use consistent type names across all responses
+4. Include accurate parameter information with required flags
+5. Use consistent type names across all responses
 
 ### 7.2 SHOULD Requirements
 
@@ -481,6 +488,7 @@ Conforming implementations SHOULD:
 2. Provide meaningful descriptions for all parameters
 3. Document default values in parameter info
 4. Return operations grouped by endpoint in list responses
+5. Include the protocol types (CRUDEndpoint, OperationResult, etc.)
 
 ### 7.3 MAY Requirements
 
@@ -497,4 +505,4 @@ Conforming implementations MAY:
 
 - [MCP-AQL Specification v1.0.0-draft](versions/v1.0.0-draft.md)
 - [CRUDE Pattern Specification](crude-pattern.md)
-- [Operations Reference](operations.md)
+- [Operations Guide](operations.md)
