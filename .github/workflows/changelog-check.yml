@@ -1,0 +1,180 @@
+name: Changelog Enforcement
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  changelog-check:
+    name: Check Changelog Update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for skip-changelog label
+        id: skip-label
+        run: |
+          if [[ "${{ contains(github.event.pull_request.labels.*.name, 'skip-changelog') }}" == "true" ]]; then
+            echo "has_skip_label=true" >> $GITHUB_OUTPUT
+            echo "::notice::Skipping changelog check due to 'skip-changelog' label"
+          else
+            echo "has_skip_label=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get changed files
+        if: steps.skip-label.outputs.has_skip_label != 'true'
+        id: changed-files
+        run: |
+          # Get the list of changed files
+          CHANGED_FILES=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Save to output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "files<<$EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Check if only non-functional files changed
+        if: steps.skip-label.outputs.has_skip_label != 'true'
+        id: check-files
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
+
+          # Define patterns for non-functional files that don't require changelog updates
+          # These are CI configs, linting configs, license files, and contribution docs
+          NON_FUNCTIONAL_PATTERNS=(
+            "^\.github/"
+            "^\.markdownlint\.json$"
+            "^\.markdownlint\.yaml$"
+            "^\.markdownlint\.yml$"
+            "^\.cspell\.json$"
+            "^\.lychee\.toml$"
+            "^\.gitignore$"
+            "^\.editorconfig$"
+            "^\.pre-commit-config\.yaml$"
+            "^LICENSE"
+            "^CONTRIBUTING\.md$"
+            "^CODE_OF_CONDUCT\.md$"
+            "^\.vale\.ini$"
+            "^\.vale/"
+          )
+
+          # Build combined regex pattern
+          COMBINED_PATTERN=$(IFS="|"; echo "${NON_FUNCTIONAL_PATTERNS[*]}")
+
+          # Check if all changed files match non-functional patterns
+          ONLY_NON_FUNCTIONAL=true
+          CHANGELOG_MODIFIED=false
+
+          while IFS= read -r file; do
+            # Skip empty lines
+            [[ -z "$file" ]] && continue
+
+            # Check if CHANGELOG.md is modified
+            if [[ "$file" == "CHANGELOG.md" ]]; then
+              CHANGELOG_MODIFIED=true
+              echo "::notice::CHANGELOG.md is included in the changes"
+            fi
+
+            # Check if file matches non-functional patterns
+            if ! echo "$file" | grep -qE "$COMBINED_PATTERN"; then
+              ONLY_NON_FUNCTIONAL=false
+              echo "Functional file changed: $file"
+            else
+              echo "Non-functional file: $file"
+            fi
+          done <<< "$CHANGED_FILES"
+
+          echo "only_non_functional=$ONLY_NON_FUNCTIONAL" >> $GITHUB_OUTPUT
+          echo "changelog_modified=$CHANGELOG_MODIFIED" >> $GITHUB_OUTPUT
+
+      - name: Verify CHANGELOG.md exists and has correct format
+        if: |
+          steps.skip-label.outputs.has_skip_label != 'true' &&
+          steps.check-files.outputs.only_non_functional != 'true'
+        id: verify-format
+        run: |
+          # Check if CHANGELOG.md exists
+          if [[ ! -f "CHANGELOG.md" ]]; then
+            echo "::error::CHANGELOG.md does not exist in the repository"
+            echo "valid_format=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check for Keep a Changelog format indicators
+          if ! grep -q "## \[Unreleased\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md does not follow Keep a Changelog format - missing '## [Unreleased]' section"
+            echo "valid_format=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Check for basic structure
+          if ! grep -q "# Changelog" CHANGELOG.md; then
+            echo "::warning::CHANGELOG.md should start with '# Changelog' header"
+          fi
+
+          echo "valid_format=true" >> $GITHUB_OUTPUT
+          echo "::notice::CHANGELOG.md exists and follows Keep a Changelog format"
+
+      - name: Enforce changelog update
+        if: steps.skip-label.outputs.has_skip_label != 'true'
+        run: |
+          ONLY_NON_FUNCTIONAL="${{ steps.check-files.outputs.only_non_functional }}"
+          CHANGELOG_MODIFIED="${{ steps.check-files.outputs.changelog_modified }}"
+          VALID_FORMAT="${{ steps.verify-format.outputs.valid_format }}"
+
+          # If only non-functional files changed, pass
+          if [[ "$ONLY_NON_FUNCTIONAL" == "true" ]]; then
+            echo "::notice::Only non-functional files changed (CI configs, etc.) - changelog update not required"
+            exit 0
+          fi
+
+          # Check format validation
+          if [[ "$VALID_FORMAT" == "false" ]]; then
+            echo "::error::CHANGELOG.md format validation failed"
+            exit 1
+          fi
+
+          # If functional files changed, changelog must be updated
+          if [[ "$CHANGELOG_MODIFIED" != "true" ]]; then
+            echo ""
+            echo "=============================================="
+            echo "  CHANGELOG UPDATE REQUIRED"
+            echo "=============================================="
+            echo ""
+            echo "This pull request includes functional changes but CHANGELOG.md was not updated."
+            echo ""
+            echo "Please do one of the following:"
+            echo ""
+            echo "1. UPDATE THE CHANGELOG"
+            echo "   Add your changes to the '## [Unreleased]' section in CHANGELOG.md"
+            echo "   using the appropriate category:"
+            echo "   - Added: for new features"
+            echo "   - Changed: for changes in existing functionality"
+            echo "   - Deprecated: for soon-to-be removed features"
+            echo "   - Removed: for now removed features"
+            echo "   - Fixed: for any bug fixes"
+            echo "   - Security: in case of vulnerabilities"
+            echo ""
+            echo "2. ADD THE SKIP LABEL"
+            echo "   If this PR truly doesn't need a changelog entry (e.g., typo fixes,"
+            echo "   internal refactoring with no user-facing changes), add the"
+            echo "   'skip-changelog' label to this pull request."
+            echo ""
+            echo "For more information on changelog format, see:"
+            echo "https://keepachangelog.com/en/1.1.0/"
+            echo ""
+            echo "=============================================="
+            exit 1
+          fi
+
+          echo "::notice::Changelog check passed - CHANGELOG.md has been updated"

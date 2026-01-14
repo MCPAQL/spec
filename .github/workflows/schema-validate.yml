@@ -1,0 +1,145 @@
+name: Validate JSON Schemas
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'schemas/**/*.json'
+  pull_request:
+    paths:
+      - 'schemas/**/*.json'
+  workflow_dispatch:
+
+jobs:
+  validate-schemas:
+    name: Validate JSON Schema Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install validation tools
+        run: |
+          npm install -g ajv-cli ajv-formats
+
+      - name: Find schema files
+        id: find-schemas
+        run: |
+          echo "Looking for JSON files in schemas/ directory..."
+          if [ -d "schemas" ]; then
+            SCHEMA_FILES=$(find schemas -name '*.json' -type f | sort)
+            if [ -z "$SCHEMA_FILES" ]; then
+              echo "No JSON files found in schemas/"
+              echo "found=false" >> $GITHUB_OUTPUT
+            else
+              echo "Found schema files:"
+              echo "$SCHEMA_FILES"
+              echo "found=true" >> $GITHUB_OUTPUT
+              # Store files for later steps
+              echo "$SCHEMA_FILES" > /tmp/schema-files.txt
+            fi
+          else
+            echo "schemas/ directory does not exist"
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate JSON syntax
+        if: steps.find-schemas.outputs.found == 'true'
+        run: |
+          echo "=== Validating JSON Syntax ==="
+          ERRORS=0
+          while IFS= read -r file; do
+            echo -n "Checking $file... "
+            if jq empty "$file" 2>/dev/null; then
+              echo "OK"
+            else
+              echo "FAILED"
+              echo "::error file=$file::Invalid JSON syntax in $file"
+              jq empty "$file" 2>&1 || true
+              ERRORS=$((ERRORS + 1))
+            fi
+          done < /tmp/schema-files.txt
+
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "::error::$ERRORS file(s) have invalid JSON syntax"
+            exit 1
+          fi
+          echo ""
+          echo "All files have valid JSON syntax"
+
+      - name: Validate JSON Schema structure
+        if: steps.find-schemas.outputs.found == 'true'
+        run: |
+          echo "=== Validating JSON Schema Structure ==="
+          ERRORS=0
+          WARNINGS=0
+
+          while IFS= read -r file; do
+            echo "----------------------------------------"
+            echo "Validating: $file"
+
+            # Check if file declares itself as a JSON Schema
+            SCHEMA_DECLARATION=$(jq -r '.["$schema"] // empty' "$file" 2>/dev/null)
+
+            if [ -z "$SCHEMA_DECLARATION" ]; then
+              echo "  Warning: No \$schema declaration found"
+              WARNINGS=$((WARNINGS + 1))
+            else
+              echo "  Schema dialect: $SCHEMA_DECLARATION"
+            fi
+
+            # Validate using ajv-cli with JSON Schema draft support
+            # ajv compile validates that the schema itself is valid
+            if ajv compile -s "$file" --spec=draft2020 -c ajv-formats 2>&1; then
+              echo "  Result: VALID"
+            else
+              # Try with draft-07 if 2020-12 fails
+              echo "  Trying draft-07 validation..."
+              if ajv compile -s "$file" --spec=draft7 -c ajv-formats 2>&1; then
+                echo "  Result: VALID (draft-07)"
+              else
+                echo "  Result: INVALID"
+                echo "::error file=$file::Invalid JSON Schema structure in $file"
+                ERRORS=$((ERRORS + 1))
+              fi
+            fi
+          done < /tmp/schema-files.txt
+
+          echo ""
+          echo "========================================"
+          echo "Validation Summary:"
+          echo "  Files checked: $(wc -l < /tmp/schema-files.txt | tr -d ' ')"
+          echo "  Errors: $ERRORS"
+          echo "  Warnings: $WARNINGS"
+          echo "========================================"
+
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "::error::$ERRORS schema file(s) failed validation"
+            exit 1
+          fi
+
+          echo ""
+          echo "All schemas are valid!"
+
+      - name: Schema validation summary
+        if: always()
+        run: |
+          echo "## Schema Validation Complete"
+          if [ -f /tmp/schema-files.txt ]; then
+            echo "Files validated:"
+            cat /tmp/schema-files.txt | while read -r file; do
+              echo "  - $file"
+            done
+          else
+            echo "No schema files were found to validate."
+          fi

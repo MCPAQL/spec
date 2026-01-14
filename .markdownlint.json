@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/main/schema/markdownlint-config-schema.json",
+  "default": true,
+
+  "MD003": {
+    "style": "atx"
+  },
+
+  "MD004": {
+    "style": "dash"
+  },
+
+  "MD007": {
+    "indent": 2
+  },
+
+  "MD012": false,
+
+  "MD013": false,
+
+  "MD024": {
+    "siblings_only": true
+  },
+
+  "MD026": {
+    "punctuation": ".,;:!"
+  },
+
+  "MD031": false,
+
+  "MD032": false,
+
+  "MD033": {
+    "allowed_elements": [
+      "a",
+      "br",
+      "code",
+      "details",
+      "div",
+      "em",
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "img",
+      "kbd",
+      "p",
+      "picture",
+      "pre",
+      "source",
+      "span",
+      "strong",
+      "sub",
+      "summary",
+      "sup",
+      "table",
+      "tbody",
+      "td",
+      "th",
+      "thead",
+      "tr"
+    ]
+  },
+
+  "MD034": false,
+
+  "MD036": false,
+
+  "MD040": false,
+
+  "MD041": true,
+
+  "MD046": {
+    "style": "fenced"
+  },
+
+  "MD048": {
+    "style": "backtick"
+  },
+
+  "MD058": false,
+
+  "MD060": false
+}

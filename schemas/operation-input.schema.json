@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/operation-input.schema.json",
+  "title": "MCP-AQL Operation Input",
+  "description": "Schema for MCP-AQL operation request format",
+  "type": "object",
+  "properties": {
+    "operation": {
+      "type": "string",
+      "description": "The operation name to execute (snake_case)",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "params": {
+      "type": "object",
+      "description": "Operation parameters (adapter-specific)",
+      "additionalProperties": true
+    }
+  },
+  "required": ["operation"],
+  "additionalProperties": true
+}

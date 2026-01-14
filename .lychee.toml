@@ -1,0 +1,78 @@
+# Lychee link checker configuration
+# https://lychee.cli.rs/
+
+# Check both internal and external links
+include_verbatim = true
+
+# Cache configuration
+cache = true
+max_cache_age = "1d"
+
+# Request settings
+timeout = 30
+max_retries = 3
+retry_wait_time = 2
+
+# Rate limiting for external requests (requests per second)
+max_concurrency = 8
+max_redirects = 10
+
+# Accept status codes (2xx are always accepted)
+accept = [200, 204, 206, 301, 302, 307, 308]
+
+# Exclude patterns - URLs that should not be checked
+exclude = [
+    # Example and placeholder URLs
+    "^https?://example\\.com",
+    "^https?://example\\.org",
+    "^https?://example\\.net",
+    "^https?://.*\\.example\\.com",
+
+    # Localhost and local network
+    "^https?://localhost",
+    "^https?://127\\.0\\.0\\.1",
+    "^https?://0\\.0\\.0\\.0",
+    "^https?://\\[::1\\]",
+    "^https?://192\\.168\\.",
+    "^https?://10\\.",
+    "^https?://172\\.(1[6-9]|2[0-9]|3[0-1])\\.",
+
+    # Placeholder patterns commonly used in documentation
+    "^https?://your-",
+    "^https?://my-",
+    "^https?://.*\\.local",
+    "^https?://api\\.your",
+    "^https?://your\\.api",
+    "<.*>",
+    "\\{\\{.*\\}\\}",
+    "\\$\\{.*\\}",
+
+    # Mail links
+    "^mailto:",
+
+    # File links (handled separately)
+    "^file://",
+]
+
+# Exclude paths - files or directories to skip
+exclude_path = [
+    "node_modules",
+    "vendor",
+    ".git",
+    "CHANGELOG.md",
+]
+
+# Include fragment checking (anchors)
+include_fragments = true
+
+# Fallback extensions for extensionless URLs
+fallback_extensions = ["html", "htm"]
+
+# User agent for requests
+user_agent = "lychee/0.15 (https://github.com/lycheeverse/lychee)"
+
+# Output format
+format = "markdown"
+
+# Verbose output
+verbose = false

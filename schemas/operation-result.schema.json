@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/operation-result.schema.json",
+  "title": "MCP-AQL Operation Result",
+  "description": "Schema for MCP-AQL operation response format (discriminated union)",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Success Result",
+      "properties": {
+        "success": {
+          "const": true,
+          "description": "Indicates operation succeeded"
+        },
+        "data": {
+          "description": "Operation result data (adapter-specific)"
+        }
+      },
+      "required": ["success", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "title": "Failure Result",
+      "properties": {
+        "success": {
+          "const": false,
+          "description": "Indicates operation failed"
+        },
+        "error": {
+          "type": "string",
+          "description": "Human-readable error message"
+        },
+        "errorCode": {
+          "type": "string",
+          "description": "Machine-readable error code (optional)"
+        }
+      },
+      "required": ["success", "error"],
+      "additionalProperties": false
+    }
+  ]
+}
