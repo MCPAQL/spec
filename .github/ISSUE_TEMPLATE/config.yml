@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and Discussions
+    url: https://github.com/MCPAQL/spec/discussions
+    about: Please ask questions and discuss the specification in GitHub Discussions instead of opening an issue.
+  - name: MCP-AQL Documentation
+    url: https://github.com/MCPAQL/spec#readme
+    about: Read the specification documentation before opening an issue.

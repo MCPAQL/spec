@@ -1,0 +1,37 @@
+# CODEOWNERS for MCPAQL/spec repository
+#
+# NOTE: For this file to work properly, the following teams must be created
+# in the MCPAQL GitHub organization:
+#   - @MCPAQL/maintainers   - Repository maintainers with admin/write access
+#   - @MCPAQL/spec-editors  - Specification editors responsible for spec content
+#
+# GitHub CODEOWNERS documentation:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# =============================================================================
+# Default owners for everything in the repository
+# =============================================================================
+*                           @MCPAQL/maintainers
+
+# =============================================================================
+# Specification documents
+# =============================================================================
+/docs/versions/             @MCPAQL/spec-editors
+/docs/*.md                  @MCPAQL/spec-editors
+
+# =============================================================================
+# Schema definitions
+# =============================================================================
+/schemas/                   @MCPAQL/spec-editors
+
+# =============================================================================
+# CI/CD configuration
+# =============================================================================
+/.github/                   @MCPAQL/maintainers
+
+# =============================================================================
+# Legal and licensing files
+# =============================================================================
+LICENSE*                    @MCPAQL/maintainers
+LICENSING.md                @MCPAQL/maintainers
+CLA.md                      @MCPAQL/maintainers

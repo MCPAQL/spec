@@ -3,29 +3,35 @@ name: Bug Report
 description: Report a bug or inconsistency in the MCP-AQL specification
 title: "[BUG] "
 labels: ["bug", "spec"]
+assignees: []
 ---
 
-## Summary
+## Spec Version Affected
 
-A brief description of the bug or inconsistency.
+Which version of the specification contains this issue?
 
-## Specification Section
+- Version:
 
-Which section(s) of the specification are affected?
+## Section/Document Affected
+
+Which section(s) or document(s) of the specification are affected?
+
+- Document:
+- Section:
+
+## Description of the Issue
+
+A clear and concise description of the bug or inconsistency.
 
 ## Expected Behavior
 
-What the specification should define or clarify.
+What the specification should define or state.
 
 ## Actual Behavior
 
 What the specification currently states or implies.
 
-## Impact
-
-Describe how this bug affects implementations or users of the specification.
-
-## Suggested Fix
+## Suggested Fix (Optional)
 
 If applicable, propose how the specification should be corrected.
 
