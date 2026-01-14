@@ -25,13 +25,18 @@ MCP-AQL extends traditional CRUD with an **Execute** endpoint, creating the CRUD
 
 ## Token Efficiency
 
-MCP-AQL dramatically reduces token consumption for LLM interactions:
+MCP-AQL dramatically reduces token consumption for LLM interactions.
 
-| Configuration | Endpoints | Token Cost | Reduction |
-|--------------|-----------|------------|-----------|
-| Discrete Tools | 50+ individual tools | ~29,600 | Baseline |
-| CRUDE Mode | 5 semantic endpoints | ~4,300 | ~85% |
-| Single Mode | 1 unified endpoint | ~1,100 | **~96%** |
+**Per-tool overhead:** A typical MCP tool definition consumes ~500-700 tokens in context.
+
+| Configuration | Tool Count | Token Cost | Reduction |
+|--------------|------------|------------|-----------|
+| Discrete Tools | ~30 tools | ~18,000 | Baseline |
+| Discrete Tools | ~50 tools | ~30,000 | Baseline |
+| **CRUDE Mode** | 5 endpoints | ~4,000 | ~80-85% |
+| **Single Mode** | 1 endpoint | ~1,000 | **~95%+** |
+
+The savings scale with adapter complexity - the more operations your adapter supports, the greater the benefit of consolidation.
 
 ## Key Features
 
@@ -58,20 +63,20 @@ MCP-AQL dramatically reduces token consumption for LLM interactions:
 ```javascript
 {
   operation: "introspect",
-  params: { query: "operations", name: "create_element" }
+  params: { query: "operations", name: "create_user" }
 }
 ```
 
 ### Execute an Operation
 
 ```javascript
+// Operations are adapter-specific - this example from a user management adapter
 {
-  operation: "create_element",
-  element_type: "persona",
+  operation: "create_user",
   params: {
-    element_name: "MyPersona",
-    description: "A helpful assistant",
-    instructions: "You are helpful and thorough."
+    email: "alice@example.com",
+    name: "Alice",
+    role: "admin"
   }
 }
 ```
@@ -83,23 +88,24 @@ MCP-AQL dramatically reduces token consumption for LLM interactions:
 | [Specification v1.0.0-draft](docs/versions/v1.0.0-draft.md) | Current working draft |
 | [CRUDE Pattern](docs/crude-pattern.md) | Detailed endpoint semantics |
 | [Introspection](docs/introspection.md) | Discovery system specification |
-| [Operations](docs/operations.md) | Complete operation reference |
-| [Schema Definitions](schemas/) | Formal JSON Schema definitions |
+| [Operations Guide](docs/operations.md) | Operation design patterns |
+| [Documentation Index](docs/README.md) | Full documentation structure |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## Reference Implementation
 
-[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) serves as the reference implementation of MCP-AQL for AI element management (personas, skills, templates, agents, memories, ensembles).
+[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) serves as the reference implementation of MCP-AQL, demonstrating all protocol features in a production environment.
 
 ## Conformance
 
 Implementations claiming MCP-AQL conformance MUST:
 
-1. Support all operations defined in the core specification
-2. Implement the CRUDE endpoint pattern with correct operation routing
-3. Provide introspection via the `introspect` operation
-4. Pass the conformance test suite in [tests/](tests/)
-5. Document any extensions or deviations
+1. Implement the `introspect` operation for runtime discovery
+2. Use the CRUDE endpoint pattern (or single endpoint mode)
+3. Return discriminated union responses (`{ success, data }` or `{ success, error }`)
+4. Document supported operations via introspection
+
+Implementations SHOULD also pass the conformance test suite in [tests/](tests/).
 
 ## Contributing
 
