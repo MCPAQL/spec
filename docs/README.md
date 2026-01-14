@@ -38,6 +38,14 @@ This directory contains the complete specification and implementation guidance f
 |----------|-------------|--------|
 | [Development Guide](adapter/development-guide.md) | How to build MCP-AQL adapters | Draft |
 
+### Process
+
+| Document | Description |
+|----------|-------------|
+| [RFC Process](process/rfc-process.md) | How to propose specification changes |
+| [Breaking Changes](process/breaking-changes.md) | Policy for handling breaking changes |
+| [Versioning](process/versioning.md) | Version numbering and release process |
+
 ### Roadmap
 
 Future features are tracked as GitHub issues with the `planned` label. Key upcoming features:
