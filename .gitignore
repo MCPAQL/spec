@@ -24,3 +24,9 @@ Desktop.ini
 .env
 .env.*
 
+# Claude Code (local context files)
+CLAUDE.md
+.claude/
+
+# DollhouseMCP (local MCP server state)
+.dollhousemcp/
