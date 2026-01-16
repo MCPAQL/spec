@@ -2,11 +2,11 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-01-16
 
 ## Abstract
 
-This document specifies the MCP-AQL introspection system, which provides GraphQL-style discovery capabilities for operations, parameters, types, and examples at runtime.
+This document specifies the MCP-AQL introspection system, which provides GraphQL-style discovery capabilities for operations, parameters, types, and examples at runtime. The introspection system is the only operation that MCP-AQL mandates all adapters implement, enabling AI models to discover capabilities dynamically.
 
 ## Table of Contents
 
@@ -15,8 +15,9 @@ This document specifies the MCP-AQL introspection system, which provides GraphQL
 3. [Response Structures](#3-response-structures)
 4. [Operation Discovery](#4-operation-discovery)
 5. [Type Discovery](#5-type-discovery)
-6. [Token Efficiency](#6-token-efficiency)
-7. [Conformance Requirements](#7-conformance-requirements)
+6. [Implementation Guidance](#6-implementation-guidance)
+7. [Token Efficiency](#7-token-efficiency)
+8. [Conformance Requirements](#8-conformance-requirements)
 
 ---
 
@@ -26,7 +27,7 @@ This document specifies the MCP-AQL introspection system, which provides GraphQL
 
 The introspection system enables AI models to discover available operations at runtime rather than parsing large tool schemas upfront. This provides:
 
-- **On-demand discovery** - Query only what's needed
+- **On-demand discovery** - Query only what is needed
 - **Self-documenting API** - API describes itself without external documentation
 - **Token efficiency** - Avoid parsing many tool schemas
 - **Dynamic capability detection** - Discover adapter-specific operations
@@ -38,9 +39,28 @@ The introspection system enables AI models to discover available operations at r
 3. **Completeness** - Sufficient information to construct valid requests
 4. **Efficiency** - Minimal response size while maintaining usefulness
 
-### 1.3 Adapter-Defined Content
+### 1.3 Introspection Flow
 
-The introspection system returns information about the adapter's operations and types. Different adapters will expose different operations - MCP-AQL defines the introspection mechanism, not the operations themselves.
+The following diagram illustrates how an AI model discovers and uses operations:
+
+```mermaid
+graph TB
+    subgraph "Introspection Flow"
+        LLM[AI Agent]
+        INTRO[introspect operation]
+        RESOLVER[Introspection Handler]
+        SCHEMA[Operation Registry]
+
+        LLM --> |query: operations| INTRO
+        INTRO --> RESOLVER
+        RESOLVER --> |lookup| SCHEMA
+        RESOLVER --> |response| LLM
+    end
+```
+
+### 1.4 Adapter-Defined Content
+
+The introspection system returns information about the adapter's operations and types. Different adapters expose different operations - MCP-AQL defines the introspection mechanism, not the operations themselves.
 
 ---
 
@@ -48,25 +68,25 @@ The introspection system returns information about the adapter's operations and 
 
 ### 2.1 The `introspect` Operation
 
-All introspection is performed through the `introspect` operation on the READ endpoint. This is the only operation that MCP-AQL requires all adapters to implement.
+All introspection is performed through the `introspect` operation on the READ endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
 
 **Request Format:**
-```json
+```javascript
 {
-  "operation": "introspect",
-  "params": {
-    "query": "<query_type>",
-    "name": "<optional_specific_name>"
+  operation: "introspect",
+  params: {
+    query: "<query_type>",
+    name: "<optional_specific_name>"
   }
 }
 ```
 
 ### 2.2 Query Types
 
-| Query | Description | Name Parameter |
-|-------|-------------|----------------|
-| `operations` | List or describe operations | Optional: specific operation name |
-| `types` | List or describe types | Optional: specific type name |
+| Query | Description | Optional `name` Parameter |
+|-------|-------------|---------------------------|
+| `operations` | List all available operations | Get details for a specific operation |
+| `types` | List all available types | Get details for a specific type |
 
 ### 2.3 Query Behavior
 
@@ -74,19 +94,57 @@ All introspection is performed through the `introspect` operation on the READ en
 
 **With `name` parameter:** Returns detailed information for the specific item.
 
+### 2.4 Basic Usage Examples
+
+```javascript
+// List all operations
+{
+  operation: "introspect",
+  params: { query: "operations" }
+}
+
+// Get details for a specific operation
+{
+  operation: "introspect",
+  params: { query: "operations", name: "create_entity" }
+}
+
+// List all types
+{
+  operation: "introspect",
+  params: { query: "types" }
+}
+
+// Get details for a specific type
+{
+  operation: "introspect",
+  params: { query: "types", name: "EntityType" }
+}
+```
+
 ---
 
 ## 3. Response Structures
 
 ### 3.1 Standard Response Wrapper
 
-All introspection responses follow the standard MCP-AQL response format:
+All introspection responses MUST follow the standard MCP-AQL discriminated response format:
 
-```json
+```javascript
+// Success response
 {
-  "success": true,
-  "data": {
+  success: true,
+  data: {
     // Introspection-specific payload
+  }
+}
+
+// Failure response
+{
+  success: false,
+  error: {
+    code: "INTROSPECTION_ERROR",
+    message: "Description of what went wrong"
   }
 }
 ```
@@ -97,7 +155,7 @@ Summary information for an operation in list responses:
 
 ```typescript
 interface OperationInfo {
-  name: string;        // Operation identifier (e.g., "create_user")
+  name: string;        // Operation identifier (e.g., "create_entity")
   endpoint: string;    // CRUDE endpoint (e.g., "CREATE")
   description: string; // Brief description
 }
@@ -113,13 +171,15 @@ interface OperationDetails {
   endpoint: string;                // CRUDE endpoint
   mcpTool: string;                 // MCP tool name (e.g., "mcp_aql_create")
   description: string;             // Detailed description
-  permissions: {
-    readOnly: boolean;             // Whether operation modifies state
-    destructive: boolean;          // Whether operation removes state
-  };
+  permissions: EndpointPermissions;
   parameters: ParameterInfo[];     // Parameter definitions
   returns: TypeInfo;               // Return type information
   examples: string[];              // Example invocations
+}
+
+interface EndpointPermissions {
+  readOnly: boolean;    // Whether operation modifies state
+  destructive: boolean; // Whether operation removes state
 }
 ```
 
@@ -129,7 +189,7 @@ Parameter definition:
 
 ```typescript
 interface ParameterInfo {
-  name: string;        // Parameter name (snake_case)
+  name: string;        // Parameter name (snake_case recommended)
   type: string;        // Type name (e.g., "string", "number", adapter-defined types)
   required: boolean;   // Whether parameter is required
   description: string; // Parameter description
@@ -168,38 +228,48 @@ interface TypeDetails extends TypeInfo {
 ### 4.1 Listing All Operations
 
 **Request:**
-```json
+```javascript
 {
-  "operation": "introspect",
-  "params": { "query": "operations" }
+  operation: "introspect",
+  params: { query: "operations" }
 }
 ```
 
-**Response (example from a user management adapter):**
+**Response (example from a resource management adapter):**
 ```json
 {
   "success": true,
   "data": {
     "operations": [
       {
-        "name": "create_user",
+        "name": "create_entity",
         "endpoint": "CREATE",
-        "description": "Create a new user account"
+        "description": "Create a new entity"
       },
       {
-        "name": "list_users",
+        "name": "list_entities",
         "endpoint": "READ",
-        "description": "List users with filtering and pagination"
+        "description": "List entities with filtering and pagination"
       },
       {
-        "name": "update_user",
+        "name": "get_entity",
+        "endpoint": "READ",
+        "description": "Get an entity by identifier"
+      },
+      {
+        "name": "update_entity",
         "endpoint": "UPDATE",
-        "description": "Update user properties"
+        "description": "Update entity properties"
       },
       {
-        "name": "delete_user",
+        "name": "delete_entity",
         "endpoint": "DELETE",
-        "description": "Permanently delete a user"
+        "description": "Delete an entity"
+      },
+      {
+        "name": "execute_workflow",
+        "endpoint": "EXECUTE",
+        "description": "Start execution of a workflow"
       },
       {
         "name": "introspect",
@@ -214,13 +284,10 @@ interface TypeDetails extends TypeInfo {
 ### 4.2 Getting Operation Details
 
 **Request:**
-```json
+```javascript
 {
-  "operation": "introspect",
-  "params": {
-    "query": "operations",
-    "name": "create_user"
-  }
+  operation: "introspect",
+  params: { query: "operations", name: "create_entity" }
 }
 ```
 
@@ -230,42 +297,53 @@ interface TypeDetails extends TypeInfo {
   "success": true,
   "data": {
     "operation": {
-      "name": "create_user",
+      "name": "create_entity",
       "endpoint": "CREATE",
       "mcpTool": "mcp_aql_create",
-      "description": "Create a new user account",
+      "description": "Create a new entity of any type",
       "permissions": {
         "readOnly": false,
         "destructive": false
       },
       "parameters": [
         {
-          "name": "email",
+          "name": "entity_name",
           "type": "string",
           "required": true,
-          "description": "User's email address"
+          "description": "Entity name"
         },
         {
-          "name": "name",
+          "name": "entity_type",
+          "type": "EntityType",
+          "required": true,
+          "description": "Type of entity to create"
+        },
+        {
+          "name": "description",
           "type": "string",
           "required": true,
-          "description": "User's display name"
+          "description": "Entity description"
         },
         {
-          "name": "role",
-          "type": "UserRole",
+          "name": "content",
+          "type": "string",
           "required": false,
-          "default": "user",
-          "description": "User's role in the system"
+          "description": "Entity content"
+        },
+        {
+          "name": "metadata",
+          "type": "object",
+          "required": false,
+          "description": "Additional metadata"
         }
       ],
       "returns": {
-        "name": "User",
+        "name": "Entity",
         "kind": "object",
-        "description": "Newly created user"
+        "description": "Newly created entity"
       },
       "examples": [
-        "{ operation: \"create_user\", params: { email: \"alice@example.com\", name: \"Alice\" } }"
+        "{ operation: \"create_entity\", element_type: \"resource\", params: { entity_name: \"MyResource\", description: \"A sample resource\" } }"
       ]
     }
   }
@@ -274,14 +352,13 @@ interface TypeDetails extends TypeInfo {
 
 ### 4.3 Unknown Operation
 
+When querying for an operation that does not exist, implementations MUST return a success response with null data:
+
 **Request:**
-```json
+```javascript
 {
-  "operation": "introspect",
-  "params": {
-    "query": "operations",
-    "name": "nonexistent_operation"
-  }
+  operation: "introspect",
+  params: { query: "operations", name: "nonexistent_operation" }
 }
 ```
 
@@ -302,38 +379,48 @@ interface TypeDetails extends TypeInfo {
 ### 5.1 Listing All Types
 
 **Request:**
-```json
+```javascript
 {
-  "operation": "introspect",
-  "params": { "query": "types" }
+  operation: "introspect",
+  params: { query: "types" }
 }
 ```
 
-**Response (example from a user management adapter):**
+**Response:**
 ```json
 {
   "success": true,
   "data": {
     "types": [
       {
-        "name": "UserRole",
+        "name": "EntityType",
         "kind": "enum",
-        "description": "User role levels"
-      },
-      {
-        "name": "User",
-        "kind": "object",
-        "description": "User account object"
+        "description": "Available entity types"
       },
       {
         "name": "CRUDEndpoint",
         "kind": "enum",
-        "description": "CRUDE endpoint identifiers"
+        "description": "CRUDE endpoint categories for operation classification"
+      },
+      {
+        "name": "OperationInput",
+        "kind": "object",
+        "description": "Standard input structure for all MCP-AQL operations"
       },
       {
         "name": "OperationResult",
         "kind": "union",
-        "description": "Success or failure result"
+        "description": "Standard result type for all operations"
+      },
+      {
+        "name": "OperationSuccess",
+        "kind": "object",
+        "description": "Successful operation result"
+      },
+      {
+        "name": "OperationFailure",
+        "kind": "object",
+        "description": "Failed operation result"
       }
     ]
   }
@@ -342,76 +429,68 @@ interface TypeDetails extends TypeInfo {
 
 ### 5.2 Getting Type Details
 
-**Enum Type Request:**
-```json
+#### 5.2.1 Enum Type
+
+**Request:**
+```javascript
 {
-  "operation": "introspect",
-  "params": {
-    "query": "types",
-    "name": "UserRole"
-  }
+  operation: "introspect",
+  params: { query: "types", name: "EntityType" }
 }
 ```
 
-**Enum Type Response:**
+**Response:**
 ```json
 {
   "success": true,
   "data": {
     "type": {
-      "name": "UserRole",
+      "name": "EntityType",
       "kind": "enum",
-      "description": "User role levels",
-      "values": ["admin", "user", "guest"]
+      "description": "Available entity types",
+      "values": ["resource", "item", "config", "workflow"]
     }
   }
 }
 ```
 
-**Object Type Request:**
-```json
+#### 5.2.2 Object Type
+
+**Request:**
+```javascript
 {
-  "operation": "introspect",
-  "params": {
-    "query": "types",
-    "name": "User"
-  }
+  operation: "introspect",
+  params: { query: "types", name: "OperationInput" }
 }
 ```
 
-**Object Type Response:**
+**Response:**
 ```json
 {
   "success": true,
   "data": {
     "type": {
-      "name": "User",
+      "name": "OperationInput",
       "kind": "object",
-      "description": "User account object",
+      "description": "Standard input structure for all MCP-AQL operations",
       "fields": [
         {
-          "name": "id",
+          "name": "operation",
           "type": "string",
           "required": true,
-          "description": "Unique user identifier"
+          "description": "The operation to perform"
         },
         {
-          "name": "email",
+          "name": "element_type",
           "type": "string",
-          "required": true,
-          "description": "User's email address"
+          "required": false,
+          "description": "Element type for element operations"
         },
         {
-          "name": "name",
-          "type": "string",
-          "required": true,
-          "description": "Display name"
-        },
-        {
-          "name": "role",
-          "type": "UserRole",
-          "required": true,
-          "description": "User's role"
+          "name": "params",
+          "type": "object",
+          "required": false,
+          "description": "Operation-specific parameters"
         }
       ]
     }
@@ -419,9 +498,34 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
+#### 5.2.3 Union Type
+
+**Request:**
+```javascript
+{
+  operation: "introspect",
+  params: { query: "types", name: "OperationResult" }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "type": {
+      "name": "OperationResult",
+      "kind": "union",
+      "description": "Standard result type for all operations",
+      "members": ["OperationSuccess", "OperationFailure"]
+    }
+  }
+}
+```
+
 ### 5.3 Protocol Types
 
-MCP-AQL defines these protocol-level types that adapters SHOULD include:
+MCP-AQL defines these protocol-level types that adapters SHOULD include in their type registry:
 
 | Type Name | Kind | Description |
 |-----------|------|-------------|
@@ -430,14 +534,95 @@ MCP-AQL defines these protocol-level types that adapters SHOULD include:
 | `OperationResult` | union | Success or failure result |
 | `OperationSuccess` | object | Successful result with data |
 | `OperationFailure` | object | Failed result with error |
+| `EndpointPermissions` | object | Permission flags for operations |
 
 Adapters define their own domain-specific types in addition to these.
 
 ---
 
-## 6. Token Efficiency
+## 6. Implementation Guidance
 
-### 6.1 Discovery Pattern
+### 6.1 Schema-Driven Architecture
+
+Implementations SHOULD maintain a single source of truth for operation definitions. The introspection system derives its responses from this source:
+
+```mermaid
+graph LR
+    subgraph "Introspection Source Resolution"
+        OP[Operation Name]
+        SCHEMA[Operation Schema<br/>Single Source of Truth]
+        RESPONSE[Introspection Response]
+
+        OP --> SCHEMA
+        SCHEMA --> RESPONSE
+    end
+```
+
+### 6.2 Introspection Handler Architecture
+
+A conforming implementation typically includes these components:
+
+```mermaid
+classDiagram
+    class IntrospectionHandler {
+        +resolve(params) IntrospectionResult
+        -listOperations() OperationInfo[]
+        -getOperationDetails(name) OperationDetails
+        -listTypes() TypeInfo[]
+        -getTypeDetails(name) TypeDetails
+        +getOperationsByEndpoint() Record
+        +getSummary() string
+    }
+
+    class OperationRegistry {
+        +getOperation(name) OperationSchema
+        +getAllOperations() OperationSchema[]
+        +isValidOperation(name) boolean
+    }
+
+    class TypeRegistry {
+        +getType(name) TypeDefinition
+        +getAllTypes() TypeDefinition[]
+        +isValidType(name) boolean
+    }
+
+    IntrospectionHandler --> OperationRegistry : queries
+    IntrospectionHandler --> TypeRegistry : queries
+```
+
+### 6.3 Utility Methods
+
+Implementations MAY provide utility methods for documentation and tooling:
+
+**Operations by Endpoint:**
+```typescript
+// Returns operations grouped by CRUDE endpoint
+getOperationsByEndpoint(): Record<CRUDEndpoint, OperationInfo[]>
+```
+
+**Summary Generation:**
+```typescript
+// Returns a human-readable summary of all operations
+getSummary(): string
+
+// Example output:
+// MCP-AQL Operations:
+//   CREATE: create_entity, import_entity
+//   READ: list_entities, get_entity, introspect
+//   UPDATE: update_entity
+//   DELETE: delete_entity
+//   EXECUTE: execute_workflow
+//
+// Types: EntityType, CRUDEndpoint, OperationInput, OperationResult
+//
+// Use introspect with name parameter for details.
+```
+
+---
+
+## 7. Token Efficiency
+
+### 7.1 Discovery Pattern
 
 The introspection system enables a token-efficient discovery pattern:
 
@@ -446,20 +631,20 @@ Step 1: List operations (~50 tokens response)
    { operation: "introspect", params: { query: "operations" } }
 
 Step 2: Get details for relevant operation (~100 tokens response)
-   { operation: "introspect", params: { query: "operations", name: "create_user" } }
+   { operation: "introspect", params: { query: "operations", name: "create_entity" } }
 
 Step 3: Execute operation
-   { operation: "create_user", params: { ... } }
+   { operation: "create_entity", params: { ... } }
 ```
 
-### 6.2 Comparison with Discrete Tools
+### 7.2 Comparison with Discrete Tools
 
 | Approach | Upfront Cost | Per-Operation Cost | Total (10 ops) |
 |----------|--------------|-------------------|----------------|
 | Discrete tools | ~29,600 tokens | 0 | ~29,600 |
 | MCP-AQL + introspect | ~1,100 tokens | ~150 tokens | ~2,600 |
 
-### 6.3 Caching Recommendations
+### 7.3 Caching Recommendations
 
 Implementations SHOULD:
 - Cache introspection responses during a session
@@ -468,19 +653,24 @@ Implementations SHOULD:
 
 ---
 
-## 7. Conformance Requirements
+## 8. Conformance Requirements
 
-### 7.1 MUST Requirements
+### 8.1 MUST Requirements
 
 Conforming implementations MUST:
 
 1. Implement the `introspect` operation on the READ endpoint
 2. Support both `operations` and `types` query types
-3. Return OperationInfo for all supported operations
-4. Include accurate parameter information with required flags
-5. Use consistent type names across all responses
+3. Return `OperationInfo` for all supported operations when listing
+4. Return `OperationDetails` when querying a specific operation by name
+5. Return `TypeInfo` for all supported types when listing
+6. Return `TypeDetails` when querying a specific type by name
+7. Include accurate parameter information with `required` flags
+8. Use consistent type names across all responses
+9. Return `null` for the item (not an error) when querying a non-existent operation or type
+10. Follow the discriminated response format (`{ success, data }` or `{ success, error }`)
 
-### 7.2 SHOULD Requirements
+### 8.2 SHOULD Requirements
 
 Conforming implementations SHOULD:
 
@@ -488,16 +678,21 @@ Conforming implementations SHOULD:
 2. Provide meaningful descriptions for all parameters
 3. Document default values in parameter info
 4. Return operations grouped by endpoint in list responses
-5. Include the protocol types (CRUDEndpoint, OperationResult, etc.)
+5. Include the protocol types (`CRUDEndpoint`, `OperationResult`, etc.)
+6. Implement caching for introspection responses
+7. Include the `introspect` operation in the operations list
+8. Derive introspection data from a single source of truth (operation schema)
 
-### 7.3 MAY Requirements
+### 8.3 MAY Requirements
 
 Conforming implementations MAY:
 
 1. Define additional custom types
 2. Include additional metadata in responses
-3. Support additional query types
+3. Support additional query types beyond `operations` and `types`
 4. Provide filtering/pagination for large operation lists
+5. Include utility methods for documentation generation
+6. Support field selection on introspection responses
 
 ---
 
