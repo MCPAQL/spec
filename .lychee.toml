@@ -22,6 +22,11 @@ accept = [200, 204, 206, 301, 302, 307, 308]
 
 # Exclude patterns - URLs that should not be checked
 exclude = [
+    # MCPAQL infrastructure (not yet deployed)
+    "^https?://mcpaql\\.org",
+    "^https?://spec\\.modelcontextprotocol\\.io",
+    "^https?://github\\.com/MCPAQL/adapter-generator",
+
     # Example and placeholder URLs
     "^https?://example\\.com",
     "^https?://example\\.org",
