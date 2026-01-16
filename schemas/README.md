@@ -13,7 +13,7 @@ This directory contains the formal JSON Schema definitions for the MCP-AQL proto
 
 ## Usage
 
-All schemas use JSON Schema 2020-12 draft and are published at `https://mcpaql.org/schemas/`.
+All schemas use JSON Schema 2020-12 draft. When the MCPAQL website is deployed, they will be published at `https://mcpaql.org/schemas/`.
 
 ### Validating Requests
 

@@ -70,7 +70,9 @@
 
   "MD040": false,
 
-  "MD041": true,
+  "MD041": {
+    "front_matter_title": "^\\s*title\\s*[:=]"
+  },
 
   "MD046": {
     "style": "fenced"
