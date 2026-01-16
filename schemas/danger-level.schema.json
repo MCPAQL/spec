@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/danger-level.schema.json",
+  "title": "MCP-AQL Danger Level",
+  "description": "Schema for operation danger classification in MCP-AQL adapters",
+  "$defs": {
+    "DangerLevel": {
+      "type": "string",
+      "title": "Danger Level",
+      "description": "Classification of operation risk level",
+      "enum": ["safe", "low", "moderate", "high", "forbidden"],
+      "x-enum-descriptions": {
+        "safe": "Read-only operations with no side effects. Always safe to execute automatically. Maps to READ endpoint operations (list, get, search, introspect).",
+        "low": "Additive operations that are easily reversible. Creates new state without modifying existing state. Maps to CREATE endpoint operations (create, add, upload, register).",
+        "moderate": "Modifying operations that are potentially reversible. Changes existing state but original values may be recoverable. Maps to UPDATE endpoint operations (update, edit, set, rename).",
+        "high": "Destructive operations that are difficult or impossible to reverse. Removes state permanently. Maps to DELETE endpoint operations (delete, remove, purge, clear).",
+        "forbidden": "Operations that should never be auto-executed under any circumstances. Reserved for critical system operations, bulk destructive actions, or operations with severe consequences. Requires explicit human confirmation regardless of context."
+      }
+    },
+    "DangerClassification": {
+      "type": "object",
+      "title": "Danger Classification",
+      "description": "Complete danger classification for an operation including level and metadata",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/DangerLevel",
+          "description": "The danger level classification for this operation"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Human-readable explanation for why this operation has this danger classification"
+        },
+        "requires_confirmation": {
+          "type": "boolean",
+          "description": "UI hint indicating whether the operation should prompt for user confirmation before execution",
+          "default": false
+        },
+        "hook_blockable": {
+          "type": "boolean",
+          "description": "Whether pre-execution hooks can block this operation. When false, hooks receive notification but cannot prevent execution",
+          "default": true
+        }
+      },
+      "required": ["level"],
+      "additionalProperties": false
+    },
+    "EndpointDangerDefaults": {
+      "type": "object",
+      "title": "Endpoint Danger Defaults",
+      "description": "Default danger level mappings for CRUDE endpoints",
+      "properties": {
+        "READ": {
+          "const": "safe",
+          "description": "READ operations default to safe (read-only, no side effects)"
+        },
+        "CREATE": {
+          "const": "low",
+          "description": "CREATE operations default to low (additive, easily reversible)"
+        },
+        "UPDATE": {
+          "const": "moderate",
+          "description": "UPDATE operations default to moderate (modifying, potentially reversible)"
+        },
+        "DELETE": {
+          "const": "high",
+          "description": "DELETE operations default to high (destructive, difficult to reverse)"
+        },
+        "EXECUTE": {
+          "$ref": "#/$defs/DangerLevel",
+          "description": "EXECUTE operations vary from safe to forbidden depending on the specific operation"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/DangerLevel"
+    },
+    {
+      "$ref": "#/$defs/DangerClassification"
+    }
+  ]
+}

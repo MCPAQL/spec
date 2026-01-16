@@ -1,0 +1,471 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/introspection-response.schema.json",
+  "title": "MCP-AQL Introspection Response",
+  "description": "Schema for MCP-AQL introspection operation responses. Introspection enables runtime discovery of operations, types, and capabilities.",
+
+  "$defs": {
+    "CRUDEndpoint": {
+      "type": "string",
+      "enum": ["CREATE", "READ", "UPDATE", "DELETE", "EXECUTE"],
+      "description": "CRUDE endpoint categories for operation classification"
+    },
+
+    "TypeKind": {
+      "type": "string",
+      "enum": ["enum", "object", "scalar", "union"],
+      "description": "The kind of type definition"
+    },
+
+    "EndpointPermissions": {
+      "type": "object",
+      "description": "Permission flags indicating operation characteristics",
+      "properties": {
+        "readOnly": {
+          "type": "boolean",
+          "description": "Whether operation only reads state without modification"
+        },
+        "destructive": {
+          "type": "boolean",
+          "description": "Whether operation removes or destroys state"
+        }
+      },
+      "required": ["readOnly", "destructive"],
+      "additionalProperties": false
+    },
+
+    "ParameterInfo": {
+      "type": "object",
+      "description": "Parameter definition for an operation",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Parameter name (snake_case recommended)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type name (e.g., 'string', 'number', or adapter-defined types)"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the parameter is required"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable parameter description"
+        },
+        "default": {
+          "description": "Default value if parameter is not provided"
+        }
+      },
+      "required": ["name", "type", "required", "description"],
+      "additionalProperties": false
+    },
+
+    "OperationInfo": {
+      "type": "object",
+      "description": "Summary information for an operation (used in list responses)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Operation identifier (e.g., 'create_entity')"
+        },
+        "endpoint": {
+          "$ref": "#/$defs/CRUDEndpoint",
+          "description": "CRUDE endpoint this operation belongs to"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the operation"
+        }
+      },
+      "required": ["name", "endpoint", "description"],
+      "additionalProperties": false
+    },
+
+    "TypeInfo": {
+      "type": "object",
+      "description": "Summary information for a type (used in list responses)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Type identifier"
+        },
+        "kind": {
+          "$ref": "#/$defs/TypeKind",
+          "description": "The kind of type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the type"
+        }
+      },
+      "required": ["name", "kind"],
+      "additionalProperties": false
+    },
+
+    "OperationDetails": {
+      "type": "object",
+      "description": "Complete information for a specific operation",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Operation identifier"
+        },
+        "endpoint": {
+          "$ref": "#/$defs/CRUDEndpoint",
+          "description": "CRUDE endpoint this operation belongs to"
+        },
+        "mcpTool": {
+          "type": "string",
+          "description": "MCP tool name (e.g., 'mcp_aql_create')"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the operation"
+        },
+        "permissions": {
+          "$ref": "#/$defs/EndpointPermissions",
+          "description": "Permission flags for this operation"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ParameterInfo"
+          },
+          "description": "Parameter definitions for the operation"
+        },
+        "returns": {
+          "$ref": "#/$defs/TypeInfo",
+          "description": "Return type information"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Example invocations of the operation"
+        }
+      },
+      "required": ["name", "endpoint", "mcpTool", "description", "permissions", "parameters", "returns"],
+      "additionalProperties": false
+    },
+
+    "TypeDetails": {
+      "type": "object",
+      "description": "Complete information for a specific type",
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Type identifier"
+            },
+            "kind": {
+              "$ref": "#/$defs/TypeKind",
+              "description": "The kind of type"
+            },
+            "description": {
+              "type": "string",
+              "description": "Detailed description of the type"
+            }
+          },
+          "required": ["name", "kind"]
+        }
+      ],
+      "oneOf": [
+        {
+          "title": "Enum Type Details",
+          "properties": {
+            "kind": { "const": "enum" },
+            "values": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Allowed values for the enum type"
+            }
+          },
+          "required": ["values"]
+        },
+        {
+          "title": "Object Type Details",
+          "properties": {
+            "kind": { "const": "object" },
+            "fields": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ParameterInfo" },
+              "description": "Field definitions for the object type"
+            }
+          },
+          "required": ["fields"]
+        },
+        {
+          "title": "Union Type Details",
+          "properties": {
+            "kind": { "const": "union" },
+            "members": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Member type names in the union"
+            }
+          },
+          "required": ["members"]
+        },
+        {
+          "title": "Scalar Type Details",
+          "properties": {
+            "kind": { "const": "scalar" }
+          }
+        }
+      ]
+    },
+
+    "OperationsListData": {
+      "type": "object",
+      "description": "Response data for listing all operations",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OperationInfo"
+          },
+          "description": "List of available operations"
+        }
+      },
+      "required": ["operations"],
+      "additionalProperties": false
+    },
+
+    "OperationDetailData": {
+      "type": "object",
+      "description": "Response data for a specific operation query",
+      "properties": {
+        "operation": {
+          "oneOf": [
+            { "$ref": "#/$defs/OperationDetails" },
+            { "type": "null" }
+          ],
+          "description": "Operation details, or null if not found"
+        }
+      },
+      "required": ["operation"],
+      "additionalProperties": false
+    },
+
+    "TypesListData": {
+      "type": "object",
+      "description": "Response data for listing all types",
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TypeInfo"
+          },
+          "description": "List of available types"
+        }
+      },
+      "required": ["types"],
+      "additionalProperties": false
+    },
+
+    "TypeDetailData": {
+      "type": "object",
+      "description": "Response data for a specific type query",
+      "properties": {
+        "type": {
+          "oneOf": [
+            { "$ref": "#/$defs/TypeDetails" },
+            { "type": "null" }
+          ],
+          "description": "Type details, or null if not found"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+
+    "IntrospectionData": {
+      "description": "Introspection response data (varies by query type)",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OperationsListData",
+          "title": "Operations List",
+          "description": "Response for query: 'operations' without name parameter"
+        },
+        {
+          "$ref": "#/$defs/OperationDetailData",
+          "title": "Operation Details",
+          "description": "Response for query: 'operations' with name parameter"
+        },
+        {
+          "$ref": "#/$defs/TypesListData",
+          "title": "Types List",
+          "description": "Response for query: 'types' without name parameter"
+        },
+        {
+          "$ref": "#/$defs/TypeDetailData",
+          "title": "Type Details",
+          "description": "Response for query: 'types' with name parameter"
+        }
+      ]
+    },
+
+    "IntrospectionError": {
+      "type": "object",
+      "description": "Error information for failed introspection",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Machine-readable error code",
+          "examples": ["INTROSPECTION_ERROR", "INVALID_QUERY_TYPE", "INTERNAL_ERROR"]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message"
+        }
+      },
+      "required": ["code", "message"],
+      "additionalProperties": false
+    }
+  },
+
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Success Response",
+      "description": "Successful introspection response",
+      "properties": {
+        "success": {
+          "const": true,
+          "description": "Indicates introspection succeeded"
+        },
+        "data": {
+          "$ref": "#/$defs/IntrospectionData",
+          "description": "Introspection result data"
+        }
+      },
+      "required": ["success", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "title": "Failure Response",
+      "description": "Failed introspection response",
+      "properties": {
+        "success": {
+          "const": false,
+          "description": "Indicates introspection failed"
+        },
+        "error": {
+          "$ref": "#/$defs/IntrospectionError",
+          "description": "Error information"
+        }
+      },
+      "required": ["success", "error"],
+      "additionalProperties": false
+    }
+  ],
+
+  "examples": [
+    {
+      "success": true,
+      "data": {
+        "operations": [
+          {
+            "name": "create_entity",
+            "endpoint": "CREATE",
+            "description": "Create a new entity"
+          },
+          {
+            "name": "list_entities",
+            "endpoint": "READ",
+            "description": "List entities with filtering"
+          },
+          {
+            "name": "introspect",
+            "endpoint": "READ",
+            "description": "Discover available operations and types"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "operation": {
+          "name": "create_entity",
+          "endpoint": "CREATE",
+          "mcpTool": "mcp_aql_create",
+          "description": "Create a new entity of any type",
+          "permissions": {
+            "readOnly": false,
+            "destructive": false
+          },
+          "parameters": [
+            {
+              "name": "entity_name",
+              "type": "string",
+              "required": true,
+              "description": "Entity name"
+            },
+            {
+              "name": "entity_type",
+              "type": "EntityType",
+              "required": true,
+              "description": "Type of entity to create"
+            }
+          ],
+          "returns": {
+            "name": "Entity",
+            "kind": "object",
+            "description": "Newly created entity"
+          },
+          "examples": [
+            "{ operation: \"create_entity\", params: { entity_name: \"MyEntity\" } }"
+          ]
+        }
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "operation": null
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "types": [
+          {
+            "name": "EntityType",
+            "kind": "enum",
+            "description": "Available entity types"
+          },
+          {
+            "name": "OperationResult",
+            "kind": "union",
+            "description": "Standard result type for all operations"
+          }
+        ]
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "type": {
+          "name": "EntityType",
+          "kind": "enum",
+          "description": "Available entity types",
+          "values": ["resource", "item", "config", "workflow"]
+        }
+      }
+    },
+    {
+      "success": false,
+      "error": {
+        "code": "INVALID_QUERY_TYPE",
+        "message": "Unknown query type: 'invalid'. Supported types: operations, types"
+      }
+    }
+  ]
+}
