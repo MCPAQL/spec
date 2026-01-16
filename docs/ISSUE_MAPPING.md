@@ -20,6 +20,7 @@ This document maps related issues across the MCPAQL organization repositories an
 | Partial Success in Batch | [#46](https://github.com/MCPAQL/spec/issues/46) | [#304](https://github.com/DollhouseMCP/mcp-server-v2-refactor/issues/304) |
 | GraphQL Specification Docs | [#47](https://github.com/MCPAQL/spec/issues/47) | [#157](https://github.com/DollhouseMCP/mcp-server-v2-refactor/issues/157) |
 | Schema Versioning | [#48](https://github.com/MCPAQL/spec/issues/48) | [#305](https://github.com/DollhouseMCP/mcp-server-v2-refactor/issues/305) |
+| Dangerous Operation Classification | [#49](https://github.com/MCPAQL/spec/issues/49) | [#318](https://github.com/DollhouseMCP/mcp-server-v2-refactor/issues/318) |
 
 ## Adapter Generator Issues
 
