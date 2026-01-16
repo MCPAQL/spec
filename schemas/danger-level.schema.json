@@ -7,15 +7,8 @@
     "DangerLevel": {
       "type": "string",
       "title": "Danger Level",
-      "description": "Classification of operation risk level",
-      "enum": ["safe", "low", "moderate", "high", "forbidden"],
-      "x-enum-descriptions": {
-        "safe": "Read-only operations with no side effects. Always safe to execute automatically. Maps to READ endpoint operations (list, get, search, introspect).",
-        "low": "Additive operations that are easily reversible. Creates new state without modifying existing state. Maps to CREATE endpoint operations (create, add, upload, register).",
-        "moderate": "Modifying operations that are potentially reversible. Changes existing state but original values may be recoverable. Maps to UPDATE endpoint operations (update, edit, set, rename).",
-        "high": "Destructive operations that are difficult or impossible to reverse. Removes state permanently. Maps to DELETE endpoint operations (delete, remove, purge, clear).",
-        "forbidden": "Operations that should never be auto-executed under any circumstances. Reserved for critical system operations, bulk destructive actions, or operations with severe consequences. Requires explicit human confirmation regardless of context."
-      }
+      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects, maps to READ), 'low' (additive, easily reversible, maps to CREATE), 'moderate' (modifying, potentially reversible, maps to UPDATE), 'high' (destructive, difficult to reverse, maps to DELETE), 'forbidden' (never auto-execute, requires explicit confirmation)",
+      "enum": ["safe", "low", "moderate", "high", "forbidden"]
     },
     "DangerClassification": {
       "type": "object",

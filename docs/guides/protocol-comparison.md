@@ -4,8 +4,6 @@ version: 1.0.0
 status: draft
 ---
 
-# MCP-AQL Protocol Comparison Guide
-
 > This document helps developers familiar with GraphQL, MongoDB, REST, SQL, or classic MCP
 > understand MCP-AQL by mapping familiar concepts to their MCP-AQL equivalents.
 

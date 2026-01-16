@@ -74,5 +74,5 @@ user_agent = "lychee/0.15 (https://github.com/lycheeverse/lychee)"
 # Output format
 format = "markdown"
 
-# Verbose output
-verbose = false
+# Verbose output (options: "error", "warn", "info", "debug")
+# verbose = "warn"
