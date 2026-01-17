@@ -5,8 +5,6 @@ status: Active
 date: 2026-01-14
 ---
 
-# RFC Process for MCP-AQL Specification
-
 This document describes the formal process for proposing, reviewing, and accepting changes to the MCP-AQL specification through Requests for Comments (RFCs).
 
 ## Table of Contents

@@ -21,6 +21,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Breaking change policy
   - Versioning strategy
 - Initial JSON schemas for operation input/result formats
+- JSON Schema for introspection response format (`introspection-response.schema.json`)
+- JSON Schema for danger level classification (`danger-level.schema.json`)
+- Schema documentation with usage examples (`schemas/README.md`)
+- Core specification documents:
+  - Protocol overview (`docs/overview.md`)
+  - Introspection system (`docs/introspection.md`)
+  - Endpoint modes (`docs/endpoint-modes.md`)
+  - Operations reference (`docs/operations.md`)
+  - Protocol comparison guide (`docs/guides/protocol-comparison.md`)
+- Architecture Decision Records (ADRs):
+  - ADR-001: CRUDE Pattern
+  - ADR-002: GraphQL-style Input Objects
+  - ADR-003: snake_case Parameters
+  - ADR-004: Schema-driven Operations
+  - ADR-005: Introspection System
+  - ADR-006: Discriminated Responses
+- Main specification document updates (`docs/versions/v1.0.0-draft.md`):
+  - Added Appendix D with JSON Schema references
+  - Added links to all new documentation in Appendix B
+  - Renamed `CRUDEndpoint` to `EndpointCategory` in type system section
 
 ### Changed
 

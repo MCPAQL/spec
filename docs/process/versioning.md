@@ -7,8 +7,6 @@ created: 2025-01-14
 updated: 2025-01-14
 ---
 
-# Versioning Strategy
-
 This document describes the version numbering scheme and release process for the MCPAQL specification.
 
 ## Overview
