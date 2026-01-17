@@ -79,6 +79,6 @@ The introspection workflow enables progressive discovery:
 
 ## References
 
-- [Protocol Specification: Introspection](../protocol/introspection.md)
+- [Introspection Specification](../introspection.md)
 - ADR-004: Schema-Driven Operation Definitions
 - ADR-001: CRUDE Pattern

@@ -86,6 +86,6 @@ Implementations MUST derive the following from the operation schema:
 
 ## References
 
-- [Protocol Specification: Operation Schema](../protocol/schema.md)
+- [Operations Reference](../operations.md)
 - ADR-005: Introspection System
 - ADR-001: CRUDE Pattern

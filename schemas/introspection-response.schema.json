@@ -5,7 +5,7 @@
   "description": "Schema for MCP-AQL introspection operation responses. Introspection enables runtime discovery of operations, types, and capabilities.",
 
   "$defs": {
-    "CRUDEndpoint": {
+    "EndpointCategory": {
       "type": "string",
       "enum": ["CREATE", "READ", "UPDATE", "DELETE", "EXECUTE"],
       "description": "CRUDE endpoint categories for operation classification"
@@ -71,7 +71,7 @@
           "description": "Operation identifier (e.g., 'create_entity')"
         },
         "endpoint": {
-          "$ref": "#/$defs/CRUDEndpoint",
+          "$ref": "#/$defs/EndpointCategory",
           "description": "CRUDE endpoint this operation belongs to"
         },
         "description": {
@@ -113,7 +113,7 @@
           "description": "Operation identifier"
         },
         "endpoint": {
-          "$ref": "#/$defs/CRUDEndpoint",
+          "$ref": "#/$defs/EndpointCategory",
           "description": "CRUDE endpoint this operation belongs to"
         },
         "mcpTool": {
