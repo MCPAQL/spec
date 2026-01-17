@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - ADR-004: Schema-driven Operations
   - ADR-005: Introspection System
   - ADR-006: Discriminated Responses
+- Main specification document updates (`docs/versions/v1.0.0-draft.md`):
+  - Added Appendix D with JSON Schema references
+  - Added links to all new documentation in Appendix B
+  - Renamed `CRUDEndpoint` to `EndpointCategory` in type system section
 
 ### Changed
 
