@@ -22,6 +22,11 @@ accept = [200, 204, 206, 301, 302, 307, 308]
 
 # Exclude patterns - URLs that should not be checked
 exclude = [
+    # MCPAQL infrastructure (not yet deployed)
+    "^https?://mcpaql\\.org",
+    "^https?://spec\\.modelcontextprotocol\\.io",
+    "^https?://github\\.com/MCPAQL/adapter-generator",
+
     # Example and placeholder URLs
     "^https?://example\\.com",
     "^https?://example\\.org",
@@ -74,5 +79,5 @@ user_agent = "lychee/0.15 (https://github.com/lycheeverse/lychee)"
 # Output format
 format = "markdown"
 
-# Verbose output
-verbose = false
+# Verbose output (options: "error", "warn", "info", "debug")
+# verbose = "warn"

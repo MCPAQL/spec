@@ -18,3 +18,13 @@ validators
 conformance
 semver
 changelog
+ADR
+LLM
+CLA
+cff
+NNN
+Genericize
+Genericization
+Genericity
+reimplementation
+rebranded

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/danger-level.schema.json",
+  "title": "MCP-AQL Danger Level",
+  "description": "Schema for operation danger classification in MCP-AQL adapters",
+  "$defs": {
+    "DangerLevel": {
+      "type": "string",
+      "title": "Danger Level",
+      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects, maps to READ), 'low' (additive, easily reversible, maps to CREATE), 'moderate' (modifying, potentially reversible, maps to UPDATE), 'high' (destructive, difficult to reverse, maps to DELETE), 'forbidden' (never auto-execute, requires explicit confirmation)",
+      "enum": ["safe", "low", "moderate", "high", "forbidden"]
+    },
+    "DangerClassification": {
+      "type": "object",
+      "title": "Danger Classification",
+      "description": "Complete danger classification for an operation including level and metadata",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/DangerLevel",
+          "description": "The danger level classification for this operation"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Human-readable explanation for why this operation has this danger classification"
+        },
+        "requires_confirmation": {
+          "type": "boolean",
+          "description": "UI hint indicating whether the operation should prompt for user confirmation before execution",
+          "default": false
+        },
+        "hook_blockable": {
+          "type": "boolean",
+          "description": "Whether pre-execution hooks can block this operation. When false, hooks receive notification but cannot prevent execution",
+          "default": true
+        }
+      },
+      "required": ["level"],
+      "additionalProperties": false
+    },
+    "EndpointDangerDefaults": {
+      "type": "object",
+      "title": "Endpoint Danger Defaults",
+      "description": "Default danger level mappings for CRUDE endpoints",
+      "properties": {
+        "READ": {
+          "const": "safe",
+          "description": "READ operations default to safe (read-only, no side effects)"
+        },
+        "CREATE": {
+          "const": "low",
+          "description": "CREATE operations default to low (additive, easily reversible)"
+        },
+        "UPDATE": {
+          "const": "moderate",
+          "description": "UPDATE operations default to moderate (modifying, potentially reversible)"
+        },
+        "DELETE": {
+          "const": "high",
+          "description": "DELETE operations default to high (destructive, difficult to reverse)"
+        },
+        "EXECUTE": {
+          "$ref": "#/$defs/DangerLevel",
+          "description": "EXECUTE operations vary from safe to forbidden depending on the specific operation"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/DangerLevel"
+    },
+    {
+      "$ref": "#/$defs/DangerClassification"
+    }
+  ],
+  "examples": [
+    {
+      "title": "Simple danger level (string)",
+      "description": "Basic classification using just the level string",
+      "value": "safe"
+    },
+    {
+      "title": "READ operation classification",
+      "description": "Typical classification for a list or get operation",
+      "value": {
+        "level": "safe",
+        "reason": "Read-only operation that retrieves data without modification"
+      }
+    },
+    {
+      "title": "CREATE operation classification",
+      "description": "Typical classification for an additive operation",
+      "value": {
+        "level": "low",
+        "reason": "Creates new resource, easily reversible by deletion"
+      }
+    },
+    {
+      "title": "DELETE operation with confirmation",
+      "description": "Destructive operation requiring user confirmation",
+      "value": {
+        "level": "high",
+        "reason": "Permanently removes resource and associated data",
+        "requires_confirmation": true,
+        "hook_blockable": true
+      }
+    },
+    {
+      "title": "Critical EXECUTE operation",
+      "description": "Dangerous operation that should never auto-execute",
+      "value": {
+        "level": "forbidden",
+        "reason": "Bulk deletion of all user data - catastrophic if executed incorrectly",
+        "requires_confirmation": true,
+        "hook_blockable": false
+      }
+    }
+  ]
+}

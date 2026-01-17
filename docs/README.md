@@ -10,6 +10,7 @@ This directory contains the complete specification and implementation guidance f
 |----------|-------------|--------|
 | [v1.0.0-draft](versions/v1.0.0-draft.md) | Current specification version | Draft |
 | [CRUDE Pattern](crude-pattern.md) | Endpoint semantics and routing | Draft |
+| [Endpoint Modes](endpoint-modes.md) | CRUDE vs Single mode configuration | Draft |
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 

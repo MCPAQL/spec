@@ -1,32 +1,47 @@
-# MCP-AQL Operations Guide
+# MCP-AQL Operations Specification
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-01-16
 
 ## Abstract
 
-This document provides guidance for defining and documenting operations in MCP-AQL adapters. It covers request/response formats, parameter conventions, batch operations, and error handling patterns.
+This document specifies how operations are defined, documented, and invoked in MCP-AQL adapters. It covers the operation input format, response format, parameter conventions, operation schemas, batch operations, and error handling patterns.
 
 ---
 
 ## Table of Contents
 
-1. [Operation Input Format](#1-operation-input-format)
-2. [Response Format](#2-response-format)
-3. [Parameter Conventions](#3-parameter-conventions)
-4. [Operation Documentation](#4-operation-documentation)
-5. [Batch Operations](#5-batch-operations)
-6. [Error Handling](#6-error-handling)
-7. [The introspect Operation](#7-the-introspect-operation)
+1. [Conformance Requirements](#1-conformance-requirements)
+2. [Operation Input Format](#2-operation-input-format)
+3. [Response Format](#3-response-format)
+4. [Parameter Conventions](#4-parameter-conventions)
+5. [Operation Schema Definition](#5-operation-schema-definition)
+6. [CRUDE Endpoint Assignment](#6-crude-endpoint-assignment)
+7. [Batch Operations](#7-batch-operations)
+8. [Error Handling](#8-error-handling)
+9. [The introspect Operation](#9-the-introspect-operation)
 
 ---
 
-## 1. Operation Input Format
+## 1. Conformance Requirements
 
-### 1.1 Standard Input Structure
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
 
-All operations follow a consistent input structure:
+An MCP-AQL adapter is conformant if it implements:
+
+1. The operation input format as specified in Section 2
+2. The discriminated response format as specified in Section 3
+3. The `introspect` operation as specified in Section 9
+4. Correct endpoint routing based on operation semantics (Section 6)
+
+---
+
+## 2. Operation Input Format
+
+### 2.1 Standard Input Structure
+
+All operations MUST follow a consistent input structure:
 
 ```json
 {
@@ -37,81 +52,100 @@ All operations follow a consistent input structure:
 }
 ```
 
-### 1.2 Required Fields
+### 2.2 Required Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `operation` | string | Yes | The operation to perform |
-| `params` | object | No | Operation-specific parameters |
+| `operation` | string | REQUIRED | The operation to perform |
+| `params` | object | OPTIONAL | Operation-specific parameters |
 
-### 1.3 Parameter Resolution
+The `operation` field MUST be a non-empty string matching a defined operation name.
 
-Parameters may be specified at multiple levels. Resolution order (first match wins):
+### 2.3 Parameter Resolution
 
-1. `params.<parameter_name>`
-2. Top-level `<parameter_name>`
+Adapters MAY support parameter resolution from multiple locations. The RECOMMENDED resolution order is:
+
+1. `params.<parameter_name>` (preferred)
+2. Top-level `<parameter_name>` (convenience)
+
+When the same parameter appears at multiple levels, the value in `params` takes precedence.
 
 **Example - Equivalent Requests:**
 ```javascript
-// Parameters in params object (preferred)
+// Parameters in params object (RECOMMENDED)
 {
-  operation: "get_user",
-  params: { user_id: "123" }
+  operation: "get_item",
+  params: { item_id: "123" }
 }
 
 // Parameters at top level (also valid)
 {
-  operation: "get_user",
-  user_id: "123"
+  operation: "get_item",
+  item_id: "123"
 }
 ```
 
+### 2.4 Case Sensitivity
+
+Operation names MUST be case-sensitive. Adapters SHOULD use lowercase operation names with underscores (snake_case).
+
 ---
 
-## 2. Response Format
+## 3. Response Format
 
-### 2.1 Discriminated Union Result
+### 3.1 Discriminated Union Result
 
-All operations return a discriminated union:
+All operations MUST return a discriminated union response. The `success` field serves as the discriminator.
 
 ```typescript
 type OperationResult = OperationSuccess | OperationFailure;
 
 interface OperationSuccess {
   success: true;
-  data: unknown;  // Operation-specific payload
+  data: unknown;   // Operation-specific payload
+  error?: never;   // MUST NOT be present
 }
 
 interface OperationFailure {
   success: false;
-  error: string;  // Human-readable error message
+  error: string;   // Human-readable error message
+  data?: never;    // MUST NOT be present
 }
 ```
 
-### 2.2 Success Response Example
+### 3.2 Success Response
+
+A successful operation MUST return:
+
+- `success`: The boolean value `true`
+- `data`: The operation result (type varies by operation)
 
 ```json
 {
   "success": true,
   "data": {
-    "id": "user_123",
-    "name": "Alice",
-    "email": "alice@example.com",
+    "id": "item_123",
+    "name": "Example Item",
     "created_at": "2024-01-15T10:30:00Z"
   }
 }
 ```
 
-### 2.3 Failure Response Example
+### 3.3 Failure Response
+
+A failed operation MUST return:
+
+- `success`: The boolean value `false`
+- `error`: A human-readable error message
 
 ```json
 {
   "success": false,
-  "error": "User with ID 'user_999' not found"
+  "error": "Item with ID 'item_999' not found"
 }
 ```
 
-### 2.4 Response Metadata
+### 3.4 Response Metadata
 
 Implementations MAY include metadata in responses:
 
@@ -121,41 +155,48 @@ Implementations MAY include metadata in responses:
   "data": { ... },
   "_meta": {
     "requestId": "req_abc123",
-    "duration": 42
+    "duration_ms": 42
   }
 }
 ```
 
-Metadata fields MUST be prefixed with `_` to distinguish from data.
+Metadata fields MUST be prefixed with underscore (`_`) to distinguish them from the operation payload.
 
 ---
 
-## 3. Parameter Conventions
+## 4. Parameter Conventions
 
-### 3.1 Naming Convention
+### 4.1 Naming Convention
 
-MCP-AQL recommends **snake_case** for all parameter names:
+MCP-AQL RECOMMENDS **snake_case** for all parameter names:
 
 ```javascript
-// Recommended
-{ user_id: "123", created_after: "2024-01-01" }
+// RECOMMENDED
+{ item_id: "123", created_after: "2024-01-01" }
 
-// Not recommended
-{ userId: "123", createdAfter: "2024-01-01" }
+// NOT RECOMMENDED
+{ itemId: "123", createdAfter: "2024-01-01" }
 ```
 
-### 3.2 Common Parameter Patterns
+For backward compatibility, adapters MAY support both snake_case and camelCase variants of parameters, with snake_case taking precedence.
+
+### 4.2 Common Parameter Patterns
 
 Adapters SHOULD use consistent patterns for common functionality:
 
-**Pagination:**
+**Pagination (offset-based):**
 ```javascript
 {
   page: 1,           // Page number (1-indexed)
-  page_size: 25,     // Items per page
-  // OR cursor-based:
-  cursor: "abc123",  // Opaque cursor
-  limit: 25          // Items to return
+  page_size: 25      // Items per page
+}
+```
+
+**Pagination (cursor-based):**
+```javascript
+{
+  cursor: "abc123",  // Opaque cursor from previous response
+  limit: 25          // Maximum items to return
 }
 ```
 
@@ -186,124 +227,179 @@ Adapters SHOULD use consistent patterns for common functionality:
 }
 ```
 
-### 3.3 Required vs Optional
+### 4.3 Required vs Optional Parameters
 
-Document required parameters clearly in introspection:
-
-```json
-{
-  "name": "user_id",
-  "type": "string",
-  "required": true,
-  "description": "The unique identifier of the user"
-}
-```
+Each parameter MUST be documented as either required or optional. The operation schema (Section 5) specifies this via the `required` attribute.
 
 ---
 
-## 4. Operation Documentation
+## 5. Operation Schema Definition
 
-### 4.1 Documenting via Introspection
+### 5.1 Schema Structure
 
-Every operation MUST be discoverable via introspection. The response should include:
+Each operation MUST be defined by a schema that specifies its behavior, parameters, and routing. Conformant adapters MUST validate requests against operation schemas before execution.
 
-```json
+**Schema Properties:**
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `endpoint` | string | REQUIRED | CRUDE endpoint: CREATE, READ, UPDATE, DELETE, or EXECUTE |
+| `description` | string | REQUIRED | Human-readable description |
+| `params` | object | OPTIONAL | Parameter definitions |
+| `handler` | string | OPTIONAL | Internal handler reference |
+| `dangerous` | boolean | OPTIONAL | If true, operation has significant side effects |
+
+### 5.2 Parameter Schema
+
+Each parameter in the `params` object MUST include:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `type` | string | REQUIRED | Data type: "string", "number", "boolean", "object", "array" |
+| `required` | boolean | OPTIONAL | Whether parameter is required (default: false) |
+| `description` | string | OPTIONAL | Human-readable description |
+| `default` | any | OPTIONAL | Default value if not provided |
+
+Additional properties MAY be included:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `mapTo` | string | Internal parameter name mapping |
+| `sources` | array | Ordered list of resolution paths |
+| `enum` | array | Allowed values for string parameters |
+| `minimum` | number | Minimum value for numeric parameters |
+| `maximum` | number | Maximum value for numeric parameters |
+| `pattern` | string | Regex pattern for string validation |
+
+### 5.3 Example Schema Definition
+
+```javascript
+// Schema for a create operation
 {
-  "name": "create_user",
-  "endpoint": "CREATE",
-  "description": "Create a new user account",
-  "parameters": [
-    {
-      "name": "email",
-      "type": "string",
-      "required": true,
-      "description": "User's email address"
-    },
-    {
-      "name": "name",
-      "type": "string",
-      "required": true,
-      "description": "User's display name"
-    },
-    {
-      "name": "role",
-      "type": "string",
-      "required": false,
-      "default": "user",
-      "description": "User's role (admin, user, guest)"
-    }
-  ],
-  "returns": {
-    "type": "User",
-    "description": "The created user object"
-  },
-  "examples": [
-    {
-      "description": "Create a basic user",
-      "request": {
-        "operation": "create_user",
-        "params": {
-          "email": "alice@example.com",
-          "name": "Alice"
-        }
+  create_item: {
+    endpoint: "CREATE",
+    description: "Create a new item in the system",
+    params: {
+      name: {
+        type: "string",
+        required: true,
+        description: "Item name"
+      },
+      category: {
+        type: "string",
+        required: true,
+        description: "Item category",
+        enum: ["product", "service", "subscription"]
+      },
+      price: {
+        type: "number",
+        required: false,
+        minimum: 0,
+        description: "Item price in cents"
+      },
+      metadata: {
+        type: "object",
+        required: false,
+        description: "Additional item metadata"
       }
     }
-  ]
+  }
 }
 ```
 
-### 4.2 Operation Naming
+### 5.4 Parameter Validation
 
-**Recommended patterns:**
+Before executing an operation, adapters MUST:
 
-| Pattern | Examples | Use For |
-|---------|----------|---------|
-| `<verb>_<noun>` | `create_user`, `delete_file` | Standard CRUD |
-| `<verb>_<noun>_<qualifier>` | `list_users_by_role` | Filtered queries |
-| `<verb>` | `search`, `export` | Generic operations |
+1. Verify all required parameters are present
+2. Validate parameter types match the schema
+3. Apply any constraints (enum, minimum, maximum, pattern)
+4. Apply default values for missing optional parameters
 
-**Naming guidelines:**
-- Use snake_case
-- Be specific but concise
-- Use consistent verbs across adapter
+Validation failures MUST return an error response (not throw exceptions).
 
-### 4.3 Common Verbs by Endpoint
+---
+
+## 6. CRUDE Endpoint Assignment
+
+### 6.1 Endpoint Semantics
+
+Operations MUST be assigned to endpoints based on their semantics:
+
+| Endpoint | Semantics | Characteristics |
+|----------|-----------|-----------------|
+| **CREATE** | Additive, non-destructive | Creates new resources; idempotent if duplicate detection enabled |
+| **READ** | Safe, read-only | No side effects; cacheable; always safe to retry |
+| **UPDATE** | Modifying | Changes existing resources; may be partially idempotent |
+| **DELETE** | Destructive | Removes resources; potentially irreversible |
+| **EXECUTE** | Lifecycle, non-idempotent | Triggers actions; manages runtime state |
+
+### 6.2 Common Verbs by Endpoint
 
 | Endpoint | Common Verbs |
 |----------|--------------|
-| CREATE | create, add, upload, register, import |
-| READ | get, list, search, find, export, count |
-| UPDATE | update, set, rename, move, edit |
-| DELETE | delete, remove, purge, unregister, clear |
-| EXECUTE | run, start, stop, cancel, resume, trigger |
+| CREATE | create, add, upload, register, import, insert |
+| READ | get, list, search, find, export, count, introspect |
+| UPDATE | update, edit, set, rename, move, patch, merge |
+| DELETE | delete, remove, purge, unregister, clear, drop |
+| EXECUTE | run, start, stop, cancel, resume, trigger, invoke |
+
+### 6.3 Endpoint Routing Enforcement
+
+Adapters SHOULD validate that operations are invoked via their designated endpoint. An operation assigned to CREATE SHOULD NOT execute when called via the DELETE endpoint.
+
+When an operation is routed to the wrong endpoint, adapters SHOULD return an error:
+
+```json
+{
+  "success": false,
+  "error": "Operation 'create_item' must use CREATE endpoint, not DELETE"
+}
+```
+
+### 6.4 Dangerous Operation Classification
+
+Operations with significant consequences SHOULD be marked with `dangerous: true` in their schema. This enables clients to:
+
+- Display confirmation prompts
+- Log operations with enhanced audit trails
+- Apply additional authorization checks
+
+Examples of dangerous operations:
+- Bulk deletions
+- Data truncation
+- Irreversible state changes
+- Operations affecting production data
 
 ---
 
-## 5. Batch Operations
+## 7. Batch Operations
 
-### 5.1 Batch Request Format
+### 7.1 Batch Request Format
 
-Adapters MAY support batch operations:
+Adapters MAY support batch operations. When supported, the format MUST be:
 
 ```json
 {
   "operations": [
-    { "operation": "create_user", "params": { "email": "a@example.com", "name": "A" } },
-    { "operation": "create_user", "params": { "email": "b@example.com", "name": "B" } },
-    { "operation": "create_user", "params": { "email": "c@example.com", "name": "C" } }
+    { "operation": "create_item", "params": { "name": "Item A", "category": "product" } },
+    { "operation": "create_item", "params": { "name": "Item B", "category": "service" } },
+    { "operation": "create_item", "params": { "name": "Item C", "category": "product" } }
   ]
 }
 ```
 
-### 5.2 Batch Response Format
+### 7.2 Batch Response Format
+
+Batch responses MUST include individual results for each operation:
 
 ```json
 {
   "success": true,
   "results": [
-    { "index": 0, "operation": "create_user", "result": { "success": true, "data": { ... } } },
-    { "index": 1, "operation": "create_user", "result": { "success": true, "data": { ... } } },
-    { "index": 2, "operation": "create_user", "result": { "success": false, "error": "Email already exists" } }
+    { "index": 0, "operation": "create_item", "result": { "success": true, "data": { ... } } },
+    { "index": 1, "operation": "create_item", "result": { "success": true, "data": { ... } } },
+    { "index": 2, "operation": "create_item", "result": { "success": false, "error": "Duplicate name" } }
   ],
   "summary": {
     "total": 3,
@@ -313,38 +409,47 @@ Adapters MAY support batch operations:
 }
 ```
 
-### 5.3 Batch Execution Semantics
+### 7.3 Batch Execution Semantics
 
-- Operations execute in order
-- Failure of one operation does NOT stop subsequent operations
-- Each operation result is independent
-- Overall `success` is `true` if batch completed (even with individual failures)
+Conformant batch implementations MUST follow these semantics:
 
-### 5.4 Cross-Endpoint Batching
+1. Operations execute in array order
+2. Failure of one operation MUST NOT prevent subsequent operations from executing
+3. Each operation result is independent
+4. The overall `success` is `true` if the batch completed processing (even with individual failures)
+5. The overall `success` is `false` only for batch-level errors (malformed request, authentication failure)
 
-In CRUDE mode, batch operations should be sent to the appropriate endpoint based on the operations included:
-- All CREATE operations → `mcp_aql_create`
-- Mixed operations → Use single mode or separate calls
+### 7.4 Cross-Endpoint Batching
+
+When using CRUDE mode (separate endpoints), batch operations SHOULD be constrained to a single endpoint:
+
+- All CREATE operations together in one batch to the CREATE endpoint
+- All READ operations together in one batch to the READ endpoint
+
+Mixing operations across endpoints in a single batch is NOT RECOMMENDED. Implementations MAY reject mixed batches or MAY process them with explicit endpoint routing per operation.
 
 ---
 
-## 6. Error Handling
+## 8. Error Handling
 
-### 6.1 Error Categories
+### 8.1 Error Categories
 
-| Category | Description | Example |
-|----------|-------------|---------|
-| Missing Parameter | Required parameter not provided | "Missing required parameter 'email'" |
-| Invalid Type | Parameter has wrong type | "Parameter 'page' must be a number" |
-| Not Found | Referenced resource doesn't exist | "User 'user_999' not found" |
-| Route Mismatch | Operation sent to wrong endpoint | "Operation 'create_user' must use CREATE endpoint" |
-| Validation | Business rule violation | "Email format is invalid" |
-| Conflict | Resource already exists | "User with email already exists" |
-| Unauthorized | Permission denied | "Operation not permitted" |
+Adapters SHOULD categorize errors consistently:
 
-### 6.2 Error Response Structure
+| Category | Description | Example Message |
+|----------|-------------|-----------------|
+| Missing Parameter | Required parameter not provided | "Missing required parameter 'name'" |
+| Invalid Type | Parameter has wrong type | "Parameter 'price' must be a number" |
+| Validation Error | Parameter fails constraints | "Parameter 'category' must be one of: product, service" |
+| Not Found | Referenced resource doesn't exist | "Item 'item_999' not found" |
+| Already Exists | Resource with identifier exists | "Item with name 'Widget' already exists" |
+| Endpoint Mismatch | Operation sent to wrong endpoint | "Operation 'create_item' must use CREATE endpoint" |
+| Unknown Operation | Operation name not recognized | "Unknown operation 'create_widget'" |
+| Unauthorized | Permission denied | "Operation 'delete_item' not permitted for this user" |
 
-**Basic format:**
+### 8.2 Error Response Structure
+
+**Basic format (REQUIRED):**
 ```json
 {
   "success": false,
@@ -352,44 +457,77 @@ In CRUDE mode, batch operations should be sent to the appropriate endpoint based
 }
 ```
 
-**Extended format (optional):**
+**Extended format (OPTIONAL):**
 ```json
 {
   "success": false,
   "error": "Human-readable error message",
   "errorCode": "NOT_FOUND",
   "details": {
-    "resource": "user",
-    "id": "user_999"
+    "resource": "item",
+    "id": "item_999"
   }
 }
 ```
 
-### 6.3 Standard Error Codes
+### 8.3 Standard Error Codes
 
-Adapters MAY use standard error codes:
+Adapters MAY use standardized error codes for programmatic handling:
 
 | Code | Description |
 |------|-------------|
 | `MISSING_PARAMETER` | Required parameter not provided |
 | `INVALID_TYPE` | Parameter type mismatch |
+| `INVALID_VALUE` | Parameter value fails validation |
 | `NOT_FOUND` | Resource not found |
-| `ENDPOINT_MISMATCH` | Operation routed to wrong endpoint |
-| `VALIDATION_ERROR` | Business rule violation |
 | `ALREADY_EXISTS` | Resource with identifier exists |
+| `ENDPOINT_MISMATCH` | Operation routed to wrong endpoint |
+| `UNKNOWN_OPERATION` | Operation name not recognized |
 | `UNAUTHORIZED` | Operation not permitted |
 | `RATE_LIMITED` | Too many requests |
 | `INTERNAL_ERROR` | Server error |
 
+### 8.4 Error Message Guidelines
+
+Error messages SHOULD be:
+
+1. **Actionable**: Tell the user what to do to fix the problem
+2. **Specific**: Include relevant identifiers and values
+3. **Safe**: Never expose sensitive information (passwords, tokens, internal paths)
+
 ---
 
-## 7. The introspect Operation
+## 9. The introspect Operation
 
-### 7.1 Required Implementation
+### 9.1 Required Implementation
 
-Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endpoint.
+Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endpoint. This operation enables runtime discovery of available operations and types.
 
-### 7.2 Query Types
+### 9.2 Operation Schema
+
+```javascript
+{
+  introspect: {
+    endpoint: "READ",
+    description: "Discover available operations and types",
+    params: {
+      query: {
+        type: "string",
+        required: true,
+        enum: ["operations", "types"],
+        description: "What to introspect"
+      },
+      name: {
+        type: "string",
+        required: false,
+        description: "Specific operation or type name for detailed info"
+      }
+    }
+  }
+}
+```
+
+### 9.3 Query Types
 
 **List all operations:**
 ```json
@@ -398,7 +536,7 @@ Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endp
 
 **Get operation details:**
 ```json
-{ "operation": "introspect", "params": { "query": "operations", "name": "create_user" } }
+{ "operation": "introspect", "params": { "query": "operations", "name": "create_item" } }
 ```
 
 **List all types:**
@@ -408,10 +546,12 @@ Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endp
 
 **Get type details:**
 ```json
-{ "operation": "introspect", "params": { "query": "types", "name": "UserRole" } }
+{ "operation": "introspect", "params": { "query": "types", "name": "ItemCategory" } }
 ```
 
-### 7.3 Operations Response
+### 9.4 Operations Response
+
+When `query` is "operations" without a `name`:
 
 ```json
 {
@@ -419,24 +559,24 @@ Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endp
   "data": {
     "operations": [
       {
-        "name": "create_user",
+        "name": "create_item",
         "endpoint": "CREATE",
-        "description": "Create a new user"
+        "description": "Create a new item"
       },
       {
-        "name": "list_users",
+        "name": "list_items",
         "endpoint": "READ",
-        "description": "List all users"
+        "description": "List all items"
       },
       {
-        "name": "update_user",
+        "name": "update_item",
         "endpoint": "UPDATE",
-        "description": "Update user properties"
+        "description": "Update item properties"
       },
       {
-        "name": "delete_user",
+        "name": "delete_item",
         "endpoint": "DELETE",
-        "description": "Delete a user"
+        "description": "Delete an item"
       },
       {
         "name": "introspect",
@@ -448,7 +588,58 @@ Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endp
 }
 ```
 
-### 7.4 Types Response
+### 9.5 Operation Details Response
+
+When `query` is "operations" with a `name`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "name": "create_item",
+    "endpoint": "CREATE",
+    "description": "Create a new item",
+    "parameters": [
+      {
+        "name": "name",
+        "type": "string",
+        "required": true,
+        "description": "Item name"
+      },
+      {
+        "name": "category",
+        "type": "string",
+        "required": true,
+        "description": "Item category",
+        "enum": ["product", "service", "subscription"]
+      },
+      {
+        "name": "price",
+        "type": "number",
+        "required": false,
+        "minimum": 0,
+        "description": "Item price in cents"
+      }
+    ],
+    "examples": [
+      {
+        "description": "Create a basic item",
+        "request": {
+          "operation": "create_item",
+          "params": {
+            "name": "Widget",
+            "category": "product"
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+### 9.6 Types Response
+
+When `query` is "types":
 
 ```json
 {
@@ -456,17 +647,18 @@ Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endp
   "data": {
     "types": [
       {
-        "name": "UserRole",
+        "name": "ItemCategory",
         "kind": "enum",
-        "values": ["admin", "user", "guest"]
+        "values": ["product", "service", "subscription"]
       },
       {
-        "name": "User",
+        "name": "Item",
         "kind": "object",
         "fields": [
           { "name": "id", "type": "string" },
-          { "name": "email", "type": "string" },
-          { "name": "role", "type": "UserRole" }
+          { "name": "name", "type": "string" },
+          { "name": "category", "type": "ItemCategory" },
+          { "name": "price", "type": "number" }
         ]
       }
     ]
