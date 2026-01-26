@@ -100,19 +100,6 @@ operations:
           description: "The contents of the comment"
 
   read:
-    - name: introspect
-      maps_to: "INTERNAL"
-      description: "Query available operations and types"
-      params:
-        query:
-          type: string
-          required: true
-          enum: [operations, types]
-          description: "Query type: 'operations' or 'types'"
-        name:
-          type: string
-          description: "Specific item name for details"
-
     - name: get_repo
       maps_to: "GET /repos/{owner}/{repo}"
       description: "Get detailed information about a repository"
@@ -467,7 +454,6 @@ Set your token in the `GITHUB_TOKEN` environment variable.
 
 | Operation | Description |
 |-----------|-------------|
-| `introspect` | Query available operations and types |
 | `get_repo` | Get repository details |
 | `list_repos` | List user's repositories |
 | `list_my_repos` | List authenticated user's repositories |
