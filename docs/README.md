@@ -37,7 +37,14 @@ This directory contains the complete specification and implementation guidance f
 
 | Document | Description | Status |
 |----------|-------------|--------|
+| [Element Type Specification](adapter/element-type.md) | Declarative adapter schema format | Draft (MVP) |
 | [Development Guide](adapter/development-guide.md) | How to build MCP-AQL adapters | Draft |
+
+### Examples
+
+| Example | Description |
+|---------|-------------|
+| [GitHub API Adapter](../examples/github-api-adapter.md) | Complete adapter for GitHub REST API |
 
 ### Process
 
@@ -49,14 +56,25 @@ This directory contains the complete specification and implementation guidance f
 
 ### Roadmap
 
-Future features are tracked as GitHub issues with the `planned` label. Key upcoming features:
+Future features are tracked as GitHub issues. Key upcoming features:
 
-- Computed fields (#11)
-- Streaming responses (#12)
-- Relationship queries (#13)
-- Structured error codes (#14)
-- Cursor pagination (#15)
-- Schema versioning (#16)
+**Phase 0 - MVP Core:**
+- Adapter Element Type (#61)
+- Plugin Interface (#62)
+- Universal Adapter Runtime (#63)
+- Structured error codes (#35)
+
+**Phase 1 - Robustness:**
+- Trust levels (#59)
+- Dangerous operation classification (#49)
+- Rate limiting (#60)
+- Cursor-based pagination (#37)
+
+**Phase 2+ - Advanced:**
+- Computed fields (#42)
+- Streaming responses (#43)
+- Relationship queries (#44)
+- Schema versioning (#48)
 
 ## Reading Order
 
@@ -70,9 +88,10 @@ For newcomers to MCP-AQL:
 For adapter developers:
 
 1. **[Architecture Overview](architecture/overview.md)** - Understand adapter structure
-2. **[Development Guide](adapter/development-guide.md)** - Implementation walkthrough
-3. **[Schema-Driven Dispatch](architecture/schema-driven-dispatch.md)** - Declarative patterns
-4. **[Gatekeeper](security/gatekeeper.md)** - Security implementation
+2. **[Element Type Specification](adapter/element-type.md)** - Declarative schema format
+3. **[Development Guide](adapter/development-guide.md)** - Implementation walkthrough
+4. **[Schema-Driven Dispatch](architecture/schema-driven-dispatch.md)** - Declarative patterns
+5. **[Gatekeeper](security/gatekeeper.md)** - Security implementation
 
 ## Reference Implementation
 
