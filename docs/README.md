@@ -20,6 +20,7 @@ This directory contains the complete specification and implementation guidance f
 |----------|-------------|--------|
 | [Overview](architecture/overview.md) | How adapters work | Draft |
 | [Schema-Driven Dispatch](architecture/schema-driven-dispatch.md) | Declarative operation definitions | Draft |
+| [Plugin Interface](architecture/plugin-interface.md) | Modular plugin system for adapters | Draft (MVP) |
 
 ### Features
 
