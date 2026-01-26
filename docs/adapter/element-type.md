@@ -609,6 +609,6 @@ operations:
 
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
 - [Adapter Development Guide](./development-guide.md)
-- [Plugin Interface Specification](#62) (to be created)
-- [Universal Adapter Runtime](#63) (to be created)
+- [Plugin Interface Specification](https://github.com/MCPAQL/spec/issues/62) (to be created)
+- [Universal Adapter Runtime](https://github.com/MCPAQL/spec/issues/63) (to be created)
 - GitHub Issue: [#61](https://github.com/MCPAQL/spec/issues/61)

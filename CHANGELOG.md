@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Adapter Element Type specification (MVP) defining declarative adapter schema format (#61)
+  - Required fields: name, type, version, description
+  - Target configuration for HTTP/REST/JSON
+  - Authentication support: bearer, api_key, none
+  - Operation definitions with typed parameters
+- GitHub API adapter example demonstrating all CRUDE operations
 - CI workflows for documentation quality (markdown lint, link check, spell check)
 - CI workflow for JSON Schema validation
 - CI workflow for changelog enforcement

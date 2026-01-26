@@ -439,7 +439,7 @@ operations:
           description: "Organization to fork into (defaults to user)"
 ---
 
-# GitHub API Adapter
+## Overview
 
 This adapter provides MCP-AQL access to the GitHub REST API v3, enabling LLMs to manage repositories, issues, and related resources through the unified CRUDE interface.
 

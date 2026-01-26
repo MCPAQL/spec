@@ -28,3 +28,4 @@ Genericization
 Genericity
 reimplementation
 rebranded
+unstar
