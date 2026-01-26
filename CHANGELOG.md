@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Authentication support: bearer, api_key, none
   - Operation definitions with typed parameters
 - GitHub API adapter example demonstrating all CRUDE operations
+- Plugin Interface specification (MVP) for adapter extensibility (#62)
+  - Transport plugins: HTTP
+  - Protocol plugins: REST
+  - Serialization plugins: JSON
+  - Auth plugins: bearer, api_key, none
+  - Plugin composition pipeline documentation
 - CI workflows for documentation quality (markdown lint, link check, spell check)
 - CI workflow for JSON Schema validation
 - CI workflow for changelog enforcement

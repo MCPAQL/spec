@@ -799,6 +799,6 @@ Future versions may support:
 ## References
 
 - [Adapter Element Type Specification](../adapter/element-type.md)
-- [Universal Adapter Runtime](#63) (to be created)
+- [Universal Adapter Runtime](https://github.com/MCPAQL/spec/issues/63) (to be created)
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
 - GitHub Issue: [#62](https://github.com/MCPAQL/spec/issues/62)
