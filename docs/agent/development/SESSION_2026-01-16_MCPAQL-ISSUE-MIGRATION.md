@@ -76,10 +76,12 @@ Created **MCPAQL/spec#34** for adding documentation on adapting MCP-AQL to other
 ## Files Changed in This Session
 
 ### DollhouseMCP Repository
+
 - `docs/architecture/mcp-aql/PROTOCOL_COMPARISON.md` - Fixed per review feedback
 - `tests/unit/MemoryManager.triggers.performance.test.ts` - Increased threshold
 
 ### MCPAQL/spec Repository
+
 - `docs/ISSUE_MAPPING.md` - Created and updated with all mappings
 
 ## Documentation to Migrate to MCPAQL/spec
@@ -118,11 +120,13 @@ The following DollhouseMCP documentation should be adapted for the MCPAQL spec:
 ## Next Session Recommendations
 
 ### 1. Spec Documentation Migration
+
 - Copy and adapt the core documentation files to MCPAQL/spec
 - Remove DollhouseMCP-specific references
 - Add conformance requirements and test cases
 
 ### 2. Schema Definition
+
 - Create formal JSON Schema or TypeScript definitions for:
   - Operation request/response formats
   - Introspection response structure
@@ -130,10 +134,12 @@ The following DollhouseMCP documentation should be adapted for the MCPAQL spec:
   - Danger level enum
 
 ### 3. Conformance Test Suite
+
 - Define required tests for MCP-AQL conformance
 - Port relevant tests from DollhouseMCP as examples
 
 ### 4. Adapter Generator Scaffolding
+
 - Set up MCPAQL/adapter-generator project structure
 - Define adapter template format
 - Create first example adapter
@@ -155,6 +161,7 @@ The following DollhouseMCP documentation should be adapted for the MCPAQL spec:
 ## Next Session: Order of Operations
 
 ### Phase 1: Start in MCPAQL/spec
+
 **Working directory:** `/Users/mick/Developer/Organizations/MCPAQL/spec`
 
 ```
@@ -170,6 +177,7 @@ The following DollhouseMCP documentation should be adapted for the MCPAQL spec:
 ```
 
 ### Phase 2: Copy & Adapt Core Documents
+
 **Source:** DollhouseMCP `docs/architecture/mcp-aql/`
 **Target:** MCPAQL/spec `docs/`
 
@@ -183,6 +191,7 @@ The following DollhouseMCP documentation should be adapted for the MCPAQL spec:
 | 6 | `DESIGN_DECISIONS.md` | `docs/adr/` | Split into individual ADR files |
 
 ### Phase 3: Create Formal Schemas
+
 **Working directory:** MCPAQL/spec `schemas/`
 
 | Order | Schema | Purpose |
@@ -193,6 +202,7 @@ The following DollhouseMCP documentation should be adapted for the MCPAQL spec:
 | 4 | `danger-level.schema.json` | Danger classification enum |
 
 ### Phase 4: Update Main Spec Document
+
 **File:** `docs/versions/v1.0.0-draft.md`
 
 - Reference the new docs

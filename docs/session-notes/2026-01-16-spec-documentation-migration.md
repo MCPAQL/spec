@@ -102,6 +102,7 @@ Resolved multiple CI check failures:
 ## Files Changed
 
 ### New Files (27)
+
 - 6 ADRs in `docs/adr/`
 - `docs/overview.md`
 - `docs/endpoint-modes.md`
@@ -113,6 +114,7 @@ Resolved multiple CI check failures:
 - `schemas/README.md`
 
 ### Modified Files
+
 - `docs/introspection.md` - Enhanced with RFC 2119 language
 - `docs/operations.md` - Converted to design guide
 - `docs/versions/v1.0.0-draft.md` - Added appendices and references
