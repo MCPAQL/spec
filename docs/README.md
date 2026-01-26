@@ -13,6 +13,7 @@ This directory contains the complete specification and implementation guidance f
 | [Endpoint Modes](endpoint-modes.md) | CRUDE vs Single mode configuration | Draft |
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
+| [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
 
 ### Architecture
 
