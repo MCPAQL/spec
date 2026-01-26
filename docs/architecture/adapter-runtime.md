@@ -727,5 +727,5 @@ Load and manage multiple adapters:
 - [Adapter Element Type Specification](../adapter/element-type.md)
 - [Plugin Interface Specification](./plugin-interface.md)
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
-- [Structured Error Codes](#35) (to be created)
+- [Structured Error Codes](https://github.com/MCPAQL/spec/issues/35) (to be created)
 - GitHub Issue: [#63](https://github.com/MCPAQL/spec/issues/63)

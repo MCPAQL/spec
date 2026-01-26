@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Serialization plugins: JSON
   - Auth plugins: bearer, api_key, none
   - Plugin composition pipeline documentation
+- Universal Adapter Runtime specification (MVP) for schema-driven execution (#63)
+  - Schema loading and validation
+  - Operation dispatch pipeline
+  - Error mapping to structured codes
+  - Response transformation
 - CI workflows for documentation quality (markdown lint, link check, spell check)
 - CI workflow for JSON Schema validation
 - CI workflow for changelog enforcement
