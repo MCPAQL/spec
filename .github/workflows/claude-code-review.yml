@@ -3,25 +3,13 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: read
       id-token: write
 
@@ -29,16 +17,83 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR TITLE: ${{ github.event.pull_request.title }}
 
+            ## Project Context
+
+            This is the **MCP-AQL Specification** repository. MCP-AQL (Model Context Protocol - Advanced Agent API Adapter Query Language) is a protocol specification that consolidates MCP tools into semantic CRUDE endpoints with ~96% token reduction.
+
+            Key concepts:
+            - **CRUDE Pattern**: Create, Read, Update, Delete, Execute endpoints
+            - **Introspection**: Runtime operation discovery via `introspect` operation
+            - **Discriminated Responses**: `{ success: true, data }` or `{ success: false, error }`
+            - **Adapters**: Declarative Markdown files with YAML front matter defining API mappings
+
+            ## Review Instructions
+
+            Please review this pull request thoroughly. Check the PR diff using `gh pr diff`.
+
+            ### For Specification Documents (docs/*.md)
+
+            1. **Technical Accuracy**
+               - Are the protocol descriptions correct and unambiguous?
+               - Are examples valid and consistent with the spec?
+               - Do TypeScript/JavaScript code examples have correct syntax?
+
+            2. **RFC 2119 Compliance**
+               - Are normative keywords (MUST, SHOULD, MAY) used appropriately?
+               - Is the language precise and unambiguous?
+
+            3. **Consistency**
+               - Does this align with existing spec documents?
+               - Are naming conventions consistent (snake_case for params, etc.)?
+               - Do cross-references link to correct locations?
+
+            4. **Completeness**
+               - Are all necessary sections present?
+               - Are edge cases addressed?
+               - Is future extensibility considered?
+
+            ### For Schema Files (schemas/*.json)
+
+            1. **JSON Schema validity** - Is the schema syntactically correct?
+            2. **Completeness** - Are all required fields documented?
+            3. **Examples** - Do examples validate against the schema?
+
+            ### For Examples (examples/*.md)
+
+            1. **YAML validity** - Is the front matter valid YAML?
+            2. **Schema compliance** - Does it match the adapter schema spec?
+            3. **Completeness** - Are all CRUDE operations demonstrated?
+
+            ### For All Files
+
+            1. **Markdown quality** - Proper formatting, no lint errors expected
+            2. **Spelling** - No typos in prose
+            3. **Links** - All links should be valid
+
+            ## Output Format
+
+            Provide a structured review with:
+
+            1. **Summary** - One paragraph overview of the changes
+            2. **Strengths** - What the PR does well (2-3 points)
+            3. **Issues Found** - Specific problems that should be addressed, with file:line references
+            4. **Suggestions** - Optional improvements (clearly marked as non-blocking)
+            5. **Verdict** - APPROVE, REQUEST_CHANGES, or COMMENT
+
+            Use `gh pr comment` for top-level feedback.
+
+          claude_args: |
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Read,Glob,Grep"
