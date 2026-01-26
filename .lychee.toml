@@ -27,6 +27,9 @@ exclude = [
     "^https?://spec\\.modelcontextprotocol\\.io",
     "^https?://github\\.com/MCPAQL/adapter-generator",
 
+    # DollhouseMCP development repo (historical references, may be private)
+    "^https?://github\\.com/DollhouseMCP/mcp-server-v2-refactor",
+
     # Example and placeholder URLs
     "^https?://example\\.com",
     "^https?://example\\.org",
