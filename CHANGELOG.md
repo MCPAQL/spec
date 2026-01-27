@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Operation dispatch pipeline
   - Error mapping to structured codes
   - Response transformation
+- Structured Error Codes specification (MVP) for machine-readable errors (#35)
+  - 6 MVP error codes: VALIDATION_MISSING_PARAM, VALIDATION_INVALID_TYPE,
+    NOT_FOUND_OPERATION, NOT_FOUND_RESOURCE, PERMISSION_DENIED, INTERNAL_ERROR
+  - Error response format with code, message, and optional details
+  - JSON Schema for error response validation
 - CI workflows for documentation quality (markdown lint, link check, spell check)
 - CI workflow for JSON Schema validation
 - CI workflow for changelog enforcement
