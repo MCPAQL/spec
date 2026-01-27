@@ -515,7 +515,7 @@ state:
 
 ## 8. Example Adapter
 
-See [examples/github-api-adapter.md](../../examples/github-api-adapter.md) for a complete example.
+See the [GitHub API Adapter](https://github.com/MCPAQL/examples/blob/develop/adapters/github-api-adapter.md) in the examples repository for a complete example.
 
 ### 8.1 Minimal Example
 
@@ -608,7 +608,7 @@ operations:
 ## References
 
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
-- [Adapter Development Guide](./development-guide.md)
-- [Plugin Interface Specification](https://github.com/MCPAQL/spec/issues/62) (to be created)
-- [Universal Adapter Runtime](https://github.com/MCPAQL/spec/issues/63) (to be created)
+- [Plugin Interface Contracts](../plugin-contracts.md)
+- [Adapter Development Guide](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/guides/development.md) (in mcpaql-adapter repo)
+- [Universal Adapter Runtime](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/architecture/runtime.md) (in mcpaql-adapter repo)
 - GitHub Issue: [#61](https://github.com/MCPAQL/spec/issues/61)
