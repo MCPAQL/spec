@@ -9,6 +9,9 @@ conformance
 CRUDE
 CRUDEndpoint
 discriminated
+FEFF
+Ffile
+Fto
 Genericity
 Genericization
 Genericize
