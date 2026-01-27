@@ -137,7 +137,47 @@ The final commercial agreement should specify:
 
 Licensee acknowledges that breach of Sections 6–10 may cause irreparable harm and that Licensor may seek injunctive relief (in addition to other remedies).
 
-## 15. Disclaimer of warranty
+## 15. Indemnification
+
+### 15.1 Licensee indemnification of Licensor
+
+Licensee will indemnify, defend, and hold harmless Licensor and its officers, directors, employees, and agents from and against any and all third-party claims, demands, actions, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or relating to:
+
+- Licensee's use of the Licensed Materials,
+- any output, data, adapters, or results produced by or through the Licensed Materials as used by Licensee,
+- Licensee's distribution of the Licensed Materials or any derivative works,
+- any violation of applicable law or regulation by Licensee in connection with the Licensed Materials, or
+- any breach of these terms by Licensee.
+
+This indemnification obligation applies regardless of whether Licensee is using the self-serve free commercial license (Section 4) or a paid commercial license (Section 5).
+
+### 15.2 No indemnification by Licensor
+
+Licensor does not provide any indemnification to Licensee under this commercial license, including (without limitation) any indemnification for intellectual property infringement claims. The Licensed Materials are provided "AS IS" (see Section 17).
+
+### 15.3 Indemnification procedure
+
+If Licensor seeks indemnification under Section 15.1, Licensor will:
+
+- promptly notify Licensee in writing of the claim (provided that failure to notify does not relieve Licensee of its obligations except to the extent Licensee is materially prejudiced),
+- give Licensee reasonable control of the defense and settlement (provided that Licensee may not settle any claim in a manner that imposes obligations on Licensor or admits fault on Licensor's behalf without Licensor's prior written consent), and
+- cooperate reasonably with Licensee at Licensee's expense.
+
+## 16. Support, SLAs, and additional services
+
+### 16.1 No support or SLA included
+
+This commercial license does not include any support, maintenance, service level agreement (SLA), uptime guarantee, or professional services obligation. The Licensed Materials are self-service.
+
+### 16.2 Separate service agreements
+
+Support, SLAs, and other services may be available under separate written agreements on a case-by-case basis. Contact `licensing@mcpaql.org` for inquiries.
+
+### 16.3 Free-tier limitations
+
+The self-serve free commercial license (Section 4) does not include and is not eligible for SLAs or support agreements.
+
+## 17. Disclaimer of warranty
 
 THE LICENSED MATERIALS ARE PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
 
@@ -145,9 +185,9 @@ LICENSOR DOES NOT WARRANT THAT THE LICENSED MATERIALS WILL BE UNINTERRUPTED, ERR
 
 NO ADVICE OR INFORMATION, WHETHER ORAL OR WRITTEN, OBTAINED FROM LICENSOR OR THROUGH THE LICENSED MATERIALS WILL CREATE ANY WARRANTY NOT EXPRESSLY STATED IN A SIGNED COMMERCIAL AGREEMENT.
 
-## 16. Limitation of liability
+## 18. Limitation of liability
 
-### 16.1 Scope of liability
+### 18.1 Scope of liability
 
 LICENSOR'S LIABILITY UNDER THIS COMMERCIAL LICENSE IS LIMITED TO DIRECT DAMAGES ARISING FROM LICENSOR'S MATERIAL BREACH OF THE LICENSE GRANT IN SECTION 3 (I.E., FAILURE TO PROVIDE OR MAINTAIN THE LICENSE RIGHTS GRANTED). LICENSOR HAS NO LIABILITY FOR:
 
@@ -159,23 +199,23 @@ LICENSOR'S LIABILITY UNDER THIS COMMERCIAL LICENSE IS LIMITED TO DIRECT DAMAGES 
 
 THE LICENSED MATERIALS ARE PROVIDED WITHOUT ANY SERVICE LEVEL AGREEMENT, UPTIME GUARANTEE, OR SUPPORT OBLIGATION UNLESS SEPARATELY AGREED IN WRITING.
 
-### 16.2 Exclusive remedy for paid licensees
+### 18.2 Exclusive remedy for paid licensees
 
 FOR PAID COMMERCIAL LICENSEES (SECTION 5), IF LICENSOR MATERIALLY BREACHES THE LICENSE GRANT AND FAILS TO CURE SUCH BREACH WITHIN THIRTY (30) DAYS AFTER RECEIVING WRITTEN NOTICE FROM LICENSEE, LICENSEE'S SOLE AND EXCLUSIVE REMEDY IS A PRO-RATA REFUND OF PRE-PAID, UNUSED LICENSE FEES FOR THE REMAINING TERM. IN NO EVENT WILL ANY REFUND EXCEED THE FEES ACTUALLY PAID BY LICENSEE IN THE TWELVE (12) MONTHS PRECEDING THE BREACH.
 
-### 16.3 No liability for free-tier licensees
+### 18.3 No liability for free-tier licensees
 
 FOR LICENSEES USING THE SELF-SERVE FREE COMMERCIAL LICENSE (SECTION 4), NO FEES HAVE BEEN PAID AND THEREFORE LICENSOR'S LIABILITY IS ZERO ($0 USD). LICENSEE'S SOLE REMEDY IS TERMINATION OF THE LICENSE.
 
-### 16.4 Exclusion of consequential damages
+### 18.4 Exclusion of consequential damages
 
 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, GOODWILL, DATA, USE, OR OTHER INTANGIBLE LOSSES, REGARDLESS OF WHETHER LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND REGARDLESS OF THE LEGAL THEORY UPON WHICH THE CLAIM IS BASED.
 
-### 16.5 Essential basis
+### 18.5 Essential basis
 
 THE LIMITATIONS AND EXCLUSIONS IN THIS SECTION ARE AN ESSENTIAL BASIS OF THE BARGAIN BETWEEN THE PARTIES AND WILL APPLY EVEN IF ANY REMEDY FAILS OF ITS ESSENTIAL PURPOSE. LICENSEE ACKNOWLEDGES THAT LICENSOR HAS OFFERED THE LICENSED MATERIALS (INCLUDING THE $0 SELF-SERVE TIER) IN RELIANCE ON THESE LIMITATIONS AND THAT THESE LIMITATIONS WILL APPLY REGARDLESS OF WHETHER LICENSEE HAS PAID ANY FEES.
 
-## 17. Relationship to open source licenses
+## 19. Relationship to open source licenses
 
 Licensee must choose either:
 
