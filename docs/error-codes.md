@@ -37,7 +37,7 @@ Structured error codes address several challenges with string-based error messag
 
 1. **Category-based** - Codes follow `CATEGORY_SPECIFIC` naming pattern
 2. **Self-documenting** - Code names describe the error condition
-3. **Backwards compatible** - Supports both string and structured error formats
+3. **Deterministic** - Each error code maps to a specific recovery strategy
 4. **Extensible** - New codes can be added without breaking existing clients
 
 ### 1.3 MVP Scope
@@ -186,7 +186,16 @@ The MVP includes 6 essential error codes:
 | `PERMISSION_DENIED` | Permission | Access denied (HTTP 401/403) |
 | `INTERNAL_ERROR` | Internal | Server error or unexpected failure |
 
-### 4.2 VALIDATION_MISSING_PARAM
+### 4.2 Message Template Conventions
+
+All error codes define a **message format** template that implementations SHOULD follow for consistency. Templates use the following conventions:
+
+- Variable placeholders use `{variable_name}` syntax matching keys in the `details` object
+- Dynamic values MUST be wrapped in single quotes within the message (e.g., `'{param_name}'`)
+- The message prefix MUST match the error category (e.g., `VALIDATION_` codes start with the validation context, `NOT_FOUND_` codes reference what was not found)
+- Implementations MAY substitute the target API's error message when it provides more specific context, but SHOULD prefer the template format for consistency
+
+### 4.3 VALIDATION_MISSING_PARAM
 
 **When used:** A required parameter was not provided in the request.
 
@@ -195,8 +204,10 @@ The MVP includes 6 essential error codes:
 **Details:**
 ```typescript
 {
-  param_name: string;      // Name of the missing parameter
-  operation?: string;      // Operation that requires this parameter
+  /** Name of the missing parameter */
+  param_name: string;
+  /** Operation that requires this parameter */
+  operation?: string;
 }
 ```
 
@@ -215,19 +226,23 @@ The MVP includes 6 essential error codes:
 }
 ```
 
-### 4.3 VALIDATION_INVALID_TYPE
+### 4.4 VALIDATION_INVALID_TYPE
 
 **When used:** A parameter was provided with an incorrect type.
 
-**Message format:** `Parameter '{param_name}' expected {expected_type}, got {actual_type}`
+**Message format:** `Parameter '{param_name}' expected '{expected_type}', got '{actual_type}'`
 
 **Details:**
 ```typescript
 {
-  param_name: string;      // Name of the invalid parameter
-  expected_type: string;   // Expected type (string, integer, etc.)
-  actual_type: string;     // Type that was received
-  value?: unknown;         // The invalid value (if safe to include)
+  /** Name of the invalid parameter */
+  param_name: string;
+  /** Expected type (string, integer, etc.) */
+  expected_type: string;
+  /** Type that was received */
+  actual_type: string;
+  /** The invalid value (if safe to include) */
+  value?: unknown;
 }
 ```
 
@@ -237,7 +252,7 @@ The MVP includes 6 essential error codes:
   "success": false,
   "error": {
     "code": "VALIDATION_INVALID_TYPE",
-    "message": "Parameter 'per_page' expected integer, got string",
+    "message": "Parameter 'per_page' expected 'integer', got 'string'",
     "details": {
       "param_name": "per_page",
       "expected_type": "integer",
@@ -248,17 +263,21 @@ The MVP includes 6 essential error codes:
 }
 ```
 
-### 4.4 NOT_FOUND_OPERATION
+### 4.5 NOT_FOUND_OPERATION
 
 **When used:** The requested operation does not exist in the adapter schema.
+
+> **Design note:** This code uses the `NOT_FOUND_` category rather than `VALIDATION_` because the error signals a fundamentally different recovery strategy. A `VALIDATION_` error tells the client to fix its input and retry the same operation. A `NOT_FOUND_OPERATION` error tells the client that the operation itself does not exist and it should discover valid operations via introspection. This distinction is especially important for LLM clients, which use the error category to determine whether to adjust parameters or switch to a different operation entirely.
 
 **Message format:** `Unknown operation: '{operation_name}'`
 
 **Details:**
 ```typescript
 {
-  operation: string;       // The requested operation name
-  available?: string[];    // List of valid operation names (optional)
+  /** The operation name that was requested */
+  operation: string;
+  /** Valid operation names the client can use instead */
+  available?: string[];
 }
 ```
 
@@ -276,18 +295,21 @@ The MVP includes 6 essential error codes:
 }
 ```
 
-### 4.5 NOT_FOUND_RESOURCE
+### 4.6 NOT_FOUND_RESOURCE
 
 **When used:** The target API returned HTTP 404 - the requested resource does not exist.
 
-**Message format:** `{Resource description} not found` or message from target API
+**Message format:** `Resource '{resource_type}' not found: '{resource_id}'`
 
 **Details:**
 ```typescript
 {
-  resource_type?: string;  // Type of resource (repository, user, etc.)
-  resource_id?: string;    // Identifier that was not found
-  http_status?: number;    // Original HTTP status code
+  /** Type of resource (e.g., "repository", "user", "issue") */
+  resource_type?: string;
+  /** Identifier that was not found */
+  resource_id?: string;
+  /** HTTP status code from the target API */
+  http_status?: number;
 }
 ```
 
@@ -307,18 +329,21 @@ The MVP includes 6 essential error codes:
 }
 ```
 
-### 4.6 PERMISSION_DENIED
+### 4.7 PERMISSION_DENIED
 
 **When used:** The target API returned HTTP 401 (unauthorized) or 403 (forbidden).
 
-**Message format:** `Permission denied: {reason}` or message from target API
+**Message format:** `Permission denied: '{reason}'`
 
 **Details:**
 ```typescript
 {
-  reason?: string;         // Why permission was denied
-  http_status?: number;    // Original HTTP status code (401 or 403)
-  required_scope?: string; // OAuth scope required (if known)
+  /** Human-readable explanation of why permission was denied */
+  reason?: string;
+  /** HTTP status code from the target API (401 or 403) */
+  http_status?: number;
+  /** OAuth scope required for this operation, if known */
+  required_scope?: string;
 }
 ```
 
@@ -337,17 +362,19 @@ The MVP includes 6 essential error codes:
 }
 ```
 
-### 4.7 INTERNAL_ERROR
+### 4.8 INTERNAL_ERROR
 
 **When used:** Server error from target API (HTTP 500+) or unexpected error in the runtime.
 
-**Message format:** `Internal error: {description}` or message from target API
+**Message format:** `Internal error: '{description}'`
 
 **Details:**
 ```typescript
 {
-  http_status?: number;    // Original HTTP status code
-  upstream_error?: string; // Error from target API
+  /** HTTP status code from the target API */
+  http_status?: number;
+  /** Error message returned by the target API */
+  upstream_error?: string;
 }
 ```
 
@@ -433,8 +460,8 @@ Implementations SHOULD:
 Client implementations SHOULD:
 
 1. Check `success` field first
-2. Parse `error` as object (structured) or string (legacy)
-3. Use `code` field for programmatic handling
+2. Parse the `error` object to extract `code` and `message`
+3. Use `code` field for programmatic error handling and recovery decisions
 4. Display `message` field to users
 
 ### 6.3 Message Localization
@@ -444,11 +471,11 @@ The `code` field enables localization:
 ```typescript
 const ERROR_MESSAGES = {
   en: {
-    VALIDATION_MISSING_PARAM: 'Missing required parameter: {param_name}',
+    VALIDATION_MISSING_PARAM: "Missing required parameter: '{param_name}'",
     NOT_FOUND_RESOURCE: 'Resource not found',
   },
   es: {
-    VALIDATION_MISSING_PARAM: 'Falta el parámetro requerido: {param_name}',
+    VALIDATION_MISSING_PARAM: "Falta el parámetro requerido: '{param_name}'",
     NOT_FOUND_RESOURCE: 'Recurso no encontrado',
   }
 };
