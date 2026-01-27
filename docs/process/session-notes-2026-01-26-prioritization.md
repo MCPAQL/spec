@@ -708,5 +708,48 @@ OperationDefinition:
 
 ---
 
+## Repository Migration (2026-01-27)
+
+Content has been reorganized across MCPAQL repositories to match the four-level protocol model:
+
+| Level | What | Normative? | Repository |
+|-------|------|-----------|------------|
+| 1. Wire format | Request/response JSON, error codes, introspection | MUST | `spec` |
+| 2. Schema semantics | Operation declarations, params, auth, target | MUST/SHOULD | `spec` |
+| 3. Canonical format | Markdown + YAML front matter interchange format | SHOULD | `spec` |
+| 4. Implementation guidance | Runtime architecture, plugin pipeline, dispatch | Non-normative | `mcpaql-adapter` |
+
+### Where Phase Work Products Go
+
+**Phase 0 (MVP Core):** Spec content stays in `spec` repo. All four MVP specs (#61, #62, #63, #35) are normative protocol content.
+
+**Phase 1 (Robustness):** Each issue produces both spec and implementation content:
+- **#59 Trust Levels** → `spec` (normative trust level semantics) + `mcpaql-adapter` (enforcement implementation)
+- **#49 Dangerous Ops** → `spec` (classification scheme and danger level definitions) + `mcpaql-adapter` (gating implementation)
+- **#60 Rate Limiting** → `spec` (normative rate limit semantics and error codes) + `mcpaql-adapter` (enforcement implementation)
+- **#37 Pagination** → `spec` (normative plugin interface and pagination semantics) + `mcpaql-adapter` (plugin implementations)
+
+**Phase 2 (Quality):** Conformance specs go to `spec`; test suite implementation goes to `spec/tests/` or a dedicated test repo.
+
+**Phase 3 (Ecosystem):** Generator work goes to `adapter-generator` repo. Versioning and batch specs go to `spec`; implementation goes to `mcpaql-adapter`.
+
+### Migration Details
+
+Moved from `spec` to `mcpaql-adapter`:
+- `docs/architecture/adapter-runtime.md` → `docs/architecture/runtime.md`
+- `docs/architecture/plugin-interface.md` → `docs/architecture/plugin-system.md` (implementation parts)
+- `docs/architecture/schema-driven-dispatch.md` → `docs/architecture/dispatch.md`
+- `docs/architecture/overview.md` → `docs/architecture/overview.md`
+- `docs/adapter/development-guide.md` → `docs/guides/development.md`
+
+Extracted from `plugin-interface.md` and kept in `spec`:
+- `docs/plugin-contracts.md` (normative plugin interface contracts)
+
+Moved from `spec` to `examples`:
+- `examples/github-api-adapter.md` → `adapters/github-api-adapter.md`
+
+---
+
 *Session notes created: 2026-01-26*
+*Updated: 2026-01-27 (added repo migration section)*
 *Next review: Before starting Phase 1 work*
