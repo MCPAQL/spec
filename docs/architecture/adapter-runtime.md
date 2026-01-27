@@ -22,6 +22,7 @@ This document defines the Universal Adapter Runtime specification - the executio
 8. [Error Mapping](#8-error-mapping)
 9. [Introspection](#9-introspection)
 10. [Future Extensions](#10-future-extensions)
+11. [Security Considerations](#11-security-considerations)
 
 ---
 
@@ -391,6 +392,65 @@ function substitutePath(template: string, params: Record<string, unknown>): stri
 }
 ```
 
+#### 6.2.1 Encoding Considerations
+
+The runtime MUST apply `encodeURIComponent()` to all path parameter values. This handles:
+
+| Input | Encoded Output | Notes |
+|-------|----------------|-------|
+| `hello world` | `hello%20world` | Spaces encoded |
+| `user@example.com` | `user%40example.com` | Special characters encoded |
+| `path/to/file` | `path%2Fto%2Ffile` | Slashes encoded (prevents path traversal) |
+| `名前` | `%E5%90%8D%E5%89%8D` | Unicode encoded as UTF-8 |
+
+**Already-encoded values:**
+
+The runtime MUST NOT double-encode values. If a value is already percent-encoded, implementations SHOULD detect and preserve it:
+
+```typescript
+function safeEncode(value: string): string {
+  // Check if value appears to be already encoded
+  try {
+    const decoded = decodeURIComponent(value);
+    // If decoding succeeds and differs from input, it was encoded
+    if (decoded !== value) {
+      return value; // Already encoded, preserve as-is
+    }
+  } catch {
+    // decodeURIComponent throws on invalid sequences
+    // Value is not properly encoded, so encode it
+  }
+  return encodeURIComponent(value);
+}
+```
+
+**Array parameters:**
+
+Array values in path parameters MUST be converted to comma-separated strings before encoding:
+
+```typescript
+// Input: { ids: [1, 2, 3] }
+// Template: "/items/{ids}"
+// Result: "/items/1%2C2%2C3"
+
+function stringifyValue(value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.map(String).join(',');
+  }
+  return String(value);
+}
+```
+
+**Edge cases:**
+
+| Scenario | Behavior |
+|----------|----------|
+| Empty string | MUST encode as empty (valid path segment) |
+| `null` value | MUST throw error (missing parameter) |
+| `undefined` value | MUST throw error (missing parameter) |
+| Object value | MUST throw error (invalid type for path parameter) |
+| Very long values | SHOULD warn if encoded length exceeds 2048 characters |
+
 ### 6.3 HTTP Method Extraction
 
 The HTTP method is extracted from the `maps_to` prefix:
@@ -467,7 +527,14 @@ interface ErrorResult {
 
 ```typescript
 function parseResponse(httpResponse: TransportResponse): OperationResult {
-  const body = JSON.parse(httpResponse.body);
+  let body: unknown;
+
+  try {
+    body = JSON.parse(httpResponse.body);
+  } catch (parseError) {
+    // Handle malformed JSON responses (e.g., HTML error pages, truncated responses)
+    return handleMalformedResponse(httpResponse, parseError);
+  }
 
   if (httpResponse.status >= 200 && httpResponse.status < 300) {
     return { success: true, data: body };
@@ -496,7 +563,53 @@ function extractErrorMessage(body: unknown, response: TransportResponse): string
   // Fallback to status text
   return `${response.status} ${response.statusText}`;
 }
+
+function handleMalformedResponse(
+  response: TransportResponse,
+  parseError: Error
+): OperationResult {
+  // Check Content-Type to provide better error messages
+  const contentType = response.headers['content-type'] || '';
+
+  if (contentType.includes('text/html')) {
+    // Likely an error page (nginx 502, Apache error, etc.)
+    return {
+      success: false,
+      error: {
+        code: 'SERIALIZATION_PARSE_ERROR',
+        message: `Server returned HTML instead of JSON (HTTP ${response.status})`,
+        details: {
+          content_type: contentType,
+          body_preview: response.body.substring(0, 200)
+        }
+      }
+    };
+  }
+
+  // Generic JSON parse failure
+  return {
+    success: false,
+    error: {
+      code: 'SERIALIZATION_PARSE_ERROR',
+      message: `Failed to parse response as JSON: ${parseError.message}`,
+      details: {
+        content_type: contentType,
+        body_preview: response.body.substring(0, 200)
+      }
+    }
+  };
+}
 ```
+
+**Malformed response scenarios:**
+
+| Scenario | Detection | Handling |
+|----------|-----------|----------|
+| HTML error page | `Content-Type: text/html` | Return `SERIALIZATION_PARSE_ERROR` with body preview |
+| Truncated JSON | `JSON.parse` throws | Return parse error with truncated body preview |
+| Empty response | Empty body string | Return success with `null` data (if 2xx status) |
+| Binary data | Non-text Content-Type | Return error indicating unexpected content type |
+| BOM prefix | UTF-8 BOM (`\uFEFF`) | Strip BOM before parsing |
 
 ---
 
@@ -721,6 +834,96 @@ Load and manage multiple adapters:
 - Adapter directory scanning
 - Namespace operations by adapter name
 - Cross-adapter operation routing
+
+---
+
+## 11. Security Considerations
+
+This section documents security-relevant behaviors and requirements for runtime implementations.
+
+### 11.1 Path Parameter Injection Prevention
+
+The `encodeURIComponent()` call in path parameter substitution (Section 6.2) prevents path traversal attacks:
+
+```typescript
+// Malicious input attempt:
+params: { filename: "../../../etc/passwd" }
+
+// After encoding:
+path: "/files/..%2F..%2F..%2Fetc%2Fpasswd"  // Slashes are encoded, path traversal blocked
+```
+
+Implementations MUST:
+- Always encode path parameters before substitution
+- Never allow raw user input in URL paths
+- Reject parameters containing null bytes (`\0`)
+
+### 11.2 Credential Handling
+
+Authentication credentials MUST be handled securely:
+
+| Requirement | Description |
+|-------------|-------------|
+| Never log credentials | Auth headers MUST be redacted in logs and error messages |
+| Memory handling | Credentials SHOULD be cleared from memory after use |
+| No credential embedding | Adapters MUST NOT contain hardcoded credentials |
+| Secure transport | Credentials MUST only be sent over HTTPS (except localhost) |
+
+**Error message sanitization:**
+
+```typescript
+// BAD: Exposes credential in error
+throw new Error(`Auth failed with token: ${token}`);
+
+// GOOD: Redacts credential
+throw new Error(`Auth failed with token: ${token.substring(0, 4)}...`);
+```
+
+### 11.3 Error Message Sanitization
+
+Error messages returned to clients MUST NOT expose:
+
+- Internal file paths or system information
+- Database connection strings or queries
+- Stack traces (in production)
+- Raw credentials or tokens
+- Internal IP addresses or hostnames
+
+**Sanitization example:**
+
+```typescript
+function sanitizeError(error: Error, isDevelopment: boolean): string {
+  if (isDevelopment) {
+    return error.message; // Full details in development
+  }
+
+  // Production: generic message with error code only
+  return `Operation failed: ${error.code || 'INTERNAL_ERROR'}`;
+}
+```
+
+### 11.4 Input Validation
+
+All inputs MUST be validated before processing:
+
+| Input Type | Validation |
+|------------|------------|
+| Operation name | MUST match `/^[a-z][a-z0-9_]*$/` pattern |
+| Parameter values | MUST match declared type and constraints |
+| URL components | MUST be properly encoded |
+| Header values | MUST NOT contain newlines (HTTP header injection) |
+
+### 11.5 Response Size Limits
+
+Implementations SHOULD enforce response size limits to prevent denial-of-service:
+
+```typescript
+const MAX_RESPONSE_SIZE = 10 * 1024 * 1024; // 10 MB default
+
+if (response.body.length > MAX_RESPONSE_SIZE) {
+  throw new Error('Response exceeds maximum size limit');
+}
+```
 
 ---
 
