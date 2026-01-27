@@ -20,7 +20,8 @@ This document defines the Adapter Element Type, a declarative schema format for 
 6. [Operations](#6-operations)
 7. [Parameter Types](#7-parameter-types)
 8. [Example Adapter](#8-example-adapter)
-9. [Future Extensions](#9-future-extensions)
+9. [Canonical Format Rationale](#9-canonical-format-rationale)
+10. [Future Extensions](#10-future-extensions)
 
 ---
 
@@ -546,11 +547,37 @@ This adapter demonstrates the minimum required fields.
 
 ---
 
-## 9. Future Extensions
+## 9. Canonical Format Rationale
+
+### 9.1 Why Markdown + YAML Front Matter
+
+The Markdown + YAML front matter format is the SHOULD (recommended) interchange format for adapter schemas. This choice is deliberate:
+
+1. **Human-readable for security auditing** - Adapter schemas define what API calls an LLM can make. Plain text makes it straightforward for security reviewers to inspect exactly which endpoints are exposed, what parameters are accepted, and what authentication is used.
+
+2. **LLM-readable for automated review** - Language models can directly read and reason about adapter schemas without specialized parsers, enabling automated security review and schema validation workflows.
+
+3. **Grep-friendly for searching operations** - Teams can use standard text search tools to find operations across adapter collections (e.g., `grep -r "maps_to.*DELETE" adapters/`).
+
+4. **Discourages obfuscation** - A text-based format makes it difficult to hide malicious configurations. Binary or compiled adapter formats would make security review harder.
+
+5. **Version control friendly** - Diffs are meaningful, merge conflicts are resolvable, and change history is transparent.
+
+### 9.2 Alternative Representations
+
+Adapter schemas MAY be stored in alternative representations (JSON, database records, programmatic builders) for implementation convenience. However:
+
+- Alternative representations SHOULD be translatable to the canonical Markdown + YAML format for review purposes
+- Tooling SHOULD support exporting to canonical format
+- The canonical format is the normative reference when discrepancies exist between representations
+
+---
+
+## 10. Future Extensions
 
 The following features are deferred from the MVP and will be specified in future issues:
 
-### 9.1 Trust Levels (#59)
+### 10.1 Trust Levels (#59)
 
 ```yaml
 trust:
@@ -559,7 +586,7 @@ trust:
   verified_at: string
 ```
 
-### 9.2 Rate Limiting (#60)
+### 10.2 Rate Limiting (#60)
 
 ```yaml
 rate_limits:
@@ -568,7 +595,7 @@ rate_limits:
   concurrent_requests: 5
 ```
 
-### 9.3 Danger Levels (#49)
+### 10.3 Danger Levels (#49)
 
 ```yaml
 operations:
@@ -579,7 +606,7 @@ operations:
       requires_confirmation: true
 ```
 
-### 9.4 Pagination (#37)
+### 10.4 Pagination (#37)
 
 ```yaml
 operations:
@@ -592,7 +619,7 @@ operations:
         per_page_param: per_page
 ```
 
-### 9.5 Field Selection
+### 10.5 Field Selection
 
 ```yaml
 operations:
