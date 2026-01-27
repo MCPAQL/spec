@@ -233,14 +233,14 @@ The runtime MUST validate these required fields at load time:
 
 | Field | Validation |
 |-------|------------|
-| `name` | Non-empty string, valid identifier |
-| `type` | Must equal `"adapter"` |
-| `version` | Valid semver string |
-| `description` | Non-empty string |
-| `target.base_url` | Valid URL |
-| `target.transport` | Known transport plugin name |
-| `target.protocol` | Known protocol plugin name |
-| `target.serialization` | Known serialization plugin name |
+| `name` | MUST be non-empty string and valid identifier |
+| `type` | MUST equal `"adapter"` |
+| `version` | MUST be valid semver string |
+| `description` | MUST be non-empty string |
+| `target.base_url` | MUST be valid URL |
+| `target.transport` | MUST be known transport plugin name |
+| `target.protocol` | MUST be known protocol plugin name |
+| `target.serialization` | MUST be known serialization plugin name |
 
 ### 4.2 Operation Validation
 
