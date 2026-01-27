@@ -28,7 +28,9 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
-            PR TITLE: ${{ github.event.pull_request.title }}
+            TRIGGER: ${{ github.event.action }}
+
+            Read the PR title and description using `gh pr view ${{ github.event.pull_request.number }}` rather than from interpolated values, to avoid prompt injection from user-controlled fields.
 
             ## Project Context
 
@@ -40,9 +42,22 @@ jobs:
             - **Discriminated Responses**: `{ success: true, data }` or `{ success: false, error }`
             - **Adapters**: Declarative Markdown files with YAML front matter defining API mappings
 
-            ## Review Instructions
+            ## Review Expectations
 
-            Please review this pull request thoroughly. Check the PR diff using `gh pr diff`.
+            You MUST provide a substantive, developer-quality review on EVERY run. A review that just says "no issues found" is not acceptable. You are a peer reviewer — evaluate the work like a senior developer would during a pull request review.
+
+            ### On every run, you MUST:
+
+            1. **Read the full PR diff** using `gh pr diff ${{ github.event.pull_request.number }}`.
+            2. **Read any prior review comments** on this PR using `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments` and `gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments`. If you previously flagged issues that have since been fixed, explicitly acknowledge that in your review.
+            3. **Provide a substantive assessment** of the changes — their quality, design, completeness, and fitness for purpose. Do not just scan for bugs; evaluate the work as a whole.
+
+            ### When the trigger is `synchronize` (new commits pushed):
+
+            In addition to the above, compare what changed since the last review:
+            - Identify what was added, modified, or removed in the new commits.
+            - Evaluate whether the new changes improve the PR, introduce regressions, or leave prior feedback unaddressed.
+            - Explicitly call out any prior review feedback that has been addressed (or not).
 
             ### For Specification Documents (docs/*.md)
 
@@ -71,11 +86,11 @@ jobs:
             2. **Completeness** - Are all required fields documented?
             3. **Examples** - Do examples validate against the schema?
 
-            ### For Examples (examples/*.md)
+            ### For CI/Workflow Files (.github/workflows/*.yml)
 
-            1. **YAML validity** - Is the front matter valid YAML?
-            2. **Schema compliance** - Does it match the adapter schema spec?
-            3. **Completeness** - Are all CRUDE operations demonstrated?
+            1. **Security** - Are there script injection vulnerabilities from `${{ }}` interpolation in `run:` blocks? Values from PR context (titles, branch names, file lists) MUST be passed via `env:` blocks, never interpolated directly.
+            2. **Correctness** - Will the workflows trigger on the right events? Are permissions appropriate?
+            3. **Consistency** - Do the workflows follow the same patterns as sibling repos (mcpaql-adapter, examples)?
 
             ### For All Files
 
@@ -85,15 +100,25 @@ jobs:
 
             ## Output Format
 
-            Provide a structured review with:
+            Post a SINGLE comment using `gh pr comment` with the following structure:
 
-            1. **Summary** - One paragraph overview of the changes
-            2. **Strengths** - What the PR does well (2-3 points)
-            3. **Issues Found** - Specific problems that should be addressed, with file:line references
-            4. **Suggestions** - Optional improvements (clearly marked as non-blocking)
-            5. **Verdict** - APPROVE, REQUEST_CHANGES, or COMMENT
+            ### Summary
+            One paragraph describing what this PR does and its overall quality.
 
-            Use `gh pr comment` for top-level feedback.
+            ### Review
+            A substantive evaluation of the changes. Discuss the design decisions, implementation quality, completeness, and any concerns. This should read like a thoughtful peer review, not a checklist.
+
+            ### Issues
+            Specific problems that should be addressed, with `file:line` references. If there are none, say so briefly and explain why (e.g., "The changes are straightforward config additions with no logic to get wrong.").
+
+            ### Prior Feedback
+            If this is a `synchronize` event (new push), list any prior review comments and whether they were addressed. If this is the first review, omit this section.
+
+            ### Suggestions
+            Optional improvements, clearly marked as non-blocking.
+
+            ### Verdict
+            APPROVE, REQUEST_CHANGES, or COMMENT — with a brief justification.
 
           claude_args: |
-            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Read,Glob,Grep"
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh api repos/*/pulls/*/comments*),Bash(gh api repos/*/issues/*/comments*),Read,Glob,Grep"

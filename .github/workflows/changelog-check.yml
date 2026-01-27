@@ -29,9 +29,12 @@ jobs:
       - name: Get changed files
         if: steps.skip-label.outputs.has_skip_label != 'true'
         id: changed-files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           # Get the list of changed files
-          CHANGED_FILES=$(gh pr diff ${{ github.event.pull_request.number }} --name-only)
+          CHANGED_FILES=$(gh pr diff "$PR_NUMBER" --name-only)
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
@@ -40,14 +43,13 @@ jobs:
           echo "files<<$EOF" >> $GITHUB_OUTPUT
           echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - name: Check if only non-functional files changed
         if: steps.skip-label.outputs.has_skip_label != 'true'
         id: check-files
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
         run: |
-          CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
 
           # Define patterns for non-functional files that don't require changelog updates
           # These are CI configs, linting configs, license files, and contribution docs
