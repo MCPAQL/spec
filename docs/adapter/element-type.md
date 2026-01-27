@@ -14,13 +14,13 @@ This document defines the Adapter Element Type, a declarative schema format for 
 
 1. [Overview](#1-overview)
 2. [Schema Structure](#2-schema-structure)
-3. [Required Fields](#3-required-fields)
-4. [Target Configuration](#4-target-configuration)
-5. [Authentication](#5-authentication)
-6. [Operations](#6-operations)
-7. [Parameter Types](#7-parameter-types)
-8. [Example Adapter](#8-example-adapter)
-9. [Canonical Format Rationale](#9-canonical-format-rationale)
+3. [Canonical Format Rationale](#3-canonical-format-rationale)
+4. [Required Fields](#4-required-fields)
+5. [Target Configuration](#5-target-configuration)
+6. [Authentication](#6-authentication)
+7. [Operations](#7-operations)
+8. [Parameter Types](#8-parameter-types)
+9. [Example Adapter](#9-example-adapter)
 10. [Future Extensions](#10-future-extensions)
 
 ---
@@ -118,9 +118,35 @@ modified: string                # ISO 8601 timestamp
 
 ---
 
-## 3. Required Fields
+## 3. Canonical Format Rationale
 
-### 3.1 name
+### 3.1 Why Markdown + YAML Front Matter
+
+The Markdown + YAML front matter format is the SHOULD (recommended) interchange format for adapter schemas. This choice is deliberate:
+
+1. **Human-readable for security auditing** - Adapter schemas define what API calls an LLM can make. Plain text makes it straightforward for security reviewers to inspect exactly which endpoints are exposed, what parameters are accepted, and what authentication is used.
+
+2. **LLM-readable for automated review** - Language models can directly read and reason about adapter schemas without specialized parsers, enabling automated security review and schema validation workflows.
+
+3. **Grep-friendly for searching operations** - Teams can use standard text search tools to find operations across adapter collections (e.g., `grep -r "maps_to.*DELETE" adapters/`).
+
+4. **Discourages obfuscation** - A text-based format makes it difficult to hide malicious configurations. Binary or compiled adapter formats would make security review harder.
+
+5. **Version control friendly** - Diffs are meaningful, merge conflicts are resolvable, and change history is transparent.
+
+### 3.2 Alternative Representations
+
+Adapter schemas MAY be stored in alternative representations (JSON, database records, programmatic builders) for implementation convenience. However:
+
+- Alternative representations SHOULD be translatable to the canonical Markdown + YAML format for review purposes
+- Tooling SHOULD support exporting to canonical format
+- The canonical format is the normative reference when discrepancies exist between representations
+
+---
+
+## 4. Required Fields
+
+### 4.1 name
 
 **Type:** string
 **Required:** Yes
@@ -136,7 +162,7 @@ name: github-api
 - MUST be 2-64 characters
 - SHOULD be descriptive of the target API
 
-### 3.2 type
+### 4.2 type
 
 **Type:** string (literal)
 **Required:** Yes
@@ -147,7 +173,7 @@ MUST be the literal string `"adapter"`. This enables tooling to identify element
 type: adapter
 ```
 
-### 3.3 version
+### 4.3 version
 
 **Type:** string (semver)
 **Required:** Yes
@@ -162,7 +188,7 @@ version: "1.0.0"
 - MUST follow [Semantic Versioning 2.0.0](https://semver.org/)
 - SHOULD be quoted to prevent YAML number parsing issues
 
-### 3.4 description
+### 4.4 description
 
 **Type:** string
 **Required:** Yes
@@ -179,9 +205,9 @@ description: "Adapter for GitHub REST API v3, enabling repository and issue mana
 
 ---
 
-## 4. Target Configuration
+## 5. Target Configuration
 
-### 4.1 target Block
+### 5.1 target Block
 
 The `target` block defines how to connect to the API.
 
@@ -193,7 +219,7 @@ target:
   serialization: json
 ```
 
-### 4.2 base_url
+### 5.2 base_url
 
 **Type:** string (URL)
 **Required:** Yes
@@ -209,7 +235,7 @@ base_url: "https://api.github.com"
 - MUST NOT include trailing slash
 - MAY include path prefix (e.g., `https://api.example.com/v1`)
 
-### 4.3 transport
+### 5.3 transport
 
 **Type:** string (enum)
 **Required:** Yes
@@ -228,7 +254,7 @@ The transport layer for API communication.
 transport: http
 ```
 
-### 4.4 protocol
+### 5.4 protocol
 
 **Type:** string (enum)
 **Required:** Yes
@@ -247,7 +273,7 @@ The API protocol used by the target.
 protocol: rest
 ```
 
-### 4.5 serialization
+### 5.5 serialization
 
 **Type:** string (enum)
 **Required:** Yes
@@ -268,13 +294,13 @@ serialization: json
 
 ---
 
-## 5. Authentication
+## 6. Authentication
 
-### 5.1 auth Block
+### 6.1 auth Block
 
 The `auth` block configures API authentication. If omitted, the adapter uses no authentication.
 
-### 5.2 type: none
+### 6.2 type: none
 
 No authentication required.
 
@@ -283,7 +309,7 @@ auth:
   type: none
 ```
 
-### 5.3 type: bearer
+### 6.3 type: bearer
 
 Bearer token authentication sent in the `Authorization` header.
 
@@ -301,7 +327,7 @@ auth:
 Authorization: Bearer ${GITHUB_TOKEN}
 ```
 
-### 5.4 type: api_key
+### 6.4 type: api_key
 
 API key authentication sent in a custom header.
 
@@ -321,7 +347,7 @@ auth:
 X-API-Key: ${OPENAI_API_KEY}
 ```
 
-### 5.5 Security Considerations
+### 6.5 Security Considerations
 
 - Adapter schemas MUST NOT contain actual credentials
 - Credentials MUST be loaded from environment variables at runtime
@@ -329,9 +355,9 @@ X-API-Key: ${OPENAI_API_KEY}
 
 ---
 
-## 6. Operations
+## 7. Operations
 
-### 6.1 operations Block
+### 7.1 operations Block
 
 The `operations` block maps MCP-AQL CRUDE operations to target API calls.
 
@@ -353,7 +379,7 @@ operations:
         username: { type: string, required: true }
 ```
 
-### 6.2 OperationDefinition
+### 7.2 OperationDefinition
 
 Each operation in a CRUDE category is an OperationDefinition object:
 
@@ -364,7 +390,7 @@ description: string             # Human-readable description
 params: ParamDefinition{}       # Parameter definitions
 ```
 
-### 6.3 name
+### 7.3 name
 
 **Type:** string
 **Required:** Yes
@@ -380,7 +406,7 @@ name: get_repo
 - MUST match pattern `^[a-z][a-z0-9_]*$`
 - SHOULD use snake_case
 
-### 6.4 maps_to
+### 7.4 maps_to
 
 **Type:** string
 **Required:** Yes
@@ -400,7 +426,7 @@ maps_to: "GET /repos/{owner}/{repo}"
 - MUST correspond to a parameter definition
 - Replaced at runtime with parameter values
 
-### 6.5 description
+### 7.5 description
 
 **Type:** string
 **Required:** No (recommended)
@@ -411,7 +437,7 @@ Human-readable description of what the operation does.
 description: "Get detailed information about a specific repository"
 ```
 
-### 6.6 params
+### 7.6 params
 
 **Type:** object mapping param names to ParamDefinition
 **Required:** No
@@ -436,9 +462,9 @@ params:
 
 ---
 
-## 7. Parameter Types
+## 8. Parameter Types
 
-### 7.1 ParamDefinition
+### 8.1 ParamDefinition
 
 ```yaml
 type: string                    # Data type (required)
@@ -448,7 +474,7 @@ default: any                    # Default value if not provided
 enum: any[]                     # Allowed values
 ```
 
-### 7.2 type Field
+### 8.2 type Field
 
 **Supported types:**
 
@@ -461,7 +487,7 @@ enum: any[]                     # Allowed values
 | `array` | List of values | `[1, 2, 3]` |
 | `object` | Key-value map | `{"key": "value"}` |
 
-### 7.3 required Field
+### 8.3 required Field
 
 **Type:** boolean
 **Default:** false
@@ -472,7 +498,7 @@ When true, the runtime MUST reject requests missing this parameter.
 name: { type: string, required: true }
 ```
 
-### 7.4 description Field
+### 8.4 description Field
 
 **Type:** string
 
@@ -485,7 +511,7 @@ owner:
   description: "The account owner of the repository"
 ```
 
-### 7.5 default Field
+### 8.5 default Field
 
 **Type:** any (matching the param type)
 
@@ -498,7 +524,7 @@ per_page:
   description: "Results per page (max 100)"
 ```
 
-### 7.6 enum Field
+### 8.6 enum Field
 
 **Type:** array
 
@@ -514,11 +540,11 @@ state:
 
 ---
 
-## 8. Example Adapter
+## 9. Example Adapter
 
 See the [GitHub API Adapter](https://github.com/MCPAQL/examples/blob/develop/adapters/github-api-adapter.md) in the examples repository for a complete example.
 
-### 8.1 Minimal Example
+### 9.1 Minimal Example
 
 ```yaml
 ---
@@ -544,32 +570,6 @@ operations:
 
 This adapter demonstrates the minimum required fields.
 ```
-
----
-
-## 9. Canonical Format Rationale
-
-### 9.1 Why Markdown + YAML Front Matter
-
-The Markdown + YAML front matter format is the SHOULD (recommended) interchange format for adapter schemas. This choice is deliberate:
-
-1. **Human-readable for security auditing** - Adapter schemas define what API calls an LLM can make. Plain text makes it straightforward for security reviewers to inspect exactly which endpoints are exposed, what parameters are accepted, and what authentication is used.
-
-2. **LLM-readable for automated review** - Language models can directly read and reason about adapter schemas without specialized parsers, enabling automated security review and schema validation workflows.
-
-3. **Grep-friendly for searching operations** - Teams can use standard text search tools to find operations across adapter collections (e.g., `grep -r "maps_to.*DELETE" adapters/`).
-
-4. **Discourages obfuscation** - A text-based format makes it difficult to hide malicious configurations. Binary or compiled adapter formats would make security review harder.
-
-5. **Version control friendly** - Diffs are meaningful, merge conflicts are resolvable, and change history is transparent.
-
-### 9.2 Alternative Representations
-
-Adapter schemas MAY be stored in alternative representations (JSON, database records, programmatic builders) for implementation convenience. However:
-
-- Alternative representations SHOULD be translatable to the canonical Markdown + YAML format for review purposes
-- Tooling SHOULD support exporting to canonical format
-- The canonical format is the normative reference when discrepancies exist between representations
 
 ---
 
