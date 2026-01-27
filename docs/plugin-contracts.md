@@ -72,6 +72,10 @@ This specification covers the Minimum Viable Product plugins:
 | Auth | `basic`, `oauth`, `mtls`, `aws-sig4` |
 | Pagination | All pagination plugins (see #37) |
 
+### 1.4 Requirement Levels
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
+
 ---
 
 ## 2. Plugin Categories

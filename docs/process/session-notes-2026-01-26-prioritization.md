@@ -739,7 +739,7 @@ Moved from `spec` to `mcpaql-adapter`:
 - `docs/architecture/adapter-runtime.md` → `docs/architecture/runtime.md`
 - `docs/architecture/plugin-interface.md` → `docs/architecture/plugin-system.md` (implementation parts)
 - `docs/architecture/schema-driven-dispatch.md` → `docs/architecture/dispatch.md`
-- `docs/architecture/overview.md` → `docs/architecture/overview.md`
+- `docs/architecture/overview.md` (same path, different repo)
 - `docs/adapter/development-guide.md` → `docs/guides/development.md`
 
 Extracted from `plugin-interface.md` and kept in `spec`:
