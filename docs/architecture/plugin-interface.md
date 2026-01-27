@@ -93,7 +93,7 @@ Plugins are resolved by name at runtime:
 
 1. Check built-in plugins (shipped with runtime)
 2. Return plugin instance
-3. Fail with `PLUGIN_NOT_FOUND` error if unknown
+3. MUST fail with `PLUGIN_NOT_FOUND` error if unknown
 
 ```typescript
 // Pseudocode
@@ -246,8 +246,8 @@ interface TransportResponse {
 
 1. Constructs HTTP request from `TransportRequest`
 2. Sends request using HTTPS (HTTP only for localhost)
-3. Handles connection errors with appropriate error codes
-4. Returns raw response without interpretation
+3. MUST handle connection errors with appropriate error codes
+4. MUST return raw response without interpretation
 
 **Options:**
 
@@ -431,13 +431,13 @@ interface SerializationPlugin extends Plugin {
 **Content-Type:** `application/json`
 
 **Serialize:**
-- Calls `JSON.stringify(data)`
-- Handles circular references with error
+- MUST call `JSON.stringify(data)`
+- MUST handle circular references with error
 
 **Deserialize:**
-- Calls `JSON.parse(raw)`
-- Returns `null` for empty responses
-- Throws on malformed JSON
+- MUST call `JSON.parse(raw)`
+- MUST return `null` for empty responses
+- MUST throw on malformed JSON
 
 **Error Handling:**
 
@@ -800,5 +800,6 @@ Future versions may support:
 
 - [Adapter Element Type Specification](../adapter/element-type.md)
 - [Universal Adapter Runtime](https://github.com/MCPAQL/spec/issues/63) (to be created)
+- [Cursor-based Pagination](https://github.com/MCPAQL/spec/issues/37) (to be created)
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
 - GitHub Issue: [#62](https://github.com/MCPAQL/spec/issues/62)
