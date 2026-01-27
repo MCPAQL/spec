@@ -57,6 +57,22 @@ This specification covers the Minimum Viable Product error codes:
 - Per-adapter error overrides
 - Error code extension mechanism
 
+### 1.4 Error Format
+
+This specification defines the canonical error response format for MCP-AQL:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_MISSING_PARAM",
+    "message": "Missing required parameter 'owner'"
+  }
+}
+```
+
+Implementations MUST use structured error objects with `code` and `message` fields. The optional `details` field MAY provide additional context.
+
 ---
 
 ## 2. Error Response Structure
@@ -117,31 +133,6 @@ interface ErrorDetail {
   }
 }
 ```
-
-### 2.3 Backwards Compatibility
-
-During transition, implementations MAY support both formats:
-
-**String format (legacy):**
-```json
-{
-  "success": false,
-  "error": "Missing required parameter 'owner'"
-}
-```
-
-**Structured format (preferred):**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_MISSING_PARAM",
-    "message": "Missing required parameter 'owner'"
-  }
-}
-```
-
-Implementations SHOULD produce structured errors and MUST accept both formats as valid.
 
 ---
 
@@ -415,6 +406,8 @@ function mapHttpStatusToErrorCode(status: number): string {
   return 'VALIDATION_INVALID_TYPE';
 }
 ```
+
+> **Note:** HTTP status codes alone cannot distinguish between `VALIDATION_MISSING_PARAM` and `VALIDATION_INVALID_TYPE` (both typically return 400 or 422). Adapters SHOULD examine the target API's response body to determine the specific validation error and set the appropriate code. The mapping algorithm above provides a default when response body inspection is not feasible.
 
 ---
 
