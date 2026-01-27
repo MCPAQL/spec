@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Fix script injection vulnerabilities in CI workflows
+  - Pass step outputs and PR number through `env:` blocks instead of direct `${{ }}` interpolation in shell scripts
+  - Remove user-controlled PR title from Claude review prompt to prevent prompt injection
+  - Narrow Claude review bot API access to only PR/issue comment endpoints
+
+### Changed
+
+- Rewrite Claude Code review prompt for substantive peer-quality reviews on every run
+- Broaden lychee link checker exclude to all MCPAQL GitHub repos (private, return 404 from CI)
+
 ### Added
 
 - Adapter Element Type specification (MVP) defining declarative adapter schema format (#61)
