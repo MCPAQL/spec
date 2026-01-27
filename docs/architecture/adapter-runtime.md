@@ -243,24 +243,24 @@ The runtime MUST validate these required fields at load time:
 
 ### 4.2 Operation Validation
 
-For each operation definition:
+The runtime MUST validate each operation definition:
 
 | Field | Validation |
 |-------|------------|
-| `name` | Non-empty string, unique across all endpoints |
-| `maps_to` | Valid `METHOD /path` format |
-| `params.*` | Valid parameter definitions |
+| `name` | MUST be non-empty string, MUST be unique across all endpoints |
+| `maps_to` | MUST be valid `METHOD /path` format |
+| `params.*` | MUST be valid parameter definitions |
 
 ### 4.3 Parameter Validation
 
-For each parameter definition:
+The runtime MUST validate each parameter definition:
 
 | Field | Validation |
 |-------|------------|
-| `type` | One of: `string`, `integer`, `number`, `boolean`, `array`, `object` |
-| `required` | Boolean (default: false) |
-| `default` | Matches declared type (if present) |
-| `enum` | Array of valid values (if present) |
+| `type` | MUST be one of: `string`, `integer`, `number`, `boolean`, `array`, `object` |
+| `required` | MUST be boolean (default: false) |
+| `default` | MUST match declared type (if present) |
+| `enum` | MUST be array of valid values (if present) |
 
 ### 4.4 Validation Errors
 
@@ -462,6 +462,8 @@ interface ErrorResult {
 ```
 
 ### 7.3 Response Parsing
+
+> **Note:** The `TransportResponse` interface is defined in the [Plugin Interface Specification](./plugin-interface.md).
 
 ```typescript
 function parseResponse(httpResponse: TransportResponse): OperationResult {
