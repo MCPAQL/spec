@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Promotion and demotion rules
   - Trust-to-operation permission gating matrix
   - Integration with danger levels for combined security gating
+- Dangerous Operation Classification specification for operation risk management (#49)
+  - Danger level enum: safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4)
+  - Operation danger metadata schema with reasons and confirmation messages
+  - Trust-to-danger gating matrix for combined security decisions
+  - Automatic lockdown behavior with pattern-based classification
+  - Standard dangerous/forbidden operation patterns
+  - Confirmation flow with token-based acknowledgment
 
 ## [1.0.0-alpha.1] - 2026-01-28
 
