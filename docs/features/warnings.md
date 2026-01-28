@@ -42,7 +42,7 @@ Without warnings, these conditions would either:
 1. **Non-blocking** - Warnings never prevent successful operation completion
 2. **Structured** - Same format as error objects for consistency
 3. **Actionable** - Each warning suggests or enables a response
-4. **Aggregatable** - Multiple warnings can be returned in a single response
+4. **Combinable** - Multiple warnings can be returned in a single response
 5. **Optional** - Clients MAY ignore warnings without breaking functionality
 
 ### 1.3 Relationship to Errors
@@ -205,9 +205,8 @@ CATEGORY_SPECIFIC_WARNING
 |----------|-------------|---------|
 | `RATE_LIMIT_` | Approaching rate/quota limits | `RATE_LIMIT_QUOTA_WARNING` |
 | `DEPRECATION_` | Deprecated feature usage | `DEPRECATION_WARNING` |
-| `VALIDATION_` | Data quality issues | `VALIDATION_TRUNCATED` |
-| `PERFORMANCE_` | Performance concerns | `PERFORMANCE_SLOW_QUERY` |
-| `SECURITY_` | Security recommendations | `SECURITY_WEAK_TOKEN` |
+| `VALIDATION_` | Data quality issues | `VALIDATION_TRUNCATED_WARNING_WARNING` |
+| `PERFORMANCE_` | Performance concerns | `PERFORMANCE_SLOW_QUERY_WARNING_WARNING` |
 
 ---
 
@@ -292,7 +291,7 @@ CATEGORY_SPECIFIC_WARNING
 
 ### 4.3 Validation Warnings
 
-#### VALIDATION_TRUNCATED
+#### VALIDATION_TRUNCATED_WARNING
 
 **When used:** Response data was truncated due to size limits.
 
@@ -315,7 +314,7 @@ CATEGORY_SPECIFIC_WARNING
 **Example:**
 ```json
 {
-  "code": "VALIDATION_TRUNCATED",
+  "code": "VALIDATION_TRUNCATED_WARNING",
   "message": "Response truncated to 100 items",
   "details": {
     "field": "results",
@@ -328,7 +327,7 @@ CATEGORY_SPECIFIC_WARNING
 
 ### 4.4 Performance Warnings
 
-#### PERFORMANCE_SLOW_QUERY
+#### PERFORMANCE_SLOW_QUERY_WARNING
 
 **When used:** An operation took longer than expected to complete.
 
@@ -351,7 +350,7 @@ CATEGORY_SPECIFIC_WARNING
 **Example:**
 ```json
 {
-  "code": "PERFORMANCE_SLOW_QUERY",
+  "code": "PERFORMANCE_SLOW_QUERY_WARNING",
   "message": "Operation took 5230ms (threshold: 1000ms)",
   "details": {
     "operation": "search_all",

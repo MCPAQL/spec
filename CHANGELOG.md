@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Warnings Array specification for non-fatal conditions in successful responses (#80)
+  - Optional `warnings` array extension to discriminated response format
+  - Warning object schema matching error object structure
+  - Standard warning codes: RATE_LIMIT_QUOTA_WARNING, DEPRECATION_WARNING, VALIDATION_TRUNCATED_WARNING, PERFORMANCE_SLOW_QUERY_WARNING
+  - Client processing requirements and display guidelines
+  - ADR-006 updated to include warnings in success response schema
 - Confirmation Token specification for gating dangerous operations and quota continuations (#79)
   - Token format with `conf_` and `quota_continue_` prefixes
   - Cryptographic generation requirements (128+ bit entropy from secure random source)
