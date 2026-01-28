@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Claude auto-review workflow not triggering on pull_request events (#95)
+
 ### Changed
 
 - Added bidirectional navigation links between spec documents for improved discoverability (#69)
