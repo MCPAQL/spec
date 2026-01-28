@@ -406,7 +406,7 @@ When API rate limit is reached:
 
 ### 4.4 Continuing After Pause
 
-To continue after pause threshold:
+To continue after pause threshold, include the confirmation token from the `RATE_LIMIT_QUOTA_PAUSE` response. See [Confirmation Token Specification](../security/confirmation-tokens.md) for token validation and lifecycle details.
 
 ```javascript
 {
@@ -650,6 +650,7 @@ rate_limits:
 
 - [Adapter Element Type Specification](./element-type.md)
 - [Dangerous Operation Classification](./danger-levels.md)
+- [Confirmation Token Specification](../security/confirmation-tokens.md)
 - [Error Codes Specification](../error-codes.md)
 - [Trust Levels Specification](./trust-levels.md)
 - GitHub Issue: [#60](https://github.com/MCPAQL/spec/issues/60)

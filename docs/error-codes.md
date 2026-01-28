@@ -168,6 +168,7 @@ CATEGORY_SPECIFIC_CONDITION
 | `PERMISSION_` | Authentication/authorization | 401, 403 |
 | `CONFLICT_` | Resource conflicts | 409 |
 | `RATE_LIMIT_` | Rate limiting | 429 |
+| `TOKEN_` | Confirmation token errors | 400, 403 |
 | `INTERNAL_` | Server errors | 500+ |
 
 ---
@@ -398,7 +399,7 @@ All error codes define a **message format** template that implementations SHOULD
 
 ## 5. Phase 1: Robustness Error Codes
 
-Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous operation classification, and rate limiting. These features introduce 7 additional error codes.
+Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous operation classification, rate limiting, and confirmation tokens. These features introduce 11 additional error codes.
 
 ### 5.1 Phase 1 Error Code Registry
 
@@ -411,6 +412,10 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 | `RATE_LIMIT_QUOTA_PAUSE` | Rate Limit | User quota pause threshold reached |
 | `RATE_LIMIT_QUOTA_EXHAUSTED` | Rate Limit | User quota hard stop reached |
 | `RATE_LIMIT_QUOTA_WARNING` | Rate Limit | Approaching quota limit (warning) |
+| `TOKEN_INVALID` | Token | Confirmation token not found or malformed |
+| `TOKEN_EXPIRED` | Token | Confirmation token has expired |
+| `TOKEN_ALREADY_USED` | Token | Confirmation token has already been redeemed |
+| `TOKEN_SCOPE_MISMATCH` | Token | Token issued for different operation or parameters |
 
 ### 5.2 PERMISSION_TRUST_LEVEL_INSUFFICIENT
 
@@ -713,6 +718,141 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 ```
 
 **Reference:** [Rate Limiting Specification](./adapter/rate-limiting.md)
+
+### 5.9 TOKEN_INVALID
+
+**When used:** A confirmation token was provided but could not be found in the token store or is malformed.
+
+**Message format:** `Invalid confirmation token`
+
+**Details:**
+```typescript
+{
+  /** The token that was provided */
+  token: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TOKEN_INVALID",
+    "message": "Invalid confirmation token",
+    "details": {
+      "token": "conf_nonexistent123"
+    }
+  }
+}
+```
+
+**Reference:** [Confirmation Token Specification](./security/confirmation-tokens.md)
+
+### 5.10 TOKEN_EXPIRED
+
+**When used:** A confirmation token was provided but has passed its expiration time.
+
+**Message format:** `Confirmation token has expired`
+
+**Details:**
+```typescript
+{
+  /** The token that expired */
+  token: string;
+  /** When the token expired */
+  expired_at: string;
+  /** Current server time */
+  current_time: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TOKEN_EXPIRED",
+    "message": "Confirmation token has expired",
+    "details": {
+      "token": "conf_abc123xyz",
+      "expired_at": "2026-01-28T12:05:00Z",
+      "current_time": "2026-01-28T12:07:30Z"
+    }
+  }
+}
+```
+
+**Reference:** [Confirmation Token Specification](./security/confirmation-tokens.md)
+
+### 5.11 TOKEN_ALREADY_USED
+
+**When used:** A confirmation token was provided but has already been redeemed for a previous operation.
+
+**Message format:** `Confirmation token has already been used`
+
+**Details:**
+```typescript
+{
+  /** The token that was already used */
+  token: string;
+  /** When the token was consumed */
+  consumed_at?: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TOKEN_ALREADY_USED",
+    "message": "Confirmation token has already been used",
+    "details": {
+      "token": "conf_abc123xyz",
+      "consumed_at": "2026-01-28T12:04:15Z"
+    }
+  }
+}
+```
+
+**Reference:** [Confirmation Token Specification](./security/confirmation-tokens.md)
+
+### 5.12 TOKEN_SCOPE_MISMATCH
+
+**When used:** A confirmation token was provided but was issued for a different operation or with different parameters.
+
+**Message format:** `Confirmation token scope mismatch`
+
+**Details:**
+```typescript
+{
+  /** The token that was provided */
+  token: string;
+  /** Operation the token was issued for */
+  token_operation: string;
+  /** Operation the client is attempting */
+  requested_operation: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "TOKEN_SCOPE_MISMATCH",
+    "message": "Confirmation token scope mismatch",
+    "details": {
+      "token": "conf_abc123xyz",
+      "token_operation": "delete_repo",
+      "requested_operation": "force_push"
+    }
+  }
+}
+```
+
+**Reference:** [Confirmation Token Specification](./security/confirmation-tokens.md)
 
 ---
 
