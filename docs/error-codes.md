@@ -885,6 +885,9 @@ For batch operations, errors may be aggregated:
 ## References
 
 - [MCP-AQL Specification](./versions/v1.0.0-draft.md)
+- [Dangerous Operation Classification](./adapter/danger-levels.md)
+- [Trust Levels Specification](./adapter/trust-levels.md)
+- [Rate Limiting Specification](./adapter/rate-limiting.md)
 - [Universal Adapter Runtime](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/architecture/runtime.md) (in mcpaql-adapter repo)
 - [DollhouseMCP Implementation](https://github.com/DollhouseMCP/mcp-server-v2-refactor/issues/298)
 - GitHub Issue: [#35](https://github.com/MCPAQL/spec/issues/35)

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added bidirectional navigation links between spec documents for improved discoverability (#69)
+  - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
 - Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
 - Deduplicated trust-to-danger gating matrix (#81)
   - danger-levels.md is now the canonical source for the gating matrix

@@ -636,6 +636,9 @@ operations:
 
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
 - [Plugin Interface Contracts](../plugin-contracts.md)
+- [Trust Levels Specification](./trust-levels.md)
+- [Dangerous Operation Classification](./danger-levels.md)
+- [Rate Limiting Specification](./rate-limiting.md)
 - [Adapter Development Guide](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/guides/development.md) (in mcpaql-adapter repo)
 - [Universal Adapter Runtime](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/architecture/runtime.md) (in mcpaql-adapter repo)
 - GitHub Issue: [#61](https://github.com/MCPAQL/spec/issues/61)

@@ -588,9 +588,10 @@ danger:
 
 ## References
 
+- [Adapter Element Type Specification](./element-type.md)
 - [Trust Levels Specification](./trust-levels.md)
+- [Rate Limiting Specification](./rate-limiting.md)
 - [Security Model: Gatekeeper](../security/gatekeeper.md)
 - [Error Codes Specification](../error-codes.md)
-- [Adapter Element Type Specification](./element-type.md)
 - Claude Code dangerous git operation handling
 - GitHub Issue: [#49](https://github.com/MCPAQL/spec/issues/49)

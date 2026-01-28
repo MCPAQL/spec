@@ -555,6 +555,7 @@ A future specification may define a protocol for trust attestation exchange betw
 
 - [Adapter Element Type Specification](./element-type.md)
 - [Dangerous Operation Classification](./danger-levels.md)
+- [Rate Limiting Specification](./rate-limiting.md)
 - [Security Model: Gatekeeper](../security/gatekeeper.md)
 - [Error Codes Specification](../error-codes.md)
 - GitHub Issue: [#59](https://github.com/MCPAQL/spec/issues/59)
