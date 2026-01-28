@@ -649,6 +649,7 @@ rate_limits:
 ## References
 
 - [Adapter Element Type Specification](./element-type.md)
+- [Dangerous Operation Classification](./danger-levels.md)
 - [Error Codes Specification](../error-codes.md)
 - [Trust Levels Specification](./trust-levels.md)
 - GitHub Issue: [#60](https://github.com/MCPAQL/spec/issues/60)

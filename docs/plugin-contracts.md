@@ -443,6 +443,7 @@ interface PluginError extends Error {
 ## References
 
 - [Adapter Element Type Specification](adapter/element-type.md)
+- [Error Codes Specification](error-codes.md)
 - [MCP-AQL Specification](versions/v1.0.0-draft.md)
 - [Plugin System Implementation](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/architecture/plugin-system.md) (implementation details)
 - GitHub Issue: [#62](https://github.com/MCPAQL/spec/issues/62)
