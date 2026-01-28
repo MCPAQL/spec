@@ -170,9 +170,9 @@ api_limits:
   - scope: global
     limit: 90000
     window: minute
-    metric: tokens
+    metric: tokens_per_minute
 
-# Stripe pattern (different limits by endpoint type)
+# Stripe pattern (different limits by CRUDE category)
 api_limits:
   - scope: category
     category: read
@@ -333,7 +333,7 @@ When API rate limit is reached:
 {
   "success": false,
   "error": {
-    "code": "RATE_LIMIT_API_EXCEEDED",
+    "code": "RATE_LIMIT_EXCEEDED",
     "message": "API rate limit would be exceeded",
     "details": {
       "limit": 5000,
@@ -426,7 +426,7 @@ To continue after pause threshold:
 
 | Code | Description | Recovery |
 |------|-------------|----------|
-| `RATE_LIMIT_API_EXCEEDED` | Target API rate limit reached | Wait for reset |
+| `RATE_LIMIT_EXCEEDED` | Target API rate limit reached | Wait for reset |
 | `RATE_LIMIT_QUOTA_PAUSE` | User quota pause threshold | Confirm to continue |
 | `RATE_LIMIT_QUOTA_EXHAUSTED` | User quota hard stop | Wait for reset |
 | `RATE_LIMIT_QUOTA_WARNING` | Approaching limit (in warnings) | Consider slowing |
