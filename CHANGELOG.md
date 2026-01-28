@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Trust Levels specification for adapter verification and validation status (#59)
+  - Trust level enum: untested, generated, validated, community_reviewed, certified
+  - Trust metadata schema with promotion history
+  - Promotion and demotion rules
+  - Trust-to-operation permission gating matrix
+  - Integration with danger levels for combined security gating
+
 ## [1.0.0-alpha.1] - 2026-01-28
 
 ### Security
