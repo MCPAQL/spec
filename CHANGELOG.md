@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Confirmation Token specification for gating dangerous operations and quota continuations (#79)
   - Token format with `conf_` and `quota_continue_` prefixes
-  - Cryptographic generation requirements (128+ bit entropy from CSPRNG)
+  - Cryptographic generation requirements (128+ bit entropy from secure random source)
   - Scope binding with SHA-256 parameter hashing
   - Validation checks (existence, expiry, single-use, scope matching)
   - Token lifecycle (expiration, single-use, revocation, session-scoped)
