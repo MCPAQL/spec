@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enforcement behavior with progressive response
   - Rate limit error codes: RATE_LIMIT_EXCEEDED, RATE_LIMIT_QUOTA_PAUSE, RATE_LIMIT_QUOTA_EXHAUSTED
   - Introspection of quota status
+- Cursor-based Pagination specification for collection operations (#37)
+  - Pagination parameters: first, after, last, before
+  - PageInfo response structure with hasNextPage, hasPreviousPage, cursors
+  - Connection-style response format with items or edges (mutually exclusive)
+  - Uses existing VALIDATION_INVALID_TYPE for pagination errors
+  - Introspection of pagination support
 
 ## [1.0.0-alpha.1] - 2026-01-28
 
