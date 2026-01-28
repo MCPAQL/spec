@@ -205,8 +205,8 @@ CATEGORY_SPECIFIC_WARNING
 |----------|-------------|---------|
 | `RATE_LIMIT_` | Approaching rate/quota limits | `RATE_LIMIT_QUOTA_WARNING` |
 | `DEPRECATION_` | Deprecated feature usage | `DEPRECATION_WARNING` |
-| `VALIDATION_` | Data quality issues | `VALIDATION_TRUNCATED_WARNING_WARNING` |
-| `PERFORMANCE_` | Performance concerns | `PERFORMANCE_SLOW_QUERY_WARNING_WARNING` |
+| `VALIDATION_` | Data quality issues | `VALIDATION_TRUNCATED_WARNING` |
+| `PERFORMANCE_` | Performance concerns | `PERFORMANCE_SLOW_QUERY_WARNING` |
 
 ---
 
