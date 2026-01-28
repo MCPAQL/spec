@@ -116,15 +116,20 @@ The following combinations MUST return a validation error:
 {
   "success": false,
   "error": {
-    "code": "VALIDATION_INVALID_PAGINATION",
+    "code": "VALIDATION_INVALID_TYPE",
     "message": "Cannot use 'first' and 'last' together",
     "details": {
+      "param_name": "pagination",
+      "expected_type": "valid pagination combination",
+      "actual_type": "conflicting parameters",
       "provided": ["first", "last"],
       "hint": "Use 'first' for forward pagination or 'last' for backward pagination"
     }
   }
 }
 ```
+
+> **Note:** This uses the existing `VALIDATION_INVALID_TYPE` error code with pagination-specific context in the `details` object, following the error-codes.md specification pattern.
 
 ### 2.4 Example Requests
 
@@ -211,8 +216,8 @@ interface PageInfo {
 |-------|----------|-------|
 | `hasNextPage` | Yes | Always include, even if false |
 | `hasPreviousPage` | Yes | Always include, even if false |
-| `startCursor` | Conditional | Required when `items.length > 0` |
-| `endCursor` | Conditional | Required when `items.length > 0` |
+| `startCursor` | Conditional | Required when results are returned (`items.length > 0` or `edges.length > 0`) |
+| `endCursor` | Conditional | Required when results are returned (`items.length > 0` or `edges.length > 0`) |
 | `totalCount` | No | Include when available without performance impact |
 
 ### 3.3 Example PageInfo
@@ -264,9 +269,9 @@ Paginated operations SHOULD return a connection-style response:
 ```typescript
 interface Connection<T> {
   /**
-   * The items in this page
+   * The items in this page (mutually exclusive with edges)
    */
-  items: T[];
+  items?: T[];
 
   /**
    * Pagination metadata
@@ -274,7 +279,8 @@ interface Connection<T> {
   pageInfo: PageInfo;
 
   /**
-   * Optional edges with per-item cursors
+   * Edges with per-item cursors (mutually exclusive with items)
+   * When present, items should be omitted
    */
   edges?: Edge<T>[];
 }
