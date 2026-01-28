@@ -348,6 +348,8 @@ When API rate limit is reached:
 
 ### 4.3 Quota Enforcement
 
+Warnings are included in successful responses via the `warnings` array. See [Warnings Specification](../features/warnings.md) for the complete schema and client handling requirements.
+
 **Warning (warn threshold):**
 ```json
 {
@@ -653,4 +655,5 @@ rate_limits:
 - [Confirmation Token Specification](../security/confirmation-tokens.md)
 - [Error Codes Specification](../error-codes.md)
 - [Trust Levels Specification](./trust-levels.md)
+- [Warnings Specification](../features/warnings.md)
 - GitHub Issue: [#60](https://github.com/MCPAQL/spec/issues/60)
