@@ -123,7 +123,7 @@ The adapter has been validated and reviewed by the community.
 **Validation requirements:**
 - All `validated` requirements PLUS:
 - Submitted to community collection
-- Reviewed by at least N community members (configurable)
+- Reviewed by at least N community members (configurable, recommended default: 2)
 - No security concerns raised
 - Documentation quality verified
 
@@ -447,6 +447,8 @@ When an operation is denied due to insufficient trust:
   }
 }
 ```
+
+> **Note:** The `PERMISSION_TRUST_LEVEL_INSUFFICIENT` error code is introduced by this specification and should be added to the [Error Codes Specification](../error-codes.md) as a future extension under the `PERMISSION_` category.
 
 ---
 
