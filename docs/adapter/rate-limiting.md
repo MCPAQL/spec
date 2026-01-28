@@ -355,7 +355,7 @@ When API rate limit is reached:
   "data": { ... },
   "warnings": [
     {
-      "code": "QUOTA_WARNING",
+      "code": "RATE_LIMIT_QUOTA_WARNING",
       "message": "Approaching quota limit",
       "details": {
         "metric": "requests_per_hour",
