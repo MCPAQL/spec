@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft (MVP)
-**Last Updated:** 2026-01-26
+**Last Updated:** 2026-01-28
 
 ## Abstract
 
@@ -16,9 +16,10 @@ This document defines the structured error code system for MCP-AQL protocol resp
 2. [Error Response Structure](#2-error-response-structure)
 3. [Error Code Format](#3-error-code-format)
 4. [MVP Error Codes](#4-mvp-error-codes)
-5. [HTTP Status Mapping](#5-http-status-mapping)
-6. [Implementation Requirements](#6-implementation-requirements)
-7. [Future Extensions](#7-future-extensions)
+5. [Phase 1: Robustness Error Codes](#5-phase-1-robustness-error-codes)
+6. [HTTP Status Mapping](#6-http-status-mapping)
+7. [Implementation Requirements](#7-implementation-requirements)
+8. [Future Extensions](#8-future-extensions)
 
 ---
 
@@ -45,13 +46,13 @@ Structured error codes address several challenges with string-based error messag
 This specification covers the Minimum Viable Product error codes:
 
 **Included:**
-- 6 essential error codes
+- 6 essential error codes (MVP)
+- 7 Phase 1 robustness error codes
 - Basic error response structure
 - HTTP status code mapping
 
 **Deferred to future specifications:**
 - Full error code taxonomy
-- Rate limit error codes (#60)
 - Conflict error codes
 - Detailed error context schemas
 - Per-adapter error overrides
@@ -395,9 +396,329 @@ All error codes define a **message format** template that implementations SHOULD
 
 ---
 
-## 5. HTTP Status Mapping
+## 5. Phase 1: Robustness Error Codes
 
-### 5.1 Default Mapping
+Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous operation classification, and rate limiting. These features introduce 7 additional error codes.
+
+### 5.1 Phase 1 Error Code Registry
+
+| Code | Category | Description |
+|------|----------|-------------|
+| `PERMISSION_TRUST_LEVEL_INSUFFICIENT` | Permission | Adapter trust level too low for operation |
+| `PERMISSION_DANGER_LEVEL_DENIED` | Permission | Operation danger level exceeds trust allowance |
+| `CONFIRMATION_REQUIRED` | Permission | Dangerous operation requires user confirmation |
+| `RATE_LIMIT_EXCEEDED` | Rate Limit | Target API rate limit reached |
+| `RATE_LIMIT_QUOTA_PAUSE` | Rate Limit | User quota pause threshold reached |
+| `RATE_LIMIT_QUOTA_EXHAUSTED` | Rate Limit | User quota hard stop reached |
+| `RATE_LIMIT_QUOTA_WARNING` | Rate Limit | Approaching quota limit (warning) |
+
+### 5.2 PERMISSION_TRUST_LEVEL_INSUFFICIENT
+
+**When used:** An operation is denied because the adapter's trust level is below the minimum required for the operation's danger level.
+
+**Message format:** `Operation '{operation}' requires trust level '{required_trust}', adapter has '{actual_trust}'`
+
+**Details:**
+```typescript
+{
+  /** The operation that was attempted */
+  operation: string;
+  /** Trust level required for this operation */
+  required_trust: 'untested' | 'generated' | 'validated' | 'community_reviewed' | 'certified';
+  /** Adapter's current trust level */
+  actual_trust: string;
+  /** The danger level of the operation */
+  danger_level?: number;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "PERMISSION_TRUST_LEVEL_INSUFFICIENT",
+    "message": "Operation 'delete_user' requires trust level 'community_reviewed', adapter has 'validated'",
+    "details": {
+      "operation": "delete_user",
+      "required_trust": "community_reviewed",
+      "actual_trust": "validated",
+      "danger_level": 2
+    }
+  }
+}
+```
+
+**Reference:** [Trust Levels Specification](./adapter/trust-levels.md)
+
+### 5.3 PERMISSION_DANGER_LEVEL_DENIED
+
+**When used:** An operation is denied because its danger level is too high for the adapter's trust level.
+
+**Message format:** `Operation '{operation}' (danger: {danger_level}) denied for adapter trust level '{adapter_trust}'`
+
+**Details:**
+```typescript
+{
+  /** The operation that was attempted */
+  operation: string;
+  /** The danger level of the operation */
+  danger_level: 'safe' | 'moderate' | 'destructive' | 'dangerous' | 'forbidden';
+  /** Adapter's current trust level */
+  adapter_trust: string;
+  /** Minimum trust level required */
+  minimum_trust_required: string;
+  /** Reasons why this operation is dangerous */
+  reasons?: string[];
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "PERMISSION_DANGER_LEVEL_DENIED",
+    "message": "Operation 'bulk_delete' (danger: dangerous) denied for adapter trust level 'validated'",
+    "details": {
+      "operation": "bulk_delete",
+      "danger_level": "dangerous",
+      "adapter_trust": "validated",
+      "minimum_trust_required": "community_reviewed",
+      "reasons": [
+        "Affects multiple resources",
+        "Cannot be undone"
+      ]
+    }
+  }
+}
+```
+
+**Reference:** [Dangerous Operation Classification](./adapter/danger-levels.md)
+
+### 5.4 CONFIRMATION_REQUIRED
+
+**When used:** A dangerous operation requires explicit user confirmation before execution.
+
+**Message format:** `This operation requires confirmation`
+
+**Details:**
+```typescript
+{
+  /** The operation that requires confirmation */
+  operation: string;
+  /** The danger level of the operation */
+  danger_level: string;
+  /** Human-readable reasons for the confirmation requirement */
+  reasons?: string[];
+  /** Custom confirmation message to display */
+  confirmation_message?: string;
+  /** Token to include in retry request */
+  confirmation_token: string;
+  /** When the confirmation token expires */
+  expires_at: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "CONFIRMATION_REQUIRED",
+    "message": "This operation requires confirmation",
+    "details": {
+      "operation": "delete_repo",
+      "danger_level": "destructive",
+      "reasons": [
+        "Permanently removes repository and all contents",
+        "Cannot be recovered after grace period"
+      ],
+      "confirmation_message": "Delete repository 'acme/widgets'? This cannot be undone.",
+      "confirmation_token": "conf_abc123xyz",
+      "expires_at": "2026-01-28T12:05:00Z"
+    }
+  }
+}
+```
+
+**Reference:** [Dangerous Operation Classification](./adapter/danger-levels.md)
+
+### 5.5 RATE_LIMIT_EXCEEDED
+
+**When used:** The target API rate limit has been reached and requests are blocked until reset.
+
+**Message format:** `API rate limit exceeded`
+
+**Details:**
+```typescript
+{
+  /** The rate limit that was exceeded */
+  limit: number;
+  /** Remaining requests (usually 0) */
+  remaining: number;
+  /** Time window of the limit */
+  window: 'second' | 'minute' | 'hour' | 'day';
+  /** When the rate limit resets */
+  resets_at: string;
+  /** Seconds until retry is allowed */
+  retry_after_seconds: number;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "API rate limit exceeded",
+    "details": {
+      "limit": 5000,
+      "remaining": 0,
+      "window": "hour",
+      "resets_at": "2026-01-28T13:00:00Z",
+      "retry_after_seconds": 1847
+    }
+  }
+}
+```
+
+**Reference:** [Rate Limiting Specification](./adapter/rate-limiting.md)
+
+### 5.6 RATE_LIMIT_QUOTA_PAUSE
+
+**When used:** A user-configured quota pause threshold has been reached. The user can confirm to continue.
+
+**Message format:** `Quota pause threshold reached`
+
+**Details:**
+```typescript
+{
+  /** The metric that triggered the pause */
+  metric: string;
+  /** Current usage */
+  current: number;
+  /** The pause threshold */
+  pause_threshold: number;
+  /** The hard stop threshold (if configured) */
+  hard_stop_threshold?: number;
+  /** Token to continue past the pause */
+  confirmation_token: string;
+  /** When the confirmation token expires */
+  expires_at: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_QUOTA_PAUSE",
+    "message": "Quota pause threshold reached",
+    "details": {
+      "metric": "requests_per_hour",
+      "current": 4850,
+      "pause_threshold": 4800,
+      "hard_stop_threshold": 5000,
+      "confirmation_token": "quota_continue_abc123",
+      "expires_at": "2026-01-28T12:05:00Z"
+    }
+  }
+}
+```
+
+**Reference:** [Rate Limiting Specification](./adapter/rate-limiting.md)
+
+### 5.7 RATE_LIMIT_QUOTA_EXHAUSTED
+
+**When used:** A user-configured quota hard stop threshold has been reached. All requests are blocked until reset.
+
+**Message format:** `Quota exhausted`
+
+**Details:**
+```typescript
+{
+  /** The metric that triggered the hard stop */
+  metric: string;
+  /** Current usage */
+  current: number;
+  /** The hard stop threshold */
+  hard_stop_threshold: number;
+  /** When the quota resets */
+  resets_at: string;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_QUOTA_EXHAUSTED",
+    "message": "Quota exhausted",
+    "details": {
+      "metric": "requests_per_hour",
+      "current": 5000,
+      "hard_stop_threshold": 5000,
+      "resets_at": "2026-01-28T13:00:00Z"
+    }
+  }
+}
+```
+
+**Reference:** [Rate Limiting Specification](./adapter/rate-limiting.md)
+
+### 5.8 RATE_LIMIT_QUOTA_WARNING
+
+**When used:** Included in the `warnings` array of successful responses when approaching a quota limit.
+
+> **Note:** This is a warning code, not an error code. It appears in the `warnings` array of successful responses, not in the `error` object.
+
+**Message format:** `Approaching quota limit`
+
+**Details:**
+```typescript
+{
+  /** The metric approaching the limit */
+  metric: string;
+  /** Current usage */
+  current: number;
+  /** The warning threshold */
+  warn_threshold: number;
+  /** The pause threshold (next level) */
+  pause_threshold?: number;
+}
+```
+
+**Example (in successful response):**
+```json
+{
+  "success": true,
+  "data": { "...": "..." },
+  "warnings": [
+    {
+      "code": "RATE_LIMIT_QUOTA_WARNING",
+      "message": "Approaching quota limit",
+      "details": {
+        "metric": "requests_per_hour",
+        "current": 4100,
+        "warn_threshold": 4000,
+        "pause_threshold": 4800
+      }
+    }
+  ]
+}
+```
+
+**Reference:** [Rate Limiting Specification](./adapter/rate-limiting.md)
+
+---
+
+## 6. HTTP Status Mapping
+
+### 6.1 Default Mapping
 
 The runtime maps HTTP status codes to MCP-AQL error codes:
 
@@ -413,7 +734,7 @@ The runtime maps HTTP status codes to MCP-AQL error codes:
 | 503 | `INTERNAL_ERROR` | Service unavailable |
 | 504 | `INTERNAL_ERROR` | Gateway timeout |
 
-### 5.2 Mapping Algorithm
+### 6.2 Mapping Algorithm
 
 ```typescript
 function mapHttpStatusToErrorCode(status: number): string {
@@ -438,9 +759,9 @@ function mapHttpStatusToErrorCode(status: number): string {
 
 ---
 
-## 6. Implementation Requirements
+## 7. Implementation Requirements
 
-### 6.1 Error Generation
+### 7.1 Error Generation
 
 Implementations MUST:
 
@@ -455,7 +776,7 @@ Implementations SHOULD:
 2. Preserve upstream error messages
 3. Log full error context for debugging
 
-### 6.2 Error Handling
+### 7.2 Error Handling
 
 Client implementations SHOULD:
 
@@ -464,7 +785,7 @@ Client implementations SHOULD:
 3. Use `code` field for programmatic error handling and recovery decisions
 4. Display `message` field to users
 
-### 6.3 Message Localization
+### 7.3 Message Localization
 
 The `code` field enables localization:
 
@@ -491,15 +812,11 @@ function localizeError(error: ErrorDetail, locale: string): string {
 
 ---
 
-## 7. Future Extensions
+## 8. Future Extensions
 
-### 7.1 Additional Error Codes
+### 8.1 Additional Error Codes
 
-Future specifications will add:
-
-**Rate Limiting (#60):**
-- `RATE_LIMIT_EXCEEDED` - API rate limit reached
-- `RATE_LIMIT_QUOTA_EXHAUSTED` - Quota exhausted
+Future specifications may add:
 
 **Conflict Handling:**
 - `CONFLICT_ALREADY_EXISTS` - Resource already exists
@@ -510,10 +827,7 @@ Future specifications will add:
 - `VALIDATION_OUT_OF_RANGE` - Value outside allowed range
 - `VALIDATION_PATTERN_MISMATCH` - String doesn't match pattern
 
-**Trust Levels (#59):**
-- `PERMISSION_TRUST_LEVEL_INSUFFICIENT` - Operation requires higher trust
-
-### 7.2 Error Code Extension Mechanism
+### 8.2 Error Code Extension Mechanism
 
 Future versions will define how adapters can register custom error codes:
 
@@ -527,7 +841,7 @@ error_codes:
     condition: "response.body.message contains 'abuse'"
 ```
 
-### 7.3 Per-Adapter Error Overrides
+### 8.3 Per-Adapter Error Overrides
 
 Future versions will allow adapters to customize HTTP error mapping:
 
@@ -542,7 +856,7 @@ error_mapping:
     code: RATE_LIMIT_EXCEEDED
 ```
 
-### 7.4 Error Aggregation
+### 8.4 Error Aggregation
 
 For batch operations, errors may be aggregated:
 

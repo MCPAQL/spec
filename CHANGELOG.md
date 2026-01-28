@@ -35,6 +35,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Connection-style response format with items or edges (mutually exclusive)
   - Uses existing VALIDATION_INVALID_TYPE for pagination errors
   - Introspection of pagination support
+- Phase 1 error codes formally added to error-codes.md (#77)
+  - PERMISSION_TRUST_LEVEL_INSUFFICIENT - adapter trust level too low
+  - PERMISSION_DANGER_LEVEL_DENIED - operation danger level exceeds trust
+  - CONFIRMATION_REQUIRED - dangerous operation requires confirmation
+  - RATE_LIMIT_EXCEEDED - API rate limit reached
+  - RATE_LIMIT_QUOTA_PAUSE - user quota pause threshold
+  - RATE_LIMIT_QUOTA_EXHAUSTED - user quota hard stop
+  - RATE_LIMIT_QUOTA_WARNING - approaching quota limit (warning)
 
 ## [1.0.0-alpha.1] - 2026-01-28
 
