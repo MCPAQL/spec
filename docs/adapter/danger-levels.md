@@ -277,7 +277,7 @@ The combination of adapter trust level and operation danger level determines beh
 
 | Danger Level | untested | generated | validated | community_reviewed | certified |
 |--------------|----------|-----------|-----------|-------------------|-----------|
-| safe (0) | introspect | allow | allow | allow | allow |
+| safe (0) | introspect_only | allow | allow | allow | allow |
 | moderate (1) | deny | deny | allow | allow | allow |
 | destructive (2) | deny | deny | confirm | allow | allow |
 | dangerous (3) | deny | deny | deny | confirm | allow |
@@ -290,7 +290,7 @@ The combination of adapter trust level and operation danger level determines beh
 | `allow` | Operation executes without additional gates |
 | `confirm` | Operation requires explicit user confirmation |
 | `deny` | Operation blocked with error response |
-| `introspect` | Only introspection operations permitted |
+| `introspect_only` | Only introspection operations permitted; all other operations (including safe ones) are blocked |
 
 ### 4.3 Confirmation Flow
 
@@ -362,6 +362,8 @@ When an operation is denied due to trust/danger mismatch:
 }
 ```
 
+> **Note:** The `PERMISSION_DANGER_LEVEL_DENIED` error code is introduced by this specification and should be added to the [Error Codes Specification](../error-codes.md) as a future extension under the `PERMISSION_` category.
+
 ---
 
 ## 5. Automatic Lockdown
@@ -387,6 +389,8 @@ danger_patterns:
     - "reset_*"           # Reset to factory
     - "destroy_*"         # Destroy operations
 ```
+
+**Pattern precedence:** When an operation matches multiple patterns at different danger levels, the **highest** danger level applies. For example, `force_delete_all` matches both `force_*` (dangerous, level 3) and `delete_all*` (forbidden, level 4), so it defaults to `forbidden`.
 
 ### 5.2 Lockdown Behavior
 
@@ -498,6 +502,7 @@ All operations at danger level 2 (destructive) or higher MUST be logged:
 ```typescript
 interface DangerAuditEntry {
   timestamp: string;
+  adapter_name: string;
   operation: string;
   danger_level: number;
   adapter_trust: string;
