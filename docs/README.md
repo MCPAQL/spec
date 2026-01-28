@@ -1,6 +1,8 @@
 # MCP-AQL Specification Documentation
 
-This directory contains the complete specification and implementation guidance for MCP-AQL (Model Context Protocol - Advanced Agent API Adapter Query Language).
+This directory contains the **normative protocol specification** for MCP-AQL (Model Context Protocol - Advanced Agent API Adapter Query Language).
+
+Implementation architecture documentation is maintained in the [mcpaql-adapter](https://github.com/MCPAQL/mcpaql-adapter) repository. Example adapters are in the [examples](https://github.com/MCPAQL/examples) repository.
 
 ## Document Organization
 
@@ -13,13 +15,14 @@ This directory contains the complete specification and implementation guidance f
 | [Endpoint Modes](endpoint-modes.md) | CRUDE vs Single mode configuration | Draft |
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
+| [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
 
-### Architecture
+### Plugin & Adapter Contracts
 
 | Document | Description | Status |
 |----------|-------------|--------|
-| [Overview](architecture/overview.md) | How adapters work | Draft |
-| [Schema-Driven Dispatch](architecture/schema-driven-dispatch.md) | Declarative operation definitions | Draft |
+| [Plugin Interface Contracts](plugin-contracts.md) | What each plugin type MUST provide | Draft (MVP) |
+| [Element Type Specification](adapter/element-type.md) | Declarative adapter schema format | Draft (MVP) |
 
 ### Features
 
@@ -33,12 +36,6 @@ This directory contains the complete specification and implementation guidance f
 |----------|-------------|-------------|
 | [Gatekeeper](security/gatekeeper.md) | Multi-layer access control | Implemented |
 
-### Adapter Development
-
-| Document | Description | Status |
-|----------|-------------|--------|
-| [Development Guide](adapter/development-guide.md) | How to build MCP-AQL adapters | Draft |
-
 ### Process
 
 | Document | Description |
@@ -47,16 +44,33 @@ This directory contains the complete specification and implementation guidance f
 | [Breaking Changes](process/breaking-changes.md) | Policy for handling breaking changes |
 | [Versioning](process/versioning.md) | Version numbering and release process |
 
+### Guides
+
+| Document | Description |
+|----------|-------------|
+| [Protocol Comparison](guides/protocol-comparison.md) | MCP-AQL vs other protocols |
+
 ### Roadmap
 
-Future features are tracked as GitHub issues with the `planned` label. Key upcoming features:
+Future features are tracked as GitHub issues. Key upcoming features:
 
-- Computed fields (#11)
-- Streaming responses (#12)
-- Relationship queries (#13)
-- Structured error codes (#14)
-- Cursor pagination (#15)
-- Schema versioning (#16)
+**Phase 0 - MVP Core:**
+- Adapter Element Type (#61)
+- Plugin Interface (#62)
+- Universal Adapter Runtime (#63)
+- Structured error codes (#35)
+
+**Phase 1 - Robustness:**
+- Trust levels (#59)
+- Dangerous operation classification (#49)
+- Rate limiting (#60)
+- Cursor-based pagination (#37)
+
+**Phase 2+ - Advanced:**
+- Computed fields (#42)
+- Streaming responses (#43)
+- Relationship queries (#44)
+- Schema versioning (#48)
 
 ## Reading Order
 
@@ -69,10 +83,24 @@ For newcomers to MCP-AQL:
 
 For adapter developers:
 
-1. **[Architecture Overview](architecture/overview.md)** - Understand adapter structure
-2. **[Development Guide](adapter/development-guide.md)** - Implementation walkthrough
-3. **[Schema-Driven Dispatch](architecture/schema-driven-dispatch.md)** - Declarative patterns
-4. **[Gatekeeper](security/gatekeeper.md)** - Security implementation
+1. **[Element Type Specification](adapter/element-type.md)** - Declarative schema format
+2. **[Plugin Interface Contracts](plugin-contracts.md)** - Plugin system contracts
+3. **[Architecture Overview](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/architecture/overview.md)** - Understand adapter structure (in mcpaql-adapter repo)
+4. **[Development Guide](https://github.com/MCPAQL/mcpaql-adapter/blob/develop/docs/guides/development.md)** - Implementation walkthrough (in mcpaql-adapter repo)
+5. **[Gatekeeper](security/gatekeeper.md)** - Security implementation
+
+## Cross-Repository Content
+
+MCP-AQL follows a four-level protocol model:
+
+| Level | What | Normative? | Repository |
+|-------|------|-----------|------------|
+| 1. Wire format | Request/response JSON, error codes, introspection | MUST | **this repo** |
+| 2. Schema semantics | Operation declarations, params, auth, target | MUST/SHOULD | **this repo** |
+| 3. Canonical format | Markdown + YAML front matter interchange format | SHOULD | **this repo** |
+| 4. Implementation guidance | Runtime architecture, plugin pipeline, dispatch | Non-normative | [mcpaql-adapter](https://github.com/MCPAQL/mcpaql-adapter) |
+
+Example adapters: [examples](https://github.com/MCPAQL/examples)
 
 ## Reference Implementation
 

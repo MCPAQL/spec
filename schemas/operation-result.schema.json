@@ -22,18 +22,33 @@
     {
       "type": "object",
       "title": "Failure Result",
+      "description": "Error response with structured error details",
       "properties": {
         "success": {
           "const": false,
           "description": "Indicates operation failed"
         },
         "error": {
-          "type": "string",
-          "description": "Human-readable error message"
-        },
-        "errorCode": {
-          "type": "string",
-          "description": "Machine-readable error code (optional)"
+          "type": "object",
+          "description": "Structured error details",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Machine-readable error code (e.g., VALIDATION_MISSING_PARAM)",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            },
+            "message": {
+              "type": "string",
+              "description": "Human-readable error message"
+            },
+            "details": {
+              "type": "object",
+              "description": "Optional contextual information",
+              "additionalProperties": true
+            }
+          },
+          "required": ["code", "message"],
+          "additionalProperties": false
         }
       },
       "required": ["success", "error"],
