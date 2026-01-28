@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
+
 ### Added
 
 - Trust Levels specification for adapter verification and validation status (#59)

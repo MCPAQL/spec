@@ -399,7 +399,7 @@ Systems SHOULD enforce minimum trust levels for operations based on risk:
 
 ### 5.2 Trust-to-Danger Matrix
 
-When combined with danger levels (see [#49](https://github.com/MCPAQL/spec/issues/49)), the gating matrix is:
+When combined with danger levels (see [Dangerous Operation Classification](./danger-levels.md)), the gating matrix is:
 
 | Danger Level | untested | generated | validated | community_reviewed | certified |
 |--------------|----------|-----------|-----------|-------------------|-----------|
@@ -562,7 +562,7 @@ A future specification may define a protocol for trust attestation exchange betw
 ## References
 
 - [Adapter Element Type Specification](./element-type.md)
-- [Dangerous Operation Classification](https://github.com/MCPAQL/spec/issues/49)
+- [Dangerous Operation Classification](./danger-levels.md)
 - [Security Model: Gatekeeper](../security/gatekeeper.md)
 - [Error Codes Specification](../error-codes.md)
 - GitHub Issue: [#59](https://github.com/MCPAQL/spec/issues/59)
