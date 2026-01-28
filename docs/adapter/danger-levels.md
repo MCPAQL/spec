@@ -271,6 +271,8 @@ Danger metadata is available via introspection:
 
 ## 4. Trust-to-Danger Gating
 
+This section defines the canonical gating matrix that combines adapter trust levels with operation danger levels. For trust level definitions and promotion rules, see [Trust Levels Specification](./trust-levels.md).
+
 ### 4.1 Gating Matrix
 
 The combination of adapter trust level and operation danger level determines behavior:

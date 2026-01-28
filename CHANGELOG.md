@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
+- Deduplicated trust-to-danger gating matrix (#81)
+  - danger-levels.md is now the canonical source for the gating matrix
+  - trust-levels.md references danger-levels.md instead of duplicating the matrix
+  - Consistent terminology: `introspect_only` instead of `introspect`
 
 ### Added
 

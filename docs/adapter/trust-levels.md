@@ -399,21 +399,13 @@ Systems SHOULD enforce minimum trust levels for operations based on risk:
 
 ### 5.2 Trust-to-Danger Matrix
 
-When combined with danger levels (see [Dangerous Operation Classification](./danger-levels.md)), the gating matrix is:
+The complete trust-to-danger gating matrix is defined in the [Dangerous Operation Classification](./danger-levels.md#4-trust-to-danger-gating) specification. The matrix determines which operations are allowed, require confirmation, or are denied based on the combination of adapter trust level and operation danger level.
 
-| Danger Level | untested | generated | validated | community_reviewed | certified |
-|--------------|----------|-----------|-----------|-------------------|-----------|
-| safe (0) | introspect | allow | allow | allow | allow |
-| moderate (1) | deny | deny | allow | allow | allow |
-| destructive (2) | deny | deny | confirm | allow | allow |
-| dangerous (3) | deny | deny | deny | confirm | allow |
-| forbidden (4) | deny | deny | deny | deny | confirm |
-
-**Legend:**
-- `allow` - Operation permitted without confirmation
+**Behavior summary:**
+- `allow` - Operation executes without additional gates
 - `confirm` - Operation requires explicit user confirmation
-- `deny` - Operation blocked
-- `introspect` - Only introspection operations permitted
+- `deny` - Operation blocked with error response
+- `introspect_only` - Only introspection operations permitted; all other operations are blocked
 
 ### 5.3 Configuration Override
 
