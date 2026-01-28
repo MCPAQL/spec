@@ -154,6 +154,8 @@ deny > confirm > allow
 
 ## 4. Confirmation System
 
+This section provides an overview of the confirmation system. For detailed token generation, validation, and lifecycle requirements, see the [Confirmation Token Specification](./confirmation-tokens.md).
+
 ### 4.1 Confirmation Request
 
 When confirmation is required:
@@ -254,4 +256,5 @@ Adapters implementing security MAY:
 
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
 - [CRUDE Pattern Specification](../crude-pattern.md)
+- [Confirmation Token Specification](./confirmation-tokens.md)
 - [Operations Guide](../operations.md)

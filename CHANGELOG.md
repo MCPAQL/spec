@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Confirmation Token specification for gating dangerous operations and quota continuations (#79)
+  - Token format with `conf_` and `quota_continue_` prefixes
+  - Cryptographic generation requirements (128+ bit entropy from secure random source)
+  - Scope binding with SHA-256 parameter hashing
+  - Validation checks (existence, expiry, single-use, scope matching)
+  - Token lifecycle (expiration, single-use, revocation, session-scoped)
+  - `TOKEN_` error category: `TOKEN_INVALID`, `TOKEN_EXPIRED`, `TOKEN_ALREADY_USED`, `TOKEN_SCOPE_MISMATCH`
 - Trust Levels specification for adapter verification and validation status (#59)
   - Trust level enum: untested, generated, validated, community_reviewed, certified
   - Trust metadata schema with promotion history

@@ -296,7 +296,7 @@ The combination of adapter trust level and operation danger level determines beh
 
 ### 4.3 Confirmation Flow
 
-When confirmation is required:
+When confirmation is required, the adapter issues a confirmation token that the client must include in a retry request. See [Confirmation Token Specification](../security/confirmation-tokens.md) for token generation, validation, and lifecycle requirements.
 
 **Step 1: Initial Request**
 ```javascript
@@ -591,6 +591,7 @@ danger:
 - [Adapter Element Type Specification](./element-type.md)
 - [Trust Levels Specification](./trust-levels.md)
 - [Rate Limiting Specification](./rate-limiting.md)
+- [Confirmation Token Specification](../security/confirmation-tokens.md)
 - [Security Model: Gatekeeper](../security/gatekeeper.md)
 - [Error Codes Specification](../error-codes.md)
 - Claude Code dangerous git operation handling
