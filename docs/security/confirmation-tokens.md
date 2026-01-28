@@ -82,7 +82,7 @@ Tokens are opaque strings with a prefix indicating their purpose:
 
 | Prefix | Purpose | Example |
 |--------|---------|---------|
-| `conf_` | Dangerous operation confirmation | `conf_abc123xyz789` |
+| `conf_` | Dangerous operation confirmation | `conf_a1b2c3d4e5f6g7h8` |
 | `quota_continue_` | Quota pause continuation | `quota_continue_def456` |
 
 ### 2.2 Token Syntax
@@ -104,7 +104,7 @@ While tokens are opaque to clients, implementations SHOULD encode or reference:
 
 ```typescript
 interface TokenPayload {
-  /** Token identifier (the visible string) */
+  /** Token identifier - the full token string including prefix (e.g., 'conf_abc123xyz789') */
   id: string;
 
   /** Purpose of the token */
@@ -163,11 +163,14 @@ Token identifiers MUST be generated with sufficient entropy to prevent guessing:
 
 ### 3.2 Scope Binding
 
-Tokens MUST be bound to the specific operation and parameters they gate:
+Tokens MUST be bound to the specific operation and parameters they gate.
+
+**Hash algorithm:** Implementations SHOULD use SHA-256 or stronger for parameter binding. The hash MUST be computed over a canonicalized representation of the critical parameters.
 
 ```javascript
 // Token issuance binds to operation + critical parameters
-const paramsHash = hash({
+// Hash algorithm: SHA-256 or stronger
+const paramsHash = sha256({
   operation: "delete_repo",
   owner: "acme",
   repo: "widgets"
@@ -289,9 +292,11 @@ Token expiration MUST be enforced:
 
 | Context | Default TTL | Maximum TTL |
 |---------|-------------|-------------|
-| Dangerous operation (level 2-3) | 5 minutes | 15 minutes |
-| Dangerous operation (level 4) | 2 minutes | 5 minutes |
+| Dangerous operation (destructive/dangerous - levels 2-3) | 5 minutes | 15 minutes |
+| Dangerous operation (forbidden - level 4) | 2 minutes | 5 minutes |
 | Quota continuation | 5 minutes | 10 minutes |
+
+Danger level values reference the danger level enum from [Dangerous Operation Classification](../adapter/danger-levels.md): safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4).
 
 **Expiration is a MUST requirement:**
 - Tokens without expiration MUST be rejected
@@ -450,7 +455,7 @@ Implementations SHOULD rate limit token-related operations to prevent abuse:
 
 Implementations using confirmation tokens MUST:
 
-1. Generate tokens with at least 128 bits of entropy from a CSPRNG
+1. Generate tokens with at least 128 bits of entropy from a cryptographically secure random source
 2. Enforce expiration times on all tokens
 3. Bind tokens to specific operations and critical parameters
 4. Reject tokens that fail any validation check
