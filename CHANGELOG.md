@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic lockdown behavior with pattern-based classification
   - Standard dangerous/forbidden operation patterns
   - Confirmation flow with token-based acknowledgment
+- Rate Limiting and Quota Management specification for API usage control (#60)
+  - API limits schema for target API rate constraints
+  - User-configurable quotas with warn/pause/hard_stop thresholds
+  - Cost estimation and tracking for paid APIs
+  - Enforcement behavior with progressive response
+  - Rate limit error codes: RATE_LIMIT_EXCEEDED, RATE_LIMIT_QUOTA_PAUSE, RATE_LIMIT_QUOTA_EXHAUSTED
+  - Introspection of quota status
 
 ## [1.0.0-alpha.1] - 2026-01-28
 
