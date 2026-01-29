@@ -429,6 +429,8 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 | `TOKEN_ALREADY_USED` | Token | Confirmation token has already been redeemed |
 | `TOKEN_SCOPE_MISMATCH` | Token | Token issued for different operation or parameters |
 
+> **Note on `CONFIRMATION_REQUIRED` categorization:** This code is categorized under "Permission" rather than having its own category because it functions as part of the permission gating flow. The operation is denied pending user confirmation—conceptually similar to other permission denials, but with a recovery path (providing a confirmation token). Clients can treat it as a permission error that includes instructions for resolution.
+
 ### 5.2 PERMISSION_TRUST_LEVEL_INSUFFICIENT
 
 **When used:** An operation is denied because the adapter's trust level is below the minimum required for the operation's danger level.
@@ -516,6 +518,8 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 ### 5.4 CONFIRMATION_REQUIRED
 
 **When used:** A dangerous operation requires explicit user confirmation before execution.
+
+> **Design note:** This code is categorized under "Permission" in the registry table because it functions as a conditional permission denial—the operation is blocked until the user provides explicit confirmation. Unlike a hard permission denial (`PERMISSION_DENIED`), this error includes a `confirmation_token` that enables the client to retry the operation once user consent is obtained. This pattern aligns with the gatekeeper security model where dangerous operations require explicit user approval.
 
 **Message format:** `This operation requires confirmation`
 
