@@ -318,6 +318,16 @@ Implementations SHOULD allow operators to configure the clock skew tolerance val
 - Security-sensitive deployments MAY reduce this to 0-5 seconds
 - Values above 60 seconds SHOULD trigger a warning in logs, as they significantly increase the window for replay attacks
 
+**Deployment environment recommendations:**
+
+| Environment | Recommended Value | Rationale |
+|-------------|-------------------|-----------|
+| Typical (NTP-synced) | 30s (default) | Accommodates normal clock drift |
+| Air-gapped systems | 60-120s | May have significant clock sync drift |
+| IoT / embedded | 60-120s | Often lack reliable NTP access |
+| High-security | 0-5s | Minimize replay attack window |
+| Zero-trust | 0s | Strict timing, requires synchronized clocks |
+
 **Example configuration:**
 ```javascript
 const tokenConfig = {
