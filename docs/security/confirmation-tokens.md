@@ -296,7 +296,7 @@ Token expiration MUST be enforced:
 | Dangerous operation (forbidden - level 4) | 2 minutes | 5 minutes |
 | Quota continuation | 5 minutes | 10 minutes |
 
-Danger level values reference the danger level enum from [Dangerous Operation Classification](../adapter/danger-levels.md): safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4).
+Danger level values reference the danger level enum from [Dangerous Operation Classification](../adapter/danger-levels.md): safe (0), reversible (1), destructive (2), dangerous (3), forbidden (4).
 
 **Expiration is a MUST requirement:**
 - Tokens without expiration MUST be rejected

@@ -7,8 +7,8 @@
     "DangerLevel": {
       "type": "string",
       "title": "Danger Level",
-      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects, maps to READ), 'low' (additive, easily reversible, maps to CREATE), 'moderate' (modifying, potentially reversible, maps to UPDATE), 'high' (destructive, difficult to reverse, maps to DELETE), 'forbidden' (never auto-execute, requires explicit confirmation)",
-      "enum": ["safe", "low", "moderate", "high", "forbidden"]
+      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects), 'reversible' (standard confirmation), 'destructive' (enhanced confirmation), 'dangerous' (explicit unlock required), 'forbidden' (blocked unless admin override)",
+      "enum": ["safe", "reversible", "destructive", "dangerous", "forbidden"]
     },
     "DangerClassification": {
       "type": "object",
@@ -47,16 +47,16 @@
           "description": "READ operations default to safe (read-only, no side effects)"
         },
         "CREATE": {
-          "const": "low",
-          "description": "CREATE operations default to low (additive, easily reversible)"
+          "const": "reversible",
+          "description": "CREATE operations default to reversible (additive, standard confirmation)"
         },
         "UPDATE": {
-          "const": "moderate",
-          "description": "UPDATE operations default to moderate (modifying, potentially reversible)"
+          "const": "reversible",
+          "description": "UPDATE operations default to reversible (modifying, potentially reversible)"
         },
         "DELETE": {
-          "const": "high",
-          "description": "DELETE operations default to high (destructive, difficult to reverse)"
+          "const": "destructive",
+          "description": "DELETE operations default to destructive (enhanced confirmation)"
         },
         "EXECUTE": {
           "$ref": "#/$defs/DangerLevel",
@@ -92,15 +92,15 @@
       "title": "CREATE operation classification",
       "description": "Typical classification for an additive operation",
       "value": {
-        "level": "low",
-        "reason": "Creates new resource, easily reversible by deletion"
+        "level": "reversible",
+        "reason": "Creates new resource, standard confirmation"
       }
     },
     {
       "title": "DELETE operation with confirmation",
       "description": "Destructive operation requiring user confirmation",
       "value": {
-        "level": "high",
+        "level": "destructive",
         "reason": "Permanently removes resource and associated data",
         "requires_confirmation": true,
         "hook_blockable": true

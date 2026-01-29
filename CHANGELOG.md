@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Danger level enum inconsistency across schemas (#99)
+  - Aligned all schemas and docs with canonical `danger-levels.md` spec
+  - Renamed `moderate` → `reversible` for clearer semantic meaning
+  - Canonical enum: `["safe", "reversible", "destructive", "dangerous", "forbidden"]`
 - Claude auto-review workflow not triggering on pull_request events (#95)
 
 ### Changed
@@ -61,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Trust-to-operation permission gating matrix
   - Integration with danger levels for combined security gating
 - Dangerous Operation Classification specification for operation risk management (#49)
-  - Danger level enum: safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4)
+  - Danger level enum: safe (0), reversible (1), destructive (2), dangerous (3), forbidden (4)
   - Operation danger metadata schema with reasons and confirmation messages
   - Trust-to-danger gating matrix for combined security decisions
   - Automatic lockdown behavior with pattern-based classification

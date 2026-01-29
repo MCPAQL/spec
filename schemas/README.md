@@ -87,9 +87,9 @@ Responses to `introspect` operation queries:
 
 Five-level classification for operation safety:
 - `safe` - Read-only, no side effects
-- `low` - Additive, easily reversible
-- `moderate` - Modifying, potentially reversible
-- `high` - Destructive, difficult to reverse
+- `reversible` - Modifying, can be undone
+- `destructive` - Removes data, enhanced confirmation
+- `dangerous` - Serious harm possible, explicit unlock
 - `forbidden` - Never auto-execute
 
 ### Batch Operation
