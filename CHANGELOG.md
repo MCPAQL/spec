@@ -68,6 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Evolution strategy with change type examples
   - Backward compatibility requirements
   - Version handling code example with deprecation support
+- Validation error code examples for adapter generator (#115)
+  - Error codes for each validation requirement (SCHEMA_MISSING_FIELD, etc.)
+  - Example validation error response format
 - Conformance Testing specification with Level 1/Level 2 definitions (#10, #55, #56)
   - Level 1 Basic: introspect, endpoint routing, response format, error handling
   - Level 2 Full: field selection, batch operations, cross-cutting params
