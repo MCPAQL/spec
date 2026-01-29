@@ -3,6 +3,9 @@ name: PR Claude Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
+    branches:
+      - main
+      - develop
 
 jobs:
   claude-review:
