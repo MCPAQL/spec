@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Claude auto-review workflow not triggering on pull_request events (#95)
+
+### Changed
+
+- Added bidirectional navigation links between spec documents for improved discoverability (#69)
+  - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
+- Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
+- Deduplicated trust-to-danger gating matrix (#81)
+  - danger-levels.md is now the canonical source for the gating matrix
+  - trust-levels.md references danger-levels.md instead of duplicating the matrix
+  - Consistent terminology: `introspect_only` instead of `introspect`
+
+### Added
+
+- Warnings Array specification for non-fatal conditions in successful responses (#80)
+  - Optional `warnings` array extension to discriminated response format
+  - Warning object schema matching error object structure
+  - Standard warning codes: RATE_LIMIT_QUOTA_WARNING, DEPRECATION_WARNING, VALIDATION_TRUNCATED_WARNING, PERFORMANCE_SLOW_QUERY_WARNING
+  - Client processing requirements and display guidelines
+  - ADR-006 updated to include warnings in success response schema
+- Confirmation Token specification for gating dangerous operations and quota continuations (#79)
+  - Token format with `conf_` and `quota_continue_` prefixes
+  - Cryptographic generation requirements (128+ bit entropy from secure random source)
+  - Scope binding with SHA-256 parameter hashing
+  - Validation checks (existence, expiry, single-use, scope matching)
+  - Token lifecycle (expiration, single-use, revocation, session-scoped)
+  - `TOKEN_` error category: `TOKEN_INVALID`, `TOKEN_EXPIRED`, `TOKEN_ALREADY_USED`, `TOKEN_SCOPE_MISMATCH`
+- Trust Levels specification for adapter verification and validation status (#59)
+  - Trust level enum: untested, generated, validated, community_reviewed, certified
+  - Trust metadata schema with promotion history
+  - Promotion and demotion rules
+  - Trust-to-operation permission gating matrix
+  - Integration with danger levels for combined security gating
+- Dangerous Operation Classification specification for operation risk management (#49)
+  - Danger level enum: safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4)
+  - Operation danger metadata schema with reasons and confirmation messages
+  - Trust-to-danger gating matrix for combined security decisions
+  - Automatic lockdown behavior with pattern-based classification
+  - Standard dangerous/forbidden operation patterns
+  - Confirmation flow with token-based acknowledgment
+- Rate Limiting and Quota Management specification for API usage control (#60)
+  - API limits schema for target API rate constraints
+  - User-configurable quotas with warn/pause/hard_stop thresholds
+  - Cost estimation and tracking for paid APIs
+  - Enforcement behavior with progressive response
+  - Rate limit error codes: RATE_LIMIT_EXCEEDED, RATE_LIMIT_QUOTA_PAUSE, RATE_LIMIT_QUOTA_EXHAUSTED
+  - Introspection of quota status
+- Cursor-based Pagination specification for collection operations (#37)
+  - Pagination parameters: first, after, last, before
+  - PageInfo response structure with hasNextPage, hasPreviousPage, cursors
+  - Connection-style response format with items or edges (mutually exclusive)
+  - Uses existing VALIDATION_INVALID_TYPE for pagination errors
+  - Introspection of pagination support
+- Phase 1 error codes formally added to error-codes.md (#77)
+  - PERMISSION_TRUST_LEVEL_INSUFFICIENT - adapter trust level too low
+  - PERMISSION_DANGER_LEVEL_DENIED - operation danger level exceeds trust
+  - CONFIRMATION_REQUIRED - dangerous operation requires confirmation
+  - RATE_LIMIT_EXCEEDED - API rate limit reached
+  - RATE_LIMIT_QUOTA_PAUSE - user quota pause threshold
+  - RATE_LIMIT_QUOTA_EXHAUSTED - user quota hard stop
+  - RATE_LIMIT_QUOTA_WARNING - approaching quota limit (warning)
+
 ## [1.0.0-alpha.1] - 2026-01-28
 
 ### Security

@@ -1,11 +1,26 @@
-name: Claude Code Review
+name: Auto Review PRs
 
+# NOTE: The push trigger is intentionally included alongside pull_request.
+# Through testing, we discovered that workflows with ONLY pull_request trigger
+# were not being recognized by GitHub Actions. Adding push trigger fixes this.
+# The job condition ensures we only run on actual pull_request events.
 on:
+  push:
+    branches:
+      - main
+      - develop
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
 
 jobs:
   claude-review:
+    name: Claude PR Review
+    # Only run on pull_request events, skip push events and draft PRs
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read

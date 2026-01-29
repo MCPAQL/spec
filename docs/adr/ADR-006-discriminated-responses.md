@@ -29,9 +29,12 @@ Successful responses MUST have the following structure:
 ```javascript
 {
   success: true,
-  data: { /* operation-specific response data */ }
+  data: { /* operation-specific response data */ },
+  warnings: [ /* optional array of warning objects */ ]
 }
 ```
+
+The `warnings` field is optional and contains non-fatal conditions that warrant attention. See the [Warnings Specification](../features/warnings.md) for details.
 
 Failed responses MUST have the following structure:
 
@@ -66,6 +69,7 @@ Implementations MUST:
 2. Include `data` when `success` is true
 3. Include `error` with at least `code` and `message` when `success` is false
 4. Use consistent error codes across the implementation
+5. Include `warnings` array only in successful responses (when present)
 
 ## Consequences
 
@@ -85,5 +89,6 @@ Implementations MUST:
 
 ## References
 
-- [Protocol Specification: Response Format](../protocol/responses.md)
+- [Warnings Specification](../features/warnings.md)
+- [Error Codes Specification](../error-codes.md)
 - ADR-004: Schema-Driven Operation Definitions
