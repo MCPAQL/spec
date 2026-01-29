@@ -48,6 +48,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional severity field for warnings to enable client prioritization (#93)
   - Levels: low, medium (default), high
   - Implementation guidelines and client handling examples
+- Severity recommendations for standard warning codes (#117)
+  - RATE_LIMIT_QUOTA_WARNING: high (>90%), medium (at threshold)
+  - DEPRECATION_WARNING: high (<30 days), medium (>30 days), low (no date)
+  - VALIDATION_TRUNCATED_WARNING: medium (>50%), low (≤50%)
+  - PERFORMANCE_SLOW_QUERY_WARNING: high (>10x), medium (2-10x), low (<2x)
+- Numeric severity mapping convention (#118)
+  - high=0, medium=1, low=2 for consistent sorting and comparison
+  - Enables database storage and threshold filtering
 - Clock skew tolerance configurability documentation for confirmation tokens (#94)
   - Default 30s accommodates typical NTP-synchronized systems
   - Guidance for air-gapped, high-security, and IoT deployments

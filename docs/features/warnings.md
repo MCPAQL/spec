@@ -203,6 +203,22 @@ The optional `severity` field helps clients prioritize warnings when multiple ar
 | `medium` | Should be addressed but not urgent | Approaching limits, scheduled deprecation |
 | `low` | Informational; can be safely deferred or filtered | Performance hints, soft deprecation notices |
 
+**Numeric severity mapping:**
+
+For sorting, filtering, and programmatic comparison, implementations SHOULD use this numeric mapping:
+
+| Severity | Numeric Value | Sort Order |
+|----------|--------------|------------|
+| `high` | 0 | First (most urgent) |
+| `medium` | 1 | Second |
+| `low` | 2 | Third (least urgent) |
+
+This mapping ensures:
+- Lower numeric values indicate higher urgency
+- Implementations can store severity in databases as integers
+- Threshold-based filtering is consistent (e.g., "show severity ≤ 1" means high and medium)
+- Cross-implementation interoperability when comparing severity levels
+
 **Severity guidelines for implementations:**
 
 - Implementations MAY omit `severity` (clients should assume `medium` as default)
@@ -269,6 +285,13 @@ CATEGORY_SPECIFIC_WARNING
 
 **Message format:** `Approaching quota limit`
 
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| >90% of quota consumed | `high` | Imminent limit, requires immediate attention |
+| At warn_threshold (default 80%) | `medium` | Standard warning, action advisable |
+
 **Details:**
 ```typescript
 {
@@ -308,6 +331,14 @@ CATEGORY_SPECIFIC_WARNING
 
 **Message format:** `{feature} is deprecated`
 
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| Within 30 days of removal_date | `high` | Urgent migration required |
+| More than 30 days from removal_date | `medium` | Migration advisable |
+| No removal_date set (soft deprecation) | `low` | Informational, no urgency |
+
 **Details:**
 ```typescript
 {
@@ -346,6 +377,13 @@ CATEGORY_SPECIFIC_WARNING
 
 **Message format:** `Response truncated to {limit} items`
 
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| Significant data loss (>50% truncated) | `medium` | User may miss important data |
+| Minor truncation (≤50% truncated) | `low` | Informational, pagination available |
+
 **Details:**
 ```typescript
 {
@@ -381,6 +419,14 @@ CATEGORY_SPECIFIC_WARNING
 **When used:** An operation took longer than expected to complete.
 
 **Message format:** `Operation took {duration}ms (threshold: {threshold}ms)`
+
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| >10x threshold exceeded | `high` | Severe degradation, may indicate systemic issue |
+| 2-10x threshold exceeded | `medium` | Notable slowdown, optimization recommended |
+| Just above threshold (<2x) | `low` | Minor performance concern |
 
 **Details:**
 ```typescript
