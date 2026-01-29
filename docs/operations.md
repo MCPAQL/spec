@@ -231,6 +231,96 @@ Adapters SHOULD use consistent patterns for common functionality:
 
 Each parameter MUST be documented as either required or optional. The operation schema (Section 5) specifies this via the `required` attribute.
 
+### 4.4 Cross-Cutting Parameters
+
+Cross-cutting parameters are parameters that apply across multiple operations. To ensure consistent discoverability, implementations SHOULD define these parameters once and reference them consistently.
+
+#### 4.4.1 Standard Cross-Cutting Parameters
+
+| Parameter | Type | Operations | Description |
+|-----------|------|------------|-------------|
+| `fields` | `string \| string[]` | All READ operations returning data | Field selection: preset name or array of field paths |
+| `limit` | `number` | List/search operations | Maximum results to return |
+| `offset` | `number` | List/search operations | Number of results to skip |
+| `page` | `number` | List/search operations | Page number (1-indexed) |
+| `page_size` | `number` | List/search operations | Items per page |
+| `sort` | `string` | List/search operations | Sort field name |
+| `order` | `string` | List/search operations | Sort order: "asc" or "desc" |
+| `dry_run` | `boolean` | All mutating operations | Preview without executing |
+
+#### 4.4.2 Shared Parameter Definitions
+
+Implementations SHOULD use a shared definition mechanism to ensure consistency:
+
+```yaml
+shared_parameters:
+  fields:
+    name: "fields"
+    type: "string | string[]"
+    required: false
+    description: "Field selection: preset ('minimal', 'standard', 'full') or array of field names"
+
+  pagination:
+    - name: "limit"
+      type: "number"
+      required: false
+      description: "Maximum results to return"
+      default: 25
+    - name: "offset"
+      type: "number"
+      required: false
+      description: "Number of results to skip"
+      default: 0
+
+  sorting:
+    - name: "sort"
+      type: "string"
+      required: false
+      description: "Field to sort by"
+    - name: "order"
+      type: "string"
+      required: false
+      enum: ["asc", "desc"]
+      description: "Sort order"
+      default: "asc"
+```
+
+#### 4.4.3 Cross-Cutting Parameter Consistency (SHOULD)
+
+When a parameter applies to multiple operations:
+
+1. The parameter name SHOULD be identical across operations
+2. The parameter type SHOULD be identical across operations
+3. The parameter description SHOULD be semantically equivalent
+4. Default values SHOULD be consistent where applicable
+
+#### 4.4.4 Introspection Integration
+
+When introspection is queried, shared parameters SHOULD be expanded inline with their full definitions. This ensures LLMs see consistent documentation regardless of which operation they query.
+
+**Example - Operations referencing shared parameters:**
+```yaml
+operations:
+  list_items:
+    params:
+      - $ref: "#/shared_parameters/fields"
+      - $ref: "#/shared_parameters/pagination"
+      - name: "category"
+        type: "string"
+        required: false
+        description: "Filter by category"
+
+  search_items:
+    params:
+      - $ref: "#/shared_parameters/fields"
+      - $ref: "#/shared_parameters/pagination"
+      - $ref: "#/shared_parameters/sorting"
+      - name: "query"
+        type: "string"
+        required: true
+        description: "Search query"
+```
+
 ---
 
 ## 5. Operation Schema Definition

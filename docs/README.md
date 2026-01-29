@@ -16,6 +16,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 | [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
+| [Conformance Testing](conformance-testing.md) | Test requirements and evaluation methodology | Draft |
 
 ### Plugin & Adapter Contracts
 
@@ -80,6 +81,7 @@ For newcomers to MCP-AQL:
 2. **[CRUDE Pattern](crude-pattern.md)** - Understand the endpoint semantics
 3. **[Operations](operations.md)** - Learn operation design patterns
 4. **[Introspection](introspection.md)** - Learn the discovery system
+5. **[Conformance Testing](conformance-testing.md)** - Understand conformance requirements
 
 For adapter developers:
 
