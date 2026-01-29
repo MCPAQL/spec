@@ -268,7 +268,15 @@ endpoints:
 
 ### 3.1 Directory Layout
 
-Generators MUST produce the following directory structure:
+Generators MUST produce the following directory structure.
+
+> **Note:** `{ext}` in the structure below represents language-specific file extensions:
+> - TypeScript: `.ts`
+> - JavaScript: `.js`
+> - Python: `.py`
+> - Go: `.go`
+> - Rust: `.rs`
+> - Java: `.java`
 
 ```
 generated-adapter/
@@ -555,7 +563,22 @@ Schema fingerprints MUST be calculated as follows:
 
 ```typescript
 function calculateFingerprint(schema: AdapterSchema): string {
-  const normalized = JSON.stringify(schema, Object.keys(schema).sort(), 0);
+  // Recursively sort object keys for canonical JSON
+  function sortKeys(obj: unknown): unknown {
+    if (Array.isArray(obj)) {
+      return obj.map(sortKeys);
+    }
+    if (obj !== null && typeof obj === 'object') {
+      const sorted: Record<string, unknown> = {};
+      for (const key of Object.keys(obj).sort()) {
+        sorted[key] = sortKeys((obj as Record<string, unknown>)[key]);
+      }
+      return sorted;
+    }
+    return obj;
+  }
+
+  const normalized = JSON.stringify(sortKeys(schema));
   const hash = crypto.createHash('sha256').update(normalized).digest('hex');
   return `sha256:${hash}`;
 }
