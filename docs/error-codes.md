@@ -691,7 +691,11 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 
 **When used:** Included in the `warnings` array of successful responses when approaching a quota limit.
 
-> **Note:** This is a warning code, not an error code. It appears in the `warnings` array of successful responses, not in the `error` object.
+> **⚠️ IMPORTANT: This is a WARNING code, not an error code.**
+>
+> Unlike all other codes in this section, `RATE_LIMIT_QUOTA_WARNING` appears in the `warnings` array of **successful** responses (`success: true`), not in the `error` object. The operation completes normally; this code signals an informational warning about approaching limits.
+>
+> See [Warnings Specification](./features/warnings.md) for details on warning handling.
 
 **Message format:** `Approaching quota limit`
 
