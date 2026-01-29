@@ -18,6 +18,7 @@ This document specifies the warnings array extension to MCP-AQL's discriminated 
 4. [Standard Warning Codes](#4-standard-warning-codes)
 5. [Client Requirements](#5-client-requirements)
 6. [Implementation Requirements](#6-implementation-requirements)
+   - [6.5 Warning Deduplication](#65-warning-deduplication)
 
 ---
 
@@ -461,6 +462,69 @@ To prevent response bloat:
 - Implementations SHOULD limit warnings to 10 per response
 - If more warnings apply, implementations SHOULD include the most important
 - Implementations MAY include a meta-warning about suppressed warnings
+
+### 6.5 Warning Deduplication
+
+Duplicate warnings (same `code` and semantically equivalent `details`) can occur when multiple subsystems generate the same warning or when batch operations trigger repeated conditions.
+
+#### Server-Side Deduplication
+
+Implementations SHOULD deduplicate warnings before including them in responses:
+
+1. **Exact duplicates** - Warnings with identical `code` and `details` SHOULD be collapsed to a single instance
+2. **Semantic duplicates** - Warnings with the same `code` but minor variations in `details` (e.g., same metric at same threshold) MAY be collapsed
+3. **Counting** - When deduplicating, implementations MAY add an `occurrence_count` field to indicate how many times the warning occurred
+
+**Example with occurrence count:**
+```json
+{
+  "code": "VALIDATION_TRUNCATED_WARNING",
+  "message": "Response truncated to 100 items",
+  "details": {
+    "field": "results",
+    "truncated_count": 100,
+    "occurrence_count": 3
+  }
+}
+```
+
+#### Client-Side Deduplication
+
+Clients MAY implement additional deduplication when:
+
+1. **Session-level deduplication** - Suppress warnings already shown in the current session
+2. **Time-based deduplication** - Suppress warnings seen within a configurable window (e.g., 5 minutes)
+3. **Code-based filtering** - Allow users to dismiss specific warning codes
+
+**Client deduplication example:**
+```typescript
+class WarningDeduplicator {
+  private seen = new Map<string, number>(); // code -> timestamp
+  private deduplicationWindowMs = 5 * 60 * 1000; // 5 minutes
+
+  shouldShow(warning: Warning): boolean {
+    const key = `${warning.code}:${JSON.stringify(warning.details)}`;
+    const lastSeen = this.seen.get(key);
+    const now = Date.now();
+
+    if (lastSeen && now - lastSeen < this.deduplicationWindowMs) {
+      return false; // Suppress duplicate
+    }
+
+    this.seen.set(key, now);
+    return true;
+  }
+}
+```
+
+#### Deduplication Recommendations
+
+| Context | Recommendation |
+|---------|----------------|
+| Single request | Server SHOULD deduplicate identical warnings |
+| Batch operations | Server SHOULD collapse per-item warnings into summary |
+| Client session | Client MAY deduplicate across requests |
+| Long-running clients | Client SHOULD use time-based expiration |
 
 ---
 
