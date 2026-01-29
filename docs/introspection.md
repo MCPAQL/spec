@@ -674,18 +674,18 @@ Conforming implementations MUST:
 
 Introspection responses MUST accurately reflect the actual parameter names, types, and behaviors accepted by the implementation:
 
-11. Parameter names in introspection MUST match the names expected by the operation handler
-12. Parameter types in introspection MUST match the types accepted by the operation handler
-13. Required/optional status in introspection MUST match the actual handler behavior
+1. Parameter names in introspection MUST match the names expected by the operation handler
+2. Parameter types in introspection MUST match the types accepted by the operation handler
+3. Required/optional status in introspection MUST match the actual handler behavior
 
 #### 8.1.2 Parameter Completeness (MUST)
 
 For every operation, implementations MUST ensure introspection completeness:
 
-14. Every parameter accepted by the handler implementation MUST appear in introspection metadata
-15. Required parameters MUST appear with `required: true`
-16. Optional parameters MUST appear with `required: false`
-17. Feature parameters (e.g., `fields`, `limit`, `offset`) MUST appear with full type information
+1. Every parameter accepted by the handler implementation MUST appear in introspection metadata
+2. Required parameters MUST appear with `required: true`
+3. Optional parameters MUST appear with `required: false`
+4. Feature parameters (e.g., `fields`, `limit`, `offset`) MUST appear with full type information
 
 **Conformance Test:**
 ```
@@ -703,9 +703,9 @@ WARN IF: Introspection documents parameters not accepted
 
 Error responses MUST NOT expose internal implementation details:
 
-18. Error messages MUST NOT include programming language error messages
-19. Error messages MUST NOT include stack traces
-20. Error messages MUST NOT include internal class/object names or file paths
+1. Error messages MUST NOT include programming language error messages
+2. Error messages MUST NOT include stack traces
+3. Error messages MUST NOT include internal class/object names or file paths
 
 ### 8.2 SHOULD Requirements
 
@@ -724,25 +724,25 @@ Conforming implementations SHOULD:
 
 Implementations SHOULD handle unrecognized parameters explicitly:
 
-9. Accept parameters at documented locations, OR
-10. Return a warning or error when unrecognized parameters are provided
-11. Implementations SHOULD NOT silently ignore parameters
+1. Accept parameters at documented locations, OR
+2. Return a warning or error when unrecognized parameters are provided
+3. Implementations SHOULD NOT silently ignore parameters
 
 #### 8.2.2 Element-Type Constraints (SHOULD)
 
 Introspection responses SHOULD document element-type-specific constraints:
 
-12. Read-only or append-only fields SHOULD be documented
-13. Required nesting (e.g., "tags must be in metadata.tags") SHOULD be documented
-14. Operations that don't apply to certain element types SHOULD be noted
+1. Read-only or append-only fields SHOULD be documented
+2. Required nesting (e.g., "tags must be in metadata.tags") SHOULD be documented
+3. Operations that don't apply to certain element types SHOULD be noted
 
 #### 8.2.3 Error Message Guidance (SHOULD)
 
 Error responses SHOULD include actionable information:
 
-15. A clear description of what went wrong
-16. The correct action the user should take
-17. Reference to the appropriate operation if applicable
+1. A clear description of what went wrong
+2. The correct action the user should take
+3. Reference to the appropriate operation if applicable
 
 **Recommended Error Message Format:**
 ```
@@ -757,8 +757,8 @@ Missing required parameter 'source'. Expected: string (URL or file path to impor
 
 #### 8.2.4 Deprecated Parameters (SHOULD)
 
-18. Deprecated parameters SHOULD appear in introspection with a deprecation notice
-19. Deprecated parameters SHOULD include migration guidance in the description
+1. Deprecated parameters SHOULD appear in introspection with a deprecation notice
+2. Deprecated parameters SHOULD include migration guidance in the description
 
 ### 8.3 MAY Requirements
 

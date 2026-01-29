@@ -24,6 +24,39 @@
       "additionalProperties": true
     },
 
+    "OperationResult": {
+      "description": "Discriminated union result for a single operation",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "Success Result",
+          "properties": {
+            "success": { "const": true },
+            "data": { "description": "Operation result data" }
+          },
+          "required": ["success", "data"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Failure Result",
+          "properties": {
+            "success": { "const": false },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": { "type": "string" },
+                "message": { "type": "string" }
+              },
+              "required": ["code", "message"]
+            }
+          },
+          "required": ["success", "error"],
+          "additionalProperties": false
+        }
+      ]
+    },
+
     "BatchResultItem": {
       "type": "object",
       "description": "Result for a single operation in the batch",
@@ -38,7 +71,7 @@
           "description": "The operation name that was executed"
         },
         "result": {
-          "$ref": "operation-result.schema.json",
+          "$ref": "#/$defs/OperationResult",
           "description": "The individual operation result (success or failure)"
         }
       },

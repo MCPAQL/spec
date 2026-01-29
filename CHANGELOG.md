@@ -23,6 +23,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Conformance Testing specification with Level 1/Level 2 definitions (#10, #55, #56)
+  - Level 1 Basic: introspect, endpoint routing, response format, error handling
+  - Level 2 Full: field selection, batch operations, cross-cutting params
+  - Five test categories: Introspection Fidelity, Parameter Handling, Error Quality, Round-Trip Integrity, Constraint Documentation
+  - Two-tier evaluation methodology (structural + semantic) for LLM discoverability testing
+- JSON Schema definitions for batch operations, field selection, and adapter schemas (#9)
+  - `batch-operation.schema.json`: Batch request/response validation
+  - `field-selection.schema.json`: Field selection parameters and presets
+  - `adapter-schema.schema.json`: Adapter definition file validation
+- RFC 2119 conformance requirements from DollhouseMCP learnings (#54, #57)
+  - Introspection accuracy MUST requirements (parameter names, types, required status)
+  - Parameter completeness MUST requirements (all handler params in introspection)
+  - Error message quality MUST requirements (no implementation leakage)
+  - Unknown parameter handling, element-type constraints SHOULD requirements
+- Cross-cutting parameter standard in operations.md (#58)
+  - Standard params: fields, limit, offset, page, page_size, sort, order, dry_run
+  - Shared parameter definition pattern with $ref mechanism
+  - Consistency requirements for multi-operation parameters
 - Warnings Array specification for non-fatal conditions in successful responses (#80)
   - Optional `warnings` array extension to discriminated response format
   - Warning object schema matching error object structure
