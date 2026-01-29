@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server-side deduplication strategies with optional occurrence_count field
   - Client-side deduplication patterns (session, time-based, code filtering)
   - Recommendations table for different contexts
+- Optional severity field for warnings to enable client prioritization (#93)
+  - Levels: low, medium (default), high
+  - Implementation guidelines and client handling examples
 - Conformance Testing specification with Level 1/Level 2 definitions (#10, #55, #56)
   - Level 1 Basic: introspect, endpoint routing, response format, error handling
   - Level 2 Full: field selection, batch operations, cross-cutting params

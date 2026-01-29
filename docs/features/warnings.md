@@ -15,6 +15,7 @@ This document specifies the warnings array extension to MCP-AQL's discriminated 
 1. [Overview](#1-overview)
 2. [Response Format Extension](#2-response-format-extension)
 3. [Warning Object Schema](#3-warning-object-schema)
+   - [3.2 Severity Levels](#32-severity-levels)
 4. [Standard Warning Codes](#4-standard-warning-codes)
 5. [Client Requirements](#5-client-requirements)
 6. [Implementation Requirements](#6-implementation-requirements)
@@ -183,10 +184,57 @@ interface Warning {
    * Content varies by warning code
    */
   details?: Record<string, unknown>;
+
+  /**
+   * Optional severity level for client prioritization
+   * Helps clients decide display ordering and filtering
+   */
+  severity?: 'low' | 'medium' | 'high';
 }
 ```
 
-### 3.2 Code Format
+### 3.2 Severity Levels
+
+The optional `severity` field helps clients prioritize warnings when multiple are present:
+
+| Level | Description | Example Use Cases |
+|-------|-------------|-------------------|
+| `high` | Requires immediate attention; may affect operations soon | Quota nearly exhausted, imminent deprecation removal |
+| `medium` | Should be addressed but not urgent | Approaching limits, scheduled deprecation |
+| `low` | Informational; can be safely deferred or filtered | Performance hints, soft deprecation notices |
+
+**Severity guidelines for implementations:**
+
+- Implementations MAY omit `severity` (clients should assume `medium` as default)
+- Implementations SHOULD use `high` sparingly to avoid alert fatigue
+- Implementations SHOULD NOT change a warning's severity between requests for the same condition
+
+**Client handling:**
+
+```typescript
+function sortWarningsBySeverity(warnings: Warning[]): Warning[] {
+  const order = { high: 0, medium: 1, low: 2 };
+  return [...warnings].sort((a, b) => {
+    const severityA = a.severity ?? 'medium';
+    const severityB = b.severity ?? 'medium';
+    return order[severityA] - order[severityB];
+  });
+}
+
+function filterByMinimumSeverity(
+  warnings: Warning[],
+  minimum: 'low' | 'medium' | 'high'
+): Warning[] {
+  const threshold = { low: 2, medium: 1, high: 0 };
+  const minLevel = threshold[minimum];
+  return warnings.filter(w => {
+    const level = threshold[w.severity ?? 'medium'];
+    return level <= minLevel;
+  });
+}
+```
+
+### 3.3 Code Format
 
 Warning codes follow the same naming convention as error codes:
 
@@ -200,7 +248,7 @@ CATEGORY_SPECIFIC_WARNING
 - Specific suffix describes the condition
 - Codes may overlap with error codes when the condition can be either (e.g., rate limits)
 
-### 3.3 Warning Categories
+### 3.4 Warning Categories
 
 | Category | Description | Example |
 |----------|-------------|---------|
