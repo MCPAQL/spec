@@ -1,15 +1,25 @@
 name: Auto Review PRs
 
+# NOTE: The push trigger is intentionally included alongside pull_request.
+# Through testing, we discovered that workflows with ONLY pull_request trigger
+# were not being recognized by GitHub Actions. Adding push trigger fixes this.
+# The job condition ensures we only run on actual pull_request events.
 on:
   push:
     branches:
       - main
       - develop
   pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
 
 jobs:
   claude-review:
     name: Claude PR Review
+    # Only run on pull_request events, skip push events and draft PRs
     if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
@@ -41,14 +51,89 @@ jobs:
 
             This is the **MCP-AQL Specification** repository. MCP-AQL (Model Context Protocol - Advanced Agent API Adapter Query Language) is a protocol specification that consolidates MCP tools into semantic CRUDE endpoints with ~96% token reduction.
 
+            Key concepts:
+            - **CRUDE Pattern**: Create, Read, Update, Delete, Execute endpoints
+            - **Introspection**: Runtime operation discovery via `introspect` operation
+            - **Discriminated Responses**: `{ success: true, data }` or `{ success: false, error }`
+            - **Adapters**: Declarative Markdown files with YAML front matter defining API mappings
+
             ## Review Expectations
 
-            Provide a substantive, developer-quality review. Post a SINGLE comment using `gh pr comment` with:
-            - Summary of what the PR does
-            - Review of design decisions and quality
-            - Issues with `file:line` references (if any)
-            - Suggestions (non-blocking)
-            - Verdict: APPROVE, REQUEST_CHANGES, or COMMENT
+            You MUST provide a substantive, developer-quality review on EVERY run. A review that just says "no issues found" is not acceptable. You are a peer reviewer — evaluate the work like a senior developer would during a pull request review.
+
+            ### On every run, you MUST:
+
+            1. **Read the full PR diff** using `gh pr diff ${{ github.event.pull_request.number }}`.
+            2. **Read any prior review comments** on this PR using `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments` and `gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments`. If you previously flagged issues that have since been fixed, explicitly acknowledge that in your review.
+            3. **Provide a substantive assessment** of the changes — their quality, design, completeness, and fitness for purpose. Do not just scan for bugs; evaluate the work as a whole.
+
+            ### When the trigger is `synchronize` (new commits pushed):
+
+            In addition to the above, compare what changed since the last review:
+            - Identify what was added, modified, or removed in the new commits.
+            - Evaluate whether the new changes improve the PR, introduce regressions, or leave prior feedback unaddressed.
+            - Explicitly call out any prior review feedback that has been addressed (or not).
+
+            ### For Specification Documents (docs/*.md)
+
+            1. **Technical Accuracy**
+               - Are the protocol descriptions correct and unambiguous?
+               - Are examples valid and consistent with the spec?
+               - Do TypeScript/JavaScript code examples have correct syntax?
+
+            2. **RFC 2119 Compliance**
+               - Are normative keywords (MUST, SHOULD, MAY) used appropriately?
+               - Is the language precise and unambiguous?
+
+            3. **Consistency**
+               - Does this align with existing spec documents?
+               - Are naming conventions consistent (snake_case for params, etc.)?
+               - Do cross-references link to correct locations?
+
+            4. **Completeness**
+               - Are all necessary sections present?
+               - Are edge cases addressed?
+               - Is future extensibility considered?
+
+            ### For Schema Files (schemas/*.json)
+
+            1. **JSON Schema validity** - Is the schema syntactically correct?
+            2. **Completeness** - Are all required fields documented?
+            3. **Examples** - Do examples validate against the schema?
+
+            ### For CI/Workflow Files (.github/workflows/*.yml)
+
+            1. **Security** - Are there script injection vulnerabilities from `${{ }}` interpolation in `run:` blocks? Values from PR context (titles, branch names, file lists) MUST be passed via `env:` blocks, never interpolated directly.
+            2. **Correctness** - Will the workflows trigger on the right events? Are permissions appropriate?
+            3. **Consistency** - Do the workflows follow the same patterns as sibling repos (mcpaql-adapter, examples)?
+
+            ### For All Files
+
+            1. **Markdown quality** - Proper formatting, no lint errors expected
+            2. **Spelling** - No typos in prose
+            3. **Links** - All links should be valid
+
+            ## Output Format
+
+            Post a SINGLE comment using `gh pr comment` with the following structure:
+
+            ### Summary
+            One paragraph describing what this PR does and its overall quality.
+
+            ### Review
+            A substantive evaluation of the changes. Discuss the design decisions, implementation quality, completeness, and any concerns. This should read like a thoughtful peer review, not a checklist.
+
+            ### Issues
+            Specific problems that should be addressed, with `file:line` references. If there are none, say so briefly and explain why (e.g., "The changes are straightforward config additions with no logic to get wrong.").
+
+            ### Prior Feedback
+            If this is a `synchronize` event (new push), list any prior review comments and whether they were addressed. If this is the first review, omit this section.
+
+            ### Suggestions
+            Optional improvements, clearly marked as non-blocking.
+
+            ### Verdict
+            APPROVE, REQUEST_CHANGES, or COMMENT — with a brief justification.
 
           claude_args: |
             --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(gh api repos/*/pulls/*/comments*),Bash(gh api repos/*/issues/*/comments*),Read,Glob,Grep"
