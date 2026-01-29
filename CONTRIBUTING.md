@@ -162,20 +162,24 @@ Use the following conventions for referencing other content:
 
 **Inline cross-references** (within document text):
 - Use relative file paths for references to other specification documents
-- Example: `[Trust Levels Specification](./trust-levels.md)`
-- Example: `[Error Codes](../error-codes.md)`
+- Paths are relative to the current document's location
+- Example (from `docs/adapter/generator.md`):
+  - `[Trust Levels](./trust-levels.md)` → links to `docs/adapter/trust-levels.md`
+  - `[Error Codes](../error-codes.md)` → links to `docs/error-codes.md`
+  - `[Gatekeeper](../security/gatekeeper.md)` → links to `docs/security/gatekeeper.md`
 
 **References sections** (at the end of documents):
 - Include relative file paths for related specification documents
 - Include GitHub issue links for historical attribution (the issue that proposed the feature)
 - External references (RFCs, standards) use full URLs
 
-**Example References section:**
+**Example References section** (from a document in `docs/adapter/`):
 ```markdown
 ## References
 
-- [Trust Levels Specification](./trust-levels.md)
-- [Security Model: Gatekeeper](../security/gatekeeper.md)
+- [Trust Levels](./trust-levels.md)
+- [Danger Levels](./danger-levels.md)
+- [Gatekeeper Security Model](../security/gatekeeper.md)
 - [RFC 9110 Section 15](https://www.rfc-editor.org/rfc/rfc9110#section-15)
 - GitHub Issue: [#49](https://github.com/MCPAQL/spec/issues/49)
 ```
