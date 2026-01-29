@@ -301,7 +301,35 @@ Danger level values reference the danger level enum from [Dangerous Operation Cl
 **Expiration is a MUST requirement:**
 - Tokens without expiration MUST be rejected
 - Expired tokens MUST NOT be accepted under any circumstances
-- Clock skew tolerance: implementations MAY allow up to 30 seconds grace
+- Clock skew tolerance: implementations MAY allow up to 30 seconds grace (see below)
+
+**Clock skew tolerance configurability:**
+
+Implementations SHOULD allow operators to configure the clock skew tolerance value:
+
+| Setting | Default | Range | Notes |
+|---------|---------|-------|-------|
+| `clock_skew_tolerance_seconds` | 30 | 0-300 | 0 disables tolerance |
+
+**Configuration guidance:**
+- The default of 30 seconds accommodates typical NTP-synchronized systems
+- Environments with known clock synchronization issues (e.g., air-gapped systems, certain IoT deployments) MAY need higher values
+- Security-sensitive deployments MAY reduce this to 0-5 seconds
+- Values above 60 seconds SHOULD trigger a warning in logs, as they significantly increase the window for replay attacks
+
+**Example configuration:**
+```javascript
+const tokenConfig = {
+  // Default: 30 seconds
+  clock_skew_tolerance_seconds: 30,
+
+  // Strict mode for high-security environments
+  // clock_skew_tolerance_seconds: 5,
+
+  // Relaxed mode for environments with clock sync issues
+  // clock_skew_tolerance_seconds: 120,
+};
+```
 
 ### 5.2 Single-Use Enforcement
 
