@@ -47,16 +47,16 @@
           "description": "READ operations default to safe (read-only, no side effects)"
         },
         "CREATE": {
-          "const": "low",
-          "description": "CREATE operations default to low (additive, easily reversible)"
+          "const": "moderate",
+          "description": "CREATE operations default to moderate (additive, standard confirmation)"
         },
         "UPDATE": {
           "const": "moderate",
           "description": "UPDATE operations default to moderate (modifying, potentially reversible)"
         },
         "DELETE": {
-          "const": "high",
-          "description": "DELETE operations default to high (destructive, difficult to reverse)"
+          "const": "destructive",
+          "description": "DELETE operations default to destructive (enhanced confirmation)"
         },
         "EXECUTE": {
           "$ref": "#/$defs/DangerLevel",
@@ -92,15 +92,15 @@
       "title": "CREATE operation classification",
       "description": "Typical classification for an additive operation",
       "value": {
-        "level": "low",
-        "reason": "Creates new resource, easily reversible by deletion"
+        "level": "moderate",
+        "reason": "Creates new resource, standard confirmation"
       }
     },
     {
       "title": "DELETE operation with confirmation",
       "description": "Destructive operation requiring user confirmation",
       "value": {
-        "level": "high",
+        "level": "destructive",
         "reason": "Permanently removes resource and associated data",
         "requires_confirmation": true,
         "hook_blockable": true

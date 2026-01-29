@@ -170,7 +170,7 @@
         },
         "danger_level": {
           "$ref": "#/$defs/DangerLevel",
-          "default": "low"
+          "default": "moderate"
         },
         "requires_confirmation": {
           "type": "boolean",
