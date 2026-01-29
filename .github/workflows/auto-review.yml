@@ -1,16 +1,19 @@
-name: PR Claude Review
+name: Auto Review PRs
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
     branches:
       - main
       - develop
 
 jobs:
   claude-review:
-    # Only run on actual pull_request events, skip draft PRs
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    if: ${{ github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
