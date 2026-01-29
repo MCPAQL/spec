@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clock skew tolerance configurability documentation for confirmation tokens (#94)
   - Default 30s accommodates typical NTP-synchronized systems
   - Guidance for air-gapped, high-security, and IoT deployments
+- Adapter generator specification (#21)
+  - Schema input format with AdapterSchema interface
+  - Generated output structure and directory layout
+  - Licensing artifacts (AGPL-3.0, NOTICE.md, COMMERCIAL-LICENSE.md)
+  - Provenance information with MCPAQL-PROVENANCE.json
+  - Language template guidance (TypeScript, JavaScript required)
+  - Generator and adapter conformance requirements
 - Conformance Testing specification with Level 1/Level 2 definitions (#10, #55, #56)
   - Level 1 Basic: introspect, endpoint routing, response format, error handling
   - Level 2 Full: field selection, batch operations, cross-cutting params
