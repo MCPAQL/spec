@@ -10,6 +10,9 @@ This directory contains the formal JSON Schema definitions for the MCP-AQL proto
 | [operation-result.schema.json](./operation-result.schema.json) | Discriminated union response format |
 | [introspection-response.schema.json](./introspection-response.schema.json) | Introspection query response format |
 | [danger-level.schema.json](./danger-level.schema.json) | Operation danger classification |
+| [batch-operation.schema.json](./batch-operation.schema.json) | Batch operation request/response format |
+| [field-selection.schema.json](./field-selection.schema.json) | Field selection parameters and metadata |
+| [adapter-schema.schema.json](./adapter-schema.schema.json) | Adapter definition file validation |
 
 ## Usage
 
@@ -89,6 +92,29 @@ Five-level classification for operation safety:
 - `high` - Destructive, difficult to reverse
 - `forbidden` - Never auto-execute
 
+### Batch Operation
+
+Request and response formats for batch operations:
+- `operations` - Array of operation items to execute
+- `results` - Individual results for each operation
+- `summary` - Aggregate success/failure counts
+
+### Field Selection
+
+Field selection parameters for controlling response payloads:
+- `fields` - Array of field paths or preset name
+- `preset` - Predefined field sets (minimal, standard, full)
+- Metadata for introspection of available fields
+
+### Adapter Schema
+
+Validation schema for adapter definition files:
+- `target` - API connection configuration (URL, transport, protocol)
+- `operations` - CRUDE operation mappings
+- `auth` - Authentication configuration
+- `trust` - Trust level metadata
+- `rate_limits` - Rate limiting configuration
+
 ## Conformance
 
 Implementations MUST:
@@ -98,3 +124,15 @@ Implementations MUST:
 
 Implementations SHOULD:
 - Classify operations using `danger-level.schema.json`
+- Support batch operations matching `batch-operation.schema.json`
+- Support field selection matching `field-selection.schema.json`
+
+Adapter Definitions MUST:
+- Validate against `adapter-schema.schema.json`
+
+## Related Issues
+
+- [#9](https://github.com/MCPAQL/spec/issues/9) - Create JSON Schema definitions
+- [#54](https://github.com/MCPAQL/spec/issues/54) - Conformance requirements from DollhouseMCP
+- [#57](https://github.com/MCPAQL/spec/issues/57) - Introspection MUST document params
+- [#58](https://github.com/MCPAQL/spec/issues/58) - Standardize cross-cutting params

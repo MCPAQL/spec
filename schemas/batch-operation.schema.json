@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/batch-operation.schema.json",
+  "title": "MCP-AQL Batch Operation",
+  "description": "Schema for MCP-AQL batch operation request and response formats",
+
+  "$defs": {
+    "BatchOperationItem": {
+      "type": "object",
+      "description": "A single operation within a batch request",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "description": "The operation name to execute (snake_case)",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "params": {
+          "type": "object",
+          "description": "Operation parameters (adapter-specific)",
+          "additionalProperties": true
+        }
+      },
+      "required": ["operation"],
+      "additionalProperties": true
+    },
+
+    "BatchResultItem": {
+      "type": "object",
+      "description": "Result for a single operation in the batch",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based index of this operation in the request array"
+        },
+        "operation": {
+          "type": "string",
+          "description": "The operation name that was executed"
+        },
+        "result": {
+          "$ref": "operation-result.schema.json",
+          "description": "The individual operation result (success or failure)"
+        }
+      },
+      "required": ["index", "operation", "result"],
+      "additionalProperties": false
+    },
+
+    "BatchSummary": {
+      "type": "object",
+      "description": "Summary statistics for the batch execution",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of operations in the batch"
+        },
+        "succeeded": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of operations that succeeded"
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of operations that failed"
+        }
+      },
+      "required": ["total", "succeeded", "failed"],
+      "additionalProperties": false
+    }
+  },
+
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "Batch Request",
+      "description": "Request format for batch operations",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BatchOperationItem"
+          },
+          "minItems": 1,
+          "description": "Array of operations to execute in order"
+        }
+      },
+      "required": ["operations"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "title": "Batch Success Response",
+      "description": "Successful batch response (batch completed processing)",
+      "properties": {
+        "success": {
+          "const": true,
+          "description": "Indicates batch processing completed (individual ops may have failed)"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BatchResultItem"
+          },
+          "description": "Individual results for each operation"
+        },
+        "summary": {
+          "$ref": "#/$defs/BatchSummary",
+          "description": "Summary statistics for the batch"
+        }
+      },
+      "required": ["success", "results", "summary"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "title": "Batch Failure Response",
+      "description": "Failed batch response (batch-level error)",
+      "properties": {
+        "success": {
+          "const": false,
+          "description": "Indicates batch-level failure (malformed request, auth failure)"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Machine-readable error code",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            },
+            "message": {
+              "type": "string",
+              "description": "Human-readable error message"
+            }
+          },
+          "required": ["code", "message"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["success", "error"],
+      "additionalProperties": false
+    }
+  ],
+
+  "examples": [
+    {
+      "operations": [
+        { "operation": "create_item", "params": { "name": "Item A", "category": "product" } },
+        { "operation": "create_item", "params": { "name": "Item B", "category": "service" } }
+      ]
+    },
+    {
+      "success": true,
+      "results": [
+        { "index": 0, "operation": "create_item", "result": { "success": true, "data": { "id": "item_1" } } },
+        { "index": 1, "operation": "create_item", "result": { "success": true, "data": { "id": "item_2" } } }
+      ],
+      "summary": { "total": 2, "succeeded": 2, "failed": 0 }
+    },
+    {
+      "success": false,
+      "error": {
+        "code": "BATCH_VALIDATION_ERROR",
+        "message": "Batch request must contain at least one operation"
+      }
+    }
+  ]
+}
