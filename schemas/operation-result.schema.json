@@ -14,6 +14,36 @@
         },
         "data": {
           "description": "Operation result data (adapter-specific)"
+        },
+        "warnings": {
+          "type": "array",
+          "description": "Optional array of non-fatal warning conditions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Machine-readable warning code",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable warning message"
+              },
+              "details": {
+                "type": "object",
+                "description": "Optional contextual information",
+                "additionalProperties": true
+              },
+              "severity": {
+                "type": "string",
+                "description": "Optional severity level for client prioritization",
+                "enum": ["low", "medium", "high"]
+              }
+            },
+            "required": ["code", "message"],
+            "additionalProperties": false
+          }
         }
       },
       "required": ["success", "data"],
