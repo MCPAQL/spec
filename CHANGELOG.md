@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added reference links to MVP error codes for consistency with Phase 1 codes (#86)
+  - MVP codes reference this specification as primary source
+  - HTTP-mapped codes include RFC 9110 section links
 - Added bidirectional navigation links between spec documents for improved discoverability (#69)
   - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
 - Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
