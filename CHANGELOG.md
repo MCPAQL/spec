@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added clock skew tolerance validation code example to confirmation tokens (#111)
+  - Shows how to apply tolerance by adding to expiry time
+  - Updated validateToken example to reference clock skew handling
 - Added reference links to MVP error codes for consistency with Phase 1 codes (#86)
   - MVP codes reference this specification as primary source
   - HTTP-mapped codes include RFC 9110 section links
