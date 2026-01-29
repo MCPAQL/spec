@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Danger level enum inconsistency across schemas (#99)
+  - Aligned `danger-level.schema.json` and `adapter-schema.schema.json` with `danger-levels.md`
+  - Canonical enum: `["safe", "moderate", "destructive", "dangerous", "forbidden"]`
 - Claude auto-review workflow not triggering on pull_request events (#95)
 
 ### Changed

@@ -25,8 +25,8 @@
 
     "DangerLevel": {
       "type": "string",
-      "enum": ["safe", "low", "medium", "high", "critical"],
-      "description": "Operation danger classification for safety controls"
+      "enum": ["safe", "moderate", "destructive", "dangerous", "forbidden"],
+      "description": "Operation danger classification for safety controls (see docs/adapter/danger-levels.md)"
     },
 
     "TargetConfig": {
@@ -354,7 +354,7 @@
               "name": { "type": "string", "required": true, "description": "Item name" },
               "category": { "type": "string", "required": true, "description": "Item category" }
             },
-            "danger_level": "low"
+            "danger_level": "moderate"
           }
         ],
         "read": [
@@ -384,7 +384,7 @@
               "id": { "type": "string", "required": true, "description": "Item ID" },
               "name": { "type": "string", "required": false, "description": "New name" }
             },
-            "danger_level": "medium"
+            "danger_level": "moderate"
           }
         ],
         "delete": [
@@ -395,7 +395,7 @@
             "params": {
               "id": { "type": "string", "required": true, "description": "Item ID" }
             },
-            "danger_level": "high",
+            "danger_level": "destructive",
             "requires_confirmation": true
           }
         ]

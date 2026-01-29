@@ -7,8 +7,8 @@
     "DangerLevel": {
       "type": "string",
       "title": "Danger Level",
-      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects, maps to READ), 'low' (additive, easily reversible, maps to CREATE), 'moderate' (modifying, potentially reversible, maps to UPDATE), 'high' (destructive, difficult to reverse, maps to DELETE), 'forbidden' (never auto-execute, requires explicit confirmation)",
-      "enum": ["safe", "low", "moderate", "high", "forbidden"]
+      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects), 'moderate' (standard confirmation), 'destructive' (enhanced confirmation), 'dangerous' (explicit unlock required), 'forbidden' (blocked unless admin override)",
+      "enum": ["safe", "moderate", "destructive", "dangerous", "forbidden"]
     },
     "DangerClassification": {
       "type": "object",
