@@ -156,6 +156,35 @@ Follow RFC 2119 for normative language:
 - Include header rows
 - Align columns for readability in source
 
+### Cross-References
+
+Use the following conventions for referencing other content:
+
+**Inline cross-references** (within document text):
+- Use relative file paths for references to other specification documents
+- Example: `[Trust Levels Specification](./trust-levels.md)`
+- Example: `[Error Codes](../error-codes.md)`
+
+**References sections** (at the end of documents):
+- Include relative file paths for related specification documents
+- Include GitHub issue links for historical attribution (the issue that proposed the feature)
+- External references (RFCs, standards) use full URLs
+
+**Example References section:**
+```markdown
+## References
+
+- [Trust Levels Specification](./trust-levels.md)
+- [Security Model: Gatekeeper](../security/gatekeeper.md)
+- [RFC 9110 Section 15](https://www.rfc-editor.org/rfc/rfc9110#section-15)
+- GitHub Issue: [#49](https://github.com/MCPAQL/spec/issues/49)
+```
+
+**Rationale:**
+- File paths enable navigation in any Markdown viewer
+- GitHub issue links preserve historical context and attribution
+- Separating inline (navigational) from footer (attribution) references improves readability
+
 ## Code of Conduct
 
 All participants in the MCP-AQL community are expected to conduct themselves professionally and respectfully. We are committed to providing a welcoming and harassment-free environment for everyone.
