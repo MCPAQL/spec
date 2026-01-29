@@ -25,7 +25,7 @@
 
     "DangerLevel": {
       "type": "string",
-      "enum": ["safe", "moderate", "destructive", "dangerous", "forbidden"],
+      "enum": ["safe", "reversible", "destructive", "dangerous", "forbidden"],
       "description": "Operation danger classification for safety controls (see docs/adapter/danger-levels.md)"
     },
 
@@ -170,7 +170,7 @@
         },
         "danger_level": {
           "$ref": "#/$defs/DangerLevel",
-          "default": "moderate"
+          "default": "reversible"
         },
         "requires_confirmation": {
           "type": "boolean",
@@ -354,7 +354,7 @@
               "name": { "type": "string", "required": true, "description": "Item name" },
               "category": { "type": "string", "required": true, "description": "Item category" }
             },
-            "danger_level": "moderate"
+            "danger_level": "reversible"
           }
         ],
         "read": [
@@ -384,7 +384,7 @@
               "id": { "type": "string", "required": true, "description": "Item ID" },
               "name": { "type": "string", "required": false, "description": "New name" }
             },
-            "danger_level": "moderate"
+            "danger_level": "reversible"
           }
         ],
         "delete": [

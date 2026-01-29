@@ -7,8 +7,8 @@
     "DangerLevel": {
       "type": "string",
       "title": "Danger Level",
-      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects), 'moderate' (standard confirmation), 'destructive' (enhanced confirmation), 'dangerous' (explicit unlock required), 'forbidden' (blocked unless admin override)",
-      "enum": ["safe", "moderate", "destructive", "dangerous", "forbidden"]
+      "description": "Classification of operation risk level. Values: 'safe' (read-only, no side effects), 'reversible' (standard confirmation), 'destructive' (enhanced confirmation), 'dangerous' (explicit unlock required), 'forbidden' (blocked unless admin override)",
+      "enum": ["safe", "reversible", "destructive", "dangerous", "forbidden"]
     },
     "DangerClassification": {
       "type": "object",
@@ -47,12 +47,12 @@
           "description": "READ operations default to safe (read-only, no side effects)"
         },
         "CREATE": {
-          "const": "moderate",
-          "description": "CREATE operations default to moderate (additive, standard confirmation)"
+          "const": "reversible",
+          "description": "CREATE operations default to reversible (additive, standard confirmation)"
         },
         "UPDATE": {
-          "const": "moderate",
-          "description": "UPDATE operations default to moderate (modifying, potentially reversible)"
+          "const": "reversible",
+          "description": "UPDATE operations default to reversible (modifying, potentially reversible)"
         },
         "DELETE": {
           "const": "destructive",
@@ -92,7 +92,7 @@
       "title": "CREATE operation classification",
       "description": "Typical classification for an additive operation",
       "value": {
-        "level": "moderate",
+        "level": "reversible",
         "reason": "Creates new resource, standard confirmation"
       }
     },

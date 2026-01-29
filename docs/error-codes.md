@@ -468,7 +468,7 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
   /** The operation that was attempted */
   operation: string;
   /** The danger level of the operation */
-  danger_level: 'safe' | 'moderate' | 'destructive' | 'dangerous' | 'forbidden';
+  danger_level: 'safe' | 'reversible' | 'destructive' | 'dangerous' | 'forbidden';
   /** Adapter's current trust level */
   adapter_trust: string;
   /** Minimum trust level required */
