@@ -228,6 +228,8 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
+**Reference:** This specification (MVP error code)
+
 ### 4.4 VALIDATION_INVALID_TYPE
 
 **When used:** A parameter was provided with an incorrect type.
@@ -265,6 +267,8 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
+**Reference:** This specification (MVP error code)
+
 ### 4.5 NOT_FOUND_OPERATION
 
 **When used:** The requested operation does not exist in the adapter schema.
@@ -296,6 +300,8 @@ All error codes define a **message format** template that implementations SHOULD
   }
 }
 ```
+
+**Reference:** This specification (MVP error code)
 
 ### 4.6 NOT_FOUND_RESOURCE
 
@@ -331,6 +337,8 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
+**Reference:** This specification (MVP error code); [RFC 9110 Section 15.5.5](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.5) (HTTP 404)
+
 ### 4.7 PERMISSION_DENIED
 
 **When used:** The target API returned HTTP 401 (unauthorized) or 403 (forbidden).
@@ -364,6 +372,8 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
+**Reference:** This specification (MVP error code); [RFC 9110 Section 15.5.2](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.2) (HTTP 401), [Section 15.5.4](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.4) (HTTP 403)
+
 ### 4.8 INTERNAL_ERROR
 
 **When used:** Server error from target API (HTTP 500+) or unexpected error in the runtime.
@@ -394,6 +404,8 @@ All error codes define a **message format** template that implementations SHOULD
   }
 }
 ```
+
+**Reference:** This specification (MVP error code); [RFC 9110 Section 15.6](https://www.rfc-editor.org/rfc/rfc9110#section-15.6) (HTTP 5xx)
 
 ---
 
