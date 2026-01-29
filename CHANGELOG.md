@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced RATE_LIMIT_QUOTA_WARNING note to better distinguish it from error codes (#87)
   - Added warning emoji and IMPORTANT label for visual prominence
   - Cross-reference to Warnings Specification
+- Added explanatory notes for CONFIRMATION_REQUIRED error code category placement (#85)
+  - Explains why it's under "Permission" category (part of permission gating flow)
+  - Documents conditional denial with recovery path pattern
 - Added bidirectional navigation links between spec documents for improved discoverability (#69)
   - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
 - Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
