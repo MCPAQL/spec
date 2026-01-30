@@ -46,6 +46,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Protocol version metadata in introspection response (#138)
+  - `_protocol` object in operations list response
+  - Version, conformance level, mode, and capabilities fields
+  - ProtocolMetadata and ProtocolCapabilities in introspection-response.schema.json
+  - Documentation in introspection.md Section 4.1.1
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors

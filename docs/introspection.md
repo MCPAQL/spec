@@ -240,6 +240,16 @@ interface TypeDetails extends TypeInfo {
 {
   "success": true,
   "data": {
+    "_protocol": {
+      "version": "1.0.0",
+      "conformance": "level-1",
+      "mode": "crude",
+      "capabilities": {
+        "batch": false,
+        "field_selection": true,
+        "warnings": true
+      }
+    },
     "operations": [
       {
         "name": "create_entity",
@@ -280,6 +290,33 @@ interface TypeDetails extends TypeInfo {
   }
 }
 ```
+
+#### 4.1.1 Protocol Metadata
+
+The `_protocol` object in operations list responses provides version and capability information:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `version` | string | MUST | MCP-AQL spec version (semver format) |
+| `conformance` | string | SHOULD | Conformance level ("level-1", "level-2") |
+| `mode` | string | SHOULD | Endpoint mode ("crude", "single", "all") |
+| `capabilities` | object | MAY | Feature flags for optional capabilities |
+
+**Capabilities flags:**
+
+| Capability | Description |
+|------------|-------------|
+| `batch` | Supports batch operations |
+| `field_selection` | Supports field selection in responses |
+| `pagination` | Supports cursor-based pagination |
+| `warnings` | Includes warnings array in responses |
+| `confirmation` | Supports confirmation token flow |
+| `dangerous_operations` | Has danger level classification |
+
+Clients can use protocol metadata to:
+- Adapt behavior to protocol version
+- Detect available features before use
+- Enable graceful degradation for older adapters
 
 ### 4.2 Getting Operation Details
 
