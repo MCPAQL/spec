@@ -76,6 +76,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Level 2 Full: field selection, batch operations, cross-cutting params
   - Five test categories: Introspection Fidelity, Parameter Handling, Error Quality, Round-Trip Integrity, Constraint Documentation
   - Two-tier evaluation methodology (structural + semantic) for LLM discoverability testing
+- mcpaql-conformance CLI interface specification (#116)
+  - Commands: test, report, version
+  - Options: --level, --output, --format, --verbose, --tier, --category, --timeout
+  - Exit codes for different test outcomes (0-5)
+  - Integration guidance with adapter generator
 - JSON Schema definitions for batch operations, field selection, and adapter schemas (#9)
   - `batch-operation.schema.json`: Batch request/response validation
   - `field-selection.schema.json`: Field selection parameters and presets

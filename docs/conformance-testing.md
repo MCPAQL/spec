@@ -18,6 +18,7 @@ This document specifies the conformance testing requirements for MCP-AQL impleme
 4. [Test Requirements](#4-test-requirements)
 5. [Evaluation Methodology](#5-evaluation-methodology)
 6. [Reporting](#6-reporting)
+7. [Command-Line Interface](#7-command-line-interface)
 
 ---
 
@@ -407,6 +408,90 @@ Conformant implementations MAY display badges:
 ### 6.3 Certification Registry
 
 A future certification registry MAY track conformant implementations.
+
+---
+
+## 7. Command-Line Interface
+
+### 7.1 CLI Invocation
+
+Conformance test runners MUST provide a command-line interface:
+
+```bash
+mcpaql-conformance <command> [options]
+```
+
+### 7.2 Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `test` | Run conformance tests against an adapter | `mcpaql-conformance test ./adapter` |
+| `report` | Generate formatted report from test results file | `mcpaql-conformance report ./results.json` |
+| `version` | Print tool version | `mcpaql-conformance version` |
+
+**Note:** The `report` command takes a JSON results file (produced by `test --format json --output results.json`) as input and generates human-readable or markdown output.
+
+### 7.3 Test Command Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--level`, `-l` | Conformance level to test (1 or 2) | `1` |
+| `--output`, `-o` | Output file for results | stdout |
+| `--format`, `-f` | Output format (`json`, `text`, `markdown`) | `text` |
+| `--verbose`, `-v` | Enable verbose output | `false` |
+| `--tier` | Evaluation tier (`1`, `2`, `both`) | `both` |
+| `--category`, `-c` | Run specific test category only | All |
+| `--timeout` | Test timeout in seconds | `30` |
+
+### 7.4 Exit Codes
+
+| Code | Meaning | Description |
+|------|---------|-------------|
+| `0` | All tests passed | Conformance achieved at requested level |
+| `1` | Tests failed | One or more MUST PASS tests failed |
+| `2` | Tests warned | All MUST PASS passed, but SHOULD PASS tests warned |
+| `3` | Configuration error | Invalid adapter path or configuration |
+| `4` | Timeout | Tests exceeded timeout limit |
+| `5` | Internal error | Unexpected error in test runner |
+
+### 7.5 Example Usage
+
+**Run Level 1 conformance tests:**
+```bash
+mcpaql-conformance test ./generated-adapter --level 1
+```
+
+**Run Level 2 tests with JSON output:**
+```bash
+mcpaql-conformance test ./adapter --level 2 --format json --output results.json
+```
+
+**Run specific test category:**
+```bash
+mcpaql-conformance test ./adapter --category "Introspection Fidelity"
+```
+
+**Verbose output with Tier 2 semantic evaluation:**
+```bash
+mcpaql-conformance test ./adapter --level 2 --tier both --verbose
+```
+
+**Generate markdown report from results:**
+```bash
+mcpaql-conformance report ./results.json --format markdown > CONFORMANCE.md
+```
+
+### 7.6 Integration with Generator
+
+The adapter generator (see [Adapter Generator Specification](adapter/generator.md)) SHOULD invoke conformance tests as part of the generation workflow:
+
+```bash
+# Generate adapter and run conformance tests
+mcpaql-generate --schema adapter.yaml --target typescript --output ./adapter
+
+# Test generated adapter
+mcpaql-conformance test ./adapter --level 1
+```
 
 ---
 
