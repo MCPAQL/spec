@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Canonical enum: `["safe", "reversible", "destructive", "dangerous", "forbidden"]`
 - Claude auto-review workflow not triggering on pull_request events (#95)
 
+### Removed
+
+- Internal working documents from spec repository (#139)
+  - docs/handoff/ - Implementation handoff notes
+  - docs/session-notes/ - Session logs
+  - docs/agent/ - Agent development logs
+  - docs/ISSUE_MAPPING.md - Issue tracker mapping
+  - docs/process/session-notes-2026-01-26-prioritization.md - Prioritization session
+
 ### Changed
 
 - Minor documentation improvements from Sprint 4 review feedback (#129)
