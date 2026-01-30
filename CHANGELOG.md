@@ -65,6 +65,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Protocol version metadata in introspection response (#138)
+  - `_protocol` object in operations list response
+  - Version, conformance level, mode, and capabilities fields
+  - ProtocolMetadata and ProtocolCapabilities in introspection-response.schema.json
+  - Documentation in introspection.md Section 4.1.1
 - Extension fields in operation-result schema for documented features (#134)
   - Success: `_meta` (response metadata), `results`/`summary` (batch operations)
   - Failure: `confirmation` (gating flow), deprecation fields
