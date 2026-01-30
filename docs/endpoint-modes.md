@@ -4,6 +4,8 @@
 **Status:** Draft
 **Last Updated:** 2026-01-16
 
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
+
 ## Abstract
 
 MCP-AQL supports two operational modes for exposing endpoints to clients: CRUDE mode (5 semantic endpoints) and Single mode (1 unified endpoint). This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
@@ -424,5 +426,6 @@ Conforming implementations MAY:
 
 - [MCP-AQL Specification v1.0.0-draft](versions/v1.0.0-draft.md)
 - [CRUDE Pattern Specification](crude-pattern.md)
+- [MCP Integration Specification](mcp-integration.md)
 - [Gatekeeper Security Model](security/gatekeeper.md)
 - [Introspection Specification](introspection.md)

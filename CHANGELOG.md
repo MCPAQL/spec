@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MUST/SHOULD contradictions across spec documents (#136)
+  - Routing enforcement: operations.md now uses MUST (aligns with v1.0.0-draft.md)
+  - Endpoint mode support: overview.md now uses MUST (aligns with v1.0.0-draft.md)
+  - Added informative banners to supporting documents (overview, operations, endpoint-modes, introspection, crude-pattern)
+  - Added normative status declaration to v1.0.0-draft.md establishing document hierarchy
+- Error examples in operations.md now use structured format (#133)
+  - Updated TypeScript interface to use `ErrorDetail` instead of `error: string`
+  - All error response examples now include `code`, `message`, and optional `details`
+  - Error category table aligned with error-codes.md taxonomy
+  - Added cross-references to Structured Error Codes Specification
 - Danger level enum inconsistency across schemas (#99)
   - Aligned all schemas and docs with canonical `danger-levels.md` spec
   - Renamed `moderate` → `reversible` for clearer semantic meaning
@@ -52,6 +62,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Optimistic concurrency control with ETag/version guidance
   - Protocol metadata extension for concurrency discovery
   - Cross-reference from CONFLICT_VERSION_MISMATCH in error-codes.md
+- Constraint metadata fields in ParameterInfo schema (#135)
+  - enum, minimum, maximum, minLength, maxLength, pattern, format, items, sensitive
+  - Updated introspection-response.schema.json with full constraint support
+  - Updated introspection.md Section 3.4 with constraint field documentation
+  - Added examples showing constraint usage in operation details
+- MCP Integration specification for protocol bridging (#132)
+  - Tool description templates with normative `introspect` operation reference
+  - Input schema composition rules for CRUDE and Single mode
+  - Error mapping between MCP-AQL and MCP protocols
+  - Progress notification mapping for EXECUTE operations
+  - Multi-adapter deployment patterns with tool prefix support
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors
