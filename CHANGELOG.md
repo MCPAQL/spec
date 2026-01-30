@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- MCP Integration specification for protocol bridging (#132)
+  - Tool description templates with normative `introspect` operation reference
+  - Input schema composition rules for CRUDE and Single mode
+  - Error mapping between MCP-AQL and MCP protocols
+  - Progress notification mapping for EXECUTE operations
+  - Multi-adapter deployment patterns with tool prefix support
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors

@@ -424,5 +424,6 @@ Conforming implementations MAY:
 
 - [MCP-AQL Specification v1.0.0-draft](versions/v1.0.0-draft.md)
 - [CRUDE Pattern Specification](crude-pattern.md)
+- [MCP Integration Specification](mcp-integration.md)
 - [Gatekeeper Security Model](security/gatekeeper.md)
 - [Introspection Specification](introspection.md)
