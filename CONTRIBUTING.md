@@ -169,7 +169,7 @@ Use the following conventions for referencing other content:
   - `[Gatekeeper](../security/gatekeeper.md)` → links to `docs/security/gatekeeper.md`
 
 **Inline GitHub issue references** (within document text):
-- Use shorthand `#123` format when discussing rationale or history inline
+- Use shorthand `#123` format when discussing rationale or historical context inline
 - GitHub auto-links `#123` to the issue, so explicit URLs are not required
 - Example: "This feature was introduced to address #88"
 - Example: "See #42 for the original design discussion"

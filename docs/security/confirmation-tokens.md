@@ -310,13 +310,13 @@ Implementations SHOULD allow operators to configure the clock skew tolerance val
 
 | Setting | Default | Range | Notes |
 |---------|---------|-------|-------|
-| `clock_skew_tolerance_seconds` | 30 | 0-300 | 0 disables tolerance |
+| `clock_skew_tolerance_seconds` | 30 | 0-300 | 0 disables tolerance (strictest mode) |
 
 **Configuration guidance:**
 - The default of 30 seconds accommodates typical NTP-synchronized systems
 - Environments with known clock synchronization issues (e.g., air-gapped systems, certain IoT deployments) MAY need higher values
 - Security-sensitive deployments MAY reduce this to 0-5 seconds
-- Values above 60 seconds SHOULD trigger a warning in logs, as they significantly increase the window for replay attacks
+- Values above 60 seconds SHOULD trigger a warning in logs, as they significantly increase the window for replay attacks (see [Section 6.1](#61-replay-attack-prevention))
 
 **Deployment environment recommendations:**
 

@@ -214,7 +214,7 @@ For sorting, filtering, and programmatic comparison, implementations SHOULD use 
 | `low` | 2 | Third (least urgent) |
 
 This mapping ensures:
-- Lower numeric values indicate higher urgency
+- Lower numeric values indicate higher urgency (consistent with syslog and common logging frameworks)
 - Implementations can store severity in databases as integers
 - Threshold-based filtering is consistent (e.g., "show severity ≤ 1" means high and medium)
 - Cross-implementation interoperability when comparing severity levels
