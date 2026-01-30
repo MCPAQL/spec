@@ -4,6 +4,8 @@
 > consolidates discrete MCP tools into 5 CRUDE endpoints (Create, Read, Update,
 > Delete, Execute), providing significant token reduction while maintaining full
 > functionality.
+>
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
 ## Table of Contents
 
@@ -118,7 +120,7 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
 
 ## Endpoint Modes
 
-MCP-AQL supports two operational modes. Implementations SHOULD support at least one mode and MAY support both:
+MCP-AQL supports two operational modes. Implementations MUST support at least one mode and SHOULD support both:
 
 ### CRUDE Mode
 

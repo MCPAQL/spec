@@ -4,6 +4,8 @@
 **Status:** Draft
 **Last Updated:** 2026-01-16
 
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
+
 ## Abstract
 
 This document specifies how operations are defined, documented, and invoked in MCP-AQL adapters. It covers the operation input format, response format, parameter conventions, operation schemas, batch operations, and error handling patterns.
@@ -451,7 +453,7 @@ Operations MUST be assigned to endpoints based on their semantics:
 
 ### 6.3 Endpoint Routing Enforcement
 
-Adapters SHOULD validate that operations are invoked via their designated endpoint. An operation assigned to CREATE SHOULD NOT execute when called via the DELETE endpoint.
+Adapters MUST validate that operations are invoked via their designated endpoint. An operation assigned to CREATE MUST NOT execute when called via the DELETE endpoint.
 
 When an operation is routed to the wrong endpoint, adapters SHOULD return an error:
 
