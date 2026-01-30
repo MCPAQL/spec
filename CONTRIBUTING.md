@@ -168,6 +168,14 @@ Use the following conventions for referencing other content:
   - `[Error Codes](../error-codes.md)` → links to `docs/error-codes.md`
   - `[Gatekeeper](../security/gatekeeper.md)` → links to `docs/security/gatekeeper.md`
 
+**Inline GitHub issue references** (within document text):
+- Use shorthand `#123` format when discussing rationale or history inline
+- GitHub auto-links `#123` to the issue, so explicit URLs are not required
+- Example: "This feature was introduced to address #88"
+- Example: "See #42 for the original design discussion"
+- Reserve full URLs for external repositories: `[org/repo#123](<URL>)`
+  - Example: `[MCPAQL/spec#49](https://github.com/MCPAQL/spec/issues/49)`
+
 **References sections** (at the end of documents):
 - Include relative file paths for related specification documents
 - Include GitHub issue links for historical attribution (the issue that proposed the feature)
@@ -187,6 +195,8 @@ Use the following conventions for referencing other content:
 **Rationale:**
 - File paths enable navigation in any Markdown viewer
 - GitHub issue links preserve historical context and attribution
+- Inline `#123` references work naturally in prose when discussing rationale
+- Footer references provide formal attribution without cluttering narrative text
 - Separating inline (navigational) from footer (attribution) references improves readability
 
 ## Code of Conduct
