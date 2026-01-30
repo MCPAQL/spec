@@ -4,6 +4,8 @@
 **Status:** Draft
 **Last Updated:** 2026-01-16
 
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
+
 ## Abstract
 
 This document specifies the MCP-AQL introspection system, which provides GraphQL-style discovery capabilities for operations, parameters, types, and examples at runtime. The introspection system is the only operation that MCP-AQL mandates all adapters implement, enabling AI models to discover capabilities dynamically.

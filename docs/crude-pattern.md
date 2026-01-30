@@ -4,6 +4,8 @@
 **Status:** Draft
 **Last Updated:** 2026-01-14
 
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
+
 ## Abstract
 
 This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoint pattern, which extends traditional CRUD semantics with an Execute endpoint for runtime lifecycle operations.

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MUST/SHOULD contradictions across spec documents (#136)
+  - Routing enforcement: operations.md now uses MUST (aligns with v1.0.0-draft.md)
+  - Endpoint mode support: overview.md now uses MUST (aligns with v1.0.0-draft.md)
+  - Added informative banners to supporting documents (overview, operations, endpoint-modes, introspection, crude-pattern)
+  - Added normative status declaration to v1.0.0-draft.md establishing document hierarchy
 - Danger level enum inconsistency across schemas (#99)
   - Aligned all schemas and docs with canonical `danger-levels.md` spec
   - Renamed `moderate` → `reversible` for clearer semantic meaning
