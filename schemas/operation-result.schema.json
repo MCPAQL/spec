@@ -69,7 +69,8 @@
             "properties": {
               "index": {
                 "type": "integer",
-                "description": "Position in the original batch request"
+                "description": "Position in the original batch request",
+                "minimum": 0
               },
               "operation": {
                 "type": "string",
