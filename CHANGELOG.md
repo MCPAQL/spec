@@ -41,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- SCHEMA_ error code category for generator validation errors (#128)
+  - Added to Category Prefixes table in error-codes.md
+  - Explanatory note distinguishing generator-time from runtime errors
+  - Cross-reference to adapter generator specification Section 2.2
 - Warning deduplication guidance in warnings specification (#92)
   - Server-side deduplication strategies with optional occurrence_count field
   - Client-side deduplication patterns (session, time-based, code filtering)
