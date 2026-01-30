@@ -268,9 +268,10 @@ function validateToken(token, operation, params) {
     return { valid: false, code: 'TOKEN_SCOPE_MISMATCH' };
   }
 
-  // Check expiry
-  if (new Date(stored.expires_at) < new Date()) {
-    return { valid: false, code: 'TOKEN_EXPIRED' };
+  // Check expiry (with optional clock skew tolerance, see Section 5.1)
+  const expiryResult = checkTokenExpiry(stored, config);
+  if (!expiryResult.valid) {
+    return expiryResult;
   }
 
   // Check consumption
@@ -329,6 +330,28 @@ const tokenConfig = {
   // Relaxed mode for environments with clock sync issues
   // clock_skew_tolerance_seconds: 120,
 };
+```
+
+**Applying tolerance in validation:**
+
+The tolerance is added to the expiry time, accepting tokens that expired within the tolerance window:
+
+```javascript
+function checkTokenExpiry(stored, config) {
+  const now = new Date();
+  const expiresAt = new Date(stored.expires_at);
+
+  // Add tolerance to expiry time (not subtract from current time)
+  // This accepts tokens expired within the tolerance window
+  const toleranceMs = (config.clock_skew_tolerance_seconds || 30) * 1000;
+  const expiryWithTolerance = new Date(expiresAt.getTime() + toleranceMs);
+
+  if (now > expiryWithTolerance) {
+    return { valid: false, code: 'TOKEN_EXPIRED' };
+  }
+
+  return { valid: true };
+}
 ```
 
 ### 5.2 Single-Use Enforcement
