@@ -689,12 +689,17 @@ mcpaql-generate --schema <path> --target <language> [options]
 |----------|-------------|---------|
 | `--output`, `-o` | Output directory for generated code | `./generated` |
 | `--config`, `-c` | Path to generator configuration file | None |
-| `--strict` | Enable strict validation mode | `false` |
+| `--output-format` | Output format (`human` or `json`) | `human` |
+| `--strict` | Enable strict validation mode (fail on warnings, enforce all optional constraints) | `false` |
 | `--dry-run` | Validate schema without generating output | `false` |
 | `--verbose`, `-v` | Enable verbose output | `false` |
 | `--quiet`, `-q` | Suppress non-error output | `false` |
 | `--version` | Print generator version and exit | - |
 | `--help`, `-h` | Print help message and exit | - |
+
+**Notes:**
+- `--verbose` and `--quiet` are mutually exclusive. If both are specified, generators MUST exit with code 3 (Configuration error).
+- When both `--config` and individual CLI arguments are provided, CLI arguments MUST take precedence over configuration file settings.
 
 ### 7.4 Exit Codes
 
@@ -703,7 +708,7 @@ Generators MUST use consistent exit codes:
 | Code | Meaning | Description |
 |------|---------|-------------|
 | `0` | Success | Generation completed successfully |
-| `1` | General error | Unspecified error occurred |
+| `1` | Internal error | Unexpected error (assertion failures, uncaught exceptions) |
 | `2` | Schema validation error | Input schema is invalid |
 | `3` | Configuration error | Invalid generator configuration |
 | `4` | I/O error | File read/write failure |
@@ -721,7 +726,7 @@ mcpaql-generate --schema adapter.yaml --target typescript
 mcpaql-generate --schema adapter.yaml --target typescript --output-format json
 ```
 
-**JSON output structure:**
+**JSON success output:**
 ```json
 {
   "success": true,
@@ -737,6 +742,26 @@ mcpaql-generate --schema adapter.yaml --target typescript --output-format json
     "generator_version": "1.2.3"
   },
   "warnings": []
+}
+```
+
+**JSON error output:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": 2,
+    "type": "SCHEMA_VALIDATION_ERROR",
+    "message": "Schema validation failed",
+    "details": [
+      {
+        "path": "endpoints.read[0].params[2].name",
+        "code": "SCHEMA_INVALID_NAME",
+        "message": "Parameter name 'userName' must be snake_case",
+        "suggestion": "Use 'user_name' instead"
+      }
+    ]
+  }
 }
 ```
 
