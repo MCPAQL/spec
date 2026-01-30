@@ -72,8 +72,35 @@ if (!validate(response)) {
 { success: true, data: any }
 
 // Failure
-{ success: false, error: string, errorCode?: string }
+{ success: false, error: { code: string, message: string, details?: object } }
 ```
+
+#### Extension Fields
+
+The operation result schema defines explicit extension fields for documented protocol features. These fields are optional and only included when their associated features are used.
+
+**Success Response Extensions:**
+
+| Field | Type | Purpose | Reference |
+|-------|------|---------|-----------|
+| `warnings` | array | Non-fatal warning conditions | [Warnings Specification](../docs/features/warnings.md) |
+| `_meta` | object | Response metadata (request_id, duration_ms) | [Operations Specification](../docs/operations.md) Section 3.4 |
+| `results` | array | Individual results for batch operations | [Operations Specification](../docs/operations.md) Section 7.2 |
+| `summary` | object | Aggregate counts for batch operations | [Operations Specification](../docs/operations.md) Section 7.2 |
+
+**Failure Response Extensions:**
+
+| Field | Type | Purpose | Reference |
+|-------|------|---------|-----------|
+| `confirmation` | object | Confirmation token and prompt for gated operations | [Confirmation Tokens](../docs/security/confirmation-tokens.md) |
+| `deprecated` | boolean | Indicates deprecated operation/response | [Breaking Changes](../docs/process/breaking-changes.md) |
+| `deprecationMessage` | string | Human-readable deprecation notice | [Breaking Changes](../docs/process/breaking-changes.md) |
+| `deprecatedSince` | string | Version when deprecated | [Breaking Changes](../docs/process/breaking-changes.md) |
+| `removalVersion` | string | Version when removal planned | [Breaking Changes](../docs/process/breaking-changes.md) |
+
+#### Metadata Field Convention
+
+Fields prefixed with underscore (`_meta`, `_debug`) are reserved for protocol-level metadata that is not part of the operation's domain response. Implementations SHOULD use this convention for any additional metadata fields.
 
 ### Introspection Response
 

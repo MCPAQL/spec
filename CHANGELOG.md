@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Canonical enum: `["safe", "reversible", "destructive", "dangerous", "forbidden"]`
 - Claude auto-review workflow not triggering on pull_request events (#95)
 
+### Removed
+
+- Internal working documents from spec repository (#139)
+  - docs/handoff/ - Implementation handoff notes
+  - docs/session-notes/ - Session logs
+  - docs/agent/ - Agent development logs
+  - docs/ISSUE_MAPPING.md - Issue tracker mapping
+  - docs/process/session-notes-2026-01-26-prioritization.md - Prioritization session
+
 ### Changed
 
 - Minor documentation improvements from Sprint 4 review feedback (#129)
@@ -61,6 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Version, conformance level, mode, and capabilities fields
   - ProtocolMetadata and ProtocolCapabilities in introspection-response.schema.json
   - Documentation in introspection.md Section 4.1.1
+- Extension fields in operation-result schema for documented features (#134)
+  - Success: `_meta` (response metadata), `results`/`summary` (batch operations)
+  - Failure: `confirmation` (gating flow), deprecation fields
+  - Schema documentation in schemas/README.md with field reference table
 - Request concurrency model documentation (#137)
   - Section 9.3 in v1.0.0-draft.md with concurrency categories
   - Serialized, read-concurrent, fully-concurrent, resource-locked modes
