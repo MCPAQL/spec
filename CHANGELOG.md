@@ -46,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Extension fields in operation-result schema for documented features (#134)
+  - Success: `_meta` (response metadata), `results`/`summary` (batch operations)
+  - Failure: `confirmation` (gating flow), deprecation fields
+  - Schema documentation in schemas/README.md with field reference table
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors
