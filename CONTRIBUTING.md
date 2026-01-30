@@ -170,7 +170,8 @@ Use the following conventions for referencing other content:
 - GitHub auto-links `#123` to the issue, so explicit URLs are not required
 - Example: "This feature was introduced to address #88"
 - Example: "See #42 for the original design discussion"
-- Reserve full URLs for external repositories: `[org/repo#123](https://github.com/org/repo/issues/123)`
+- Reserve full URLs for external repositories: `[org/repo#123](<URL>)`
+  - Example: `[MCPAQL/spec#49](https://github.com/MCPAQL/spec/issues/49)`
 
 **References sections** (at the end of documents):
 - Include relative file paths for related specification documents
