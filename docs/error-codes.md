@@ -984,7 +984,7 @@ Future specifications may add:
 
 **Conflict Handling:**
 - `CONFLICT_ALREADY_EXISTS` - Resource already exists
-- `CONFLICT_VERSION_MISMATCH` - Optimistic locking failure
+- `CONFLICT_VERSION_MISMATCH` - Optimistic locking failure (see [Request Concurrency](./versions/v1.0.0-draft.md#93-request-concurrency))
 
 **Enhanced Validation:**
 - `VALIDATION_INVALID_ENUM` - Value not in allowed enum
