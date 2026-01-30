@@ -259,10 +259,74 @@
       ]
     },
 
+    "ProtocolCapabilities": {
+      "type": "object",
+      "description": "Feature flags for optional protocol capabilities",
+      "properties": {
+        "batch": {
+          "type": "boolean",
+          "description": "Supports batch operations"
+        },
+        "field_selection": {
+          "type": "boolean",
+          "description": "Supports field selection in responses"
+        },
+        "pagination": {
+          "type": "boolean",
+          "description": "Supports cursor-based pagination"
+        },
+        "warnings": {
+          "type": "boolean",
+          "description": "Includes warnings array in responses"
+        },
+        "confirmation": {
+          "type": "boolean",
+          "description": "Supports confirmation token flow for dangerous operations"
+        },
+        "dangerous_operations": {
+          "type": "boolean",
+          "description": "Has danger level classification for operations"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "ProtocolMetadata": {
+      "type": "object",
+      "description": "Protocol version and capability information",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "MCP-AQL specification version (semver format)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.-]+)?$"
+        },
+        "conformance": {
+          "type": "string",
+          "description": "Conformance level",
+          "enum": ["level-1", "level-2"]
+        },
+        "mode": {
+          "type": "string",
+          "description": "Endpoint mode",
+          "enum": ["crude", "single", "all"]
+        },
+        "capabilities": {
+          "$ref": "#/$defs/ProtocolCapabilities",
+          "description": "Optional feature capabilities"
+        }
+      },
+      "required": ["version"],
+      "additionalProperties": true
+    },
+
     "OperationsListData": {
       "type": "object",
       "description": "Response data for listing all operations",
       "properties": {
+        "_protocol": {
+          "$ref": "#/$defs/ProtocolMetadata",
+          "description": "Protocol version and capability metadata"
+        },
         "operations": {
           "type": "array",
           "items": {
@@ -409,6 +473,19 @@
     {
       "success": true,
       "data": {
+        "_protocol": {
+          "version": "1.0.0-alpha.1",
+          "conformance": "level-1",
+          "mode": "crude",
+          "capabilities": {
+            "batch": false,
+            "field_selection": true,
+            "pagination": true,
+            "warnings": true,
+            "confirmation": true,
+            "dangerous_operations": true
+          }
+        },
         "operations": [
           {
             "name": "create_entity",

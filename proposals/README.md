@@ -44,7 +44,7 @@ Proposal numbers are assigned sequentially by maintainers when a proposal is acc
 
 ```bash
 # Copy template
-cp proposals/TEMPLATE.md proposals/NNNN-your-proposal-name.md
+cp proposals/TEMPLATE.md proposals/draft-your-proposal-name.md
 
 # Edit with your proposal content
 # Submit as a PR

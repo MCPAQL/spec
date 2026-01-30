@@ -69,6 +69,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - proposals/README.md with process overview
   - proposals/TEMPLATE.md with standard proposal format
   - Reference from docs/process/rfc-process.md
+- Protocol version metadata in introspection response (#138)
+  - `_protocol` object in operations list response
+  - Version, conformance level, mode, and capabilities fields
+  - ProtocolMetadata and ProtocolCapabilities in introspection-response.schema.json
+  - Documentation in introspection.md Section 4.1.1
+- Extension fields in operation-result schema for documented features (#134)
+  - Success: `_meta` (response metadata), `results`/`summary` (batch operations)
+  - Failure: `confirmation` (gating flow), deprecation fields
+  - Schema documentation in schemas/README.md with field reference table
 - Request concurrency model documentation (#137)
   - Section 9.3 in v1.0.0-draft.md with concurrency categories
   - Serialized, read-concurrent, fully-concurrent, resource-locked modes
