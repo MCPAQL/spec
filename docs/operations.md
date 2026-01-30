@@ -108,10 +108,18 @@ interface OperationSuccess {
 
 interface OperationFailure {
   success: false;
-  error: string;   // Human-readable error message
-  data?: never;    // MUST NOT be present
+  error: ErrorDetail;  // Structured error information
+  data?: never;        // MUST NOT be present
+}
+
+interface ErrorDetail {
+  code: string;     // Machine-readable error code (e.g., "NOT_FOUND_RESOURCE")
+  message: string;  // Human-readable error message
+  details?: Record<string, unknown>;  // Optional contextual information
 }
 ```
+
+> **Note:** See [Structured Error Codes Specification](./error-codes.md) for the complete error code taxonomy.
 
 ### 3.2 Success Response
 
@@ -136,12 +144,19 @@ A successful operation MUST return:
 A failed operation MUST return:
 
 - `success`: The boolean value `false`
-- `error`: A human-readable error message
+- `error`: A structured error object with `code` and `message`
 
 ```json
 {
   "success": false,
-  "error": "Item with ID 'item_999' not found"
+  "error": {
+    "code": "NOT_FOUND_RESOURCE",
+    "message": "Item with ID 'item_999' not found",
+    "details": {
+      "resource_type": "item",
+      "resource_id": "item_999"
+    }
+  }
 }
 ```
 
@@ -443,7 +458,15 @@ When an operation is routed to the wrong endpoint, adapters SHOULD return an err
 ```json
 {
   "success": false,
-  "error": "Operation 'create_item' must use CREATE endpoint, not DELETE"
+  "error": {
+    "code": "VALIDATION_ENDPOINT_MISMATCH",
+    "message": "Operation 'create_item' must use CREATE endpoint, not DELETE",
+    "details": {
+      "operation": "create_item",
+      "expected_endpoint": "CREATE",
+      "actual_endpoint": "DELETE"
+    }
+  }
 }
 ```
 
@@ -486,10 +509,11 @@ Batch responses MUST include individual results for each operation:
 ```json
 {
   "success": true,
+  "data": null,
   "results": [
-    { "index": 0, "operation": "create_item", "result": { "success": true, "data": { ... } } },
-    { "index": 1, "operation": "create_item", "result": { "success": true, "data": { ... } } },
-    { "index": 2, "operation": "create_item", "result": { "success": false, "error": "Duplicate name" } }
+    { "index": 0, "operation": "create_item", "result": { "success": true, "data": { "id": "item_1" } } },
+    { "index": 1, "operation": "create_item", "result": { "success": true, "data": { "id": "item_2" } } },
+    { "index": 2, "operation": "create_item", "result": { "success": false, "error": { "code": "CONFLICT_ALREADY_EXISTS", "message": "Item with name 'Item C' already exists" } } }
   ],
   "summary": {
     "total": 3,
@@ -524,58 +548,60 @@ Mixing operations across endpoints in a single batch is NOT RECOMMENDED. Impleme
 
 ### 8.1 Error Categories
 
-Adapters SHOULD categorize errors consistently:
+Adapters MUST categorize errors using structured error codes. The table below shows error categories and their corresponding codes:
 
-| Category | Description | Example Message |
-|----------|-------------|-----------------|
-| Missing Parameter | Required parameter not provided | "Missing required parameter 'name'" |
-| Invalid Type | Parameter has wrong type | "Parameter 'price' must be a number" |
-| Validation Error | Parameter fails constraints | "Parameter 'category' must be one of: product, service" |
-| Not Found | Referenced resource doesn't exist | "Item 'item_999' not found" |
-| Already Exists | Resource with identifier exists | "Item with name 'Widget' already exists" |
-| Endpoint Mismatch | Operation sent to wrong endpoint | "Operation 'create_item' must use CREATE endpoint" |
-| Unknown Operation | Operation name not recognized | "Unknown operation 'create_widget'" |
-| Unauthorized | Permission denied | "Operation 'delete_item' not permitted for this user" |
+| Category | Error Code | Example Message |
+|----------|------------|-----------------|
+| Missing Parameter | `VALIDATION_MISSING_PARAM` | "Missing required parameter 'name'" |
+| Invalid Type | `VALIDATION_INVALID_TYPE` | "Parameter 'price' expected 'number', got 'string'" |
+| Resource Not Found | `NOT_FOUND_RESOURCE` | "Item 'item_999' not found" |
+| Unknown Operation | `NOT_FOUND_OPERATION` | "Unknown operation: 'create_widget'" |
+| Permission Denied | `PERMISSION_DENIED` | "Permission denied: requires 'admin' scope" |
+| Rate Limited | `RATE_LIMIT_EXCEEDED` | "API rate limit exceeded" |
+| Internal Error | `INTERNAL_ERROR` | "Internal error: database connection failed" |
+
+See [Structured Error Codes Specification](./error-codes.md) for detailed error code definitions and usage.
 
 ### 8.2 Error Response Structure
 
-**Basic format (REQUIRED):**
-```json
-{
-  "success": false,
-  "error": "Human-readable error message"
-}
-```
+All error responses MUST use structured error objects:
 
-**Extended format (OPTIONAL):**
 ```json
 {
   "success": false,
-  "error": "Human-readable error message",
-  "errorCode": "NOT_FOUND",
-  "details": {
-    "resource": "item",
-    "id": "item_999"
+  "error": {
+    "code": "NOT_FOUND_RESOURCE",
+    "message": "Item 'item_999' not found",
+    "details": {
+      "resource_type": "item",
+      "resource_id": "item_999"
+    }
   }
 }
 ```
 
+The `error` object:
+- MUST include `code` - A machine-readable error code from the [error code taxonomy](./error-codes.md)
+- MUST include `message` - A human-readable error message
+- MAY include `details` - Additional contextual information for debugging
+
+See [Structured Error Codes Specification](./error-codes.md) for the complete error code registry and usage guidelines.
+
 ### 8.3 Standard Error Codes
 
-Adapters MAY use standardized error codes for programmatic handling:
+Adapters MUST use standardized error codes for programmatic handling. Common codes include:
 
 | Code | Description |
 |------|-------------|
-| `MISSING_PARAMETER` | Required parameter not provided |
-| `INVALID_TYPE` | Parameter type mismatch |
-| `INVALID_VALUE` | Parameter value fails validation |
-| `NOT_FOUND` | Resource not found |
-| `ALREADY_EXISTS` | Resource with identifier exists |
-| `ENDPOINT_MISMATCH` | Operation routed to wrong endpoint |
-| `UNKNOWN_OPERATION` | Operation name not recognized |
-| `UNAUTHORIZED` | Operation not permitted |
-| `RATE_LIMITED` | Too many requests |
+| `VALIDATION_MISSING_PARAM` | Required parameter not provided |
+| `VALIDATION_INVALID_TYPE` | Parameter type mismatch |
+| `NOT_FOUND_OPERATION` | Operation name not recognized |
+| `NOT_FOUND_RESOURCE` | Resource not found |
+| `PERMISSION_DENIED` | Operation not permitted |
+| `RATE_LIMIT_EXCEEDED` | Too many requests |
 | `INTERNAL_ERROR` | Server error |
+
+See [Structured Error Codes Specification](./error-codes.md) for the complete error code registry including Phase 1 robustness codes.
 
 ### 8.4 Error Message Guidelines
 
