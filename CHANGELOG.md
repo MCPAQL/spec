@@ -51,6 +51,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Constraint metadata fields in ParameterInfo schema (#135)
+  - enum, minimum, maximum, minLength, maxLength, pattern, format, items, sensitive
+  - Updated introspection-response.schema.json with full constraint support
+  - Updated introspection.md Section 3.4 with constraint field documentation
+  - Added examples showing constraint usage in operation details
 - MCP Integration specification for protocol bridging (#132)
   - Tool description templates with normative `introspect` operation reference
   - Input schema composition rules for CRUDE and Single mode
