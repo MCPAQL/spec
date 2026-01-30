@@ -78,8 +78,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Two-tier evaluation methodology (structural + semantic) for LLM discoverability testing
 - mcpaql-conformance CLI interface specification (#116)
   - Commands: test, report, version
-  - Options: --level, --format, --verbose, --tier, --category
-  - Exit codes for different test outcomes
+  - Options: --level, --output, --format, --verbose, --tier, --category, --timeout
+  - Exit codes for different test outcomes (0-5)
   - Integration guidance with adapter generator
 - JSON Schema definitions for batch operations, field selection, and adapter schemas (#9)
   - `batch-operation.schema.json`: Batch request/response validation

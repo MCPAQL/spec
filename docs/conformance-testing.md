@@ -426,8 +426,10 @@ mcpaql-conformance <command> [options]
 | Command | Description | Example |
 |---------|-------------|---------|
 | `test` | Run conformance tests against an adapter | `mcpaql-conformance test ./adapter` |
-| `report` | Generate a conformance report | `mcpaql-conformance report ./results.json` |
+| `report` | Generate formatted report from test results file | `mcpaql-conformance report ./results.json` |
 | `version` | Print tool version | `mcpaql-conformance version` |
+
+**Note:** The `report` command takes a JSON results file (produced by `test --format json --output results.json`) as input and generates human-readable or markdown output.
 
 ### 7.3 Test Command Options
 
