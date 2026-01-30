@@ -263,6 +263,70 @@ endpoints:
         path: /repos/{owner}/{repo}
 ```
 
+### 2.4 Schema Version Evolution
+
+**Version format rationale:**
+
+The `schema_version` field uses a simplified `major.minor` format (e.g., `'1.0'`) rather than full semver:
+
+- **Schema version** (`schema_version: '1.0'`): Defines the input format the generator expects
+- **Adapter version** (`adapter.version: '1.0.0'`): Follows semver for the generated adapter's release lifecycle
+
+This distinction separates concerns: schema format stability vs. adapter functionality evolution.
+
+**Evolution strategy:**
+
+| Change Type | Version Increment | Example |
+|-------------|-------------------|---------|
+| Breaking schema changes | Major (`1.0` → `2.0`) | Removing required fields, restructuring `endpoints` |
+| New optional features | Minor (`1.0` → `1.1`) | Adding `auth.config.scopes` field |
+| Clarifications, fixes | No change | Documentation updates, validation improvements |
+
+**Backward compatibility requirements:**
+
+Generators SHOULD support multiple schema versions:
+
+1. **Current version** - Full support (REQUIRED)
+2. **Previous major version** - Conversion/migration support (RECOMMENDED)
+3. **Older versions** - Reject with clear upgrade guidance (OPTIONAL)
+
+**Version handling in generators:**
+
+```javascript
+function validateSchemaVersion(schema) {
+  const supportedVersions = ['1.0', '1.1'];
+  const deprecatedVersions = ['0.9'];
+
+  if (supportedVersions.includes(schema.schema_version)) {
+    return { valid: true };
+  }
+
+  if (deprecatedVersions.includes(schema.schema_version)) {
+    return {
+      valid: false,
+      code: 'SCHEMA_VERSION_DEPRECATED',
+      message: `Schema version '${schema.schema_version}' is deprecated`,
+      migration_guide: 'https://mcpaql.org/docs/schema-migration'
+    };
+  }
+
+  return {
+    valid: false,
+    code: 'SCHEMA_VERSION_UNSUPPORTED',
+    message: `Unknown schema version '${schema.schema_version}'`,
+    supported_versions: supportedVersions
+  };
+}
+```
+
+**Migration guidance:**
+
+When schema versions change, the MCP-AQL project SHOULD provide:
+
+1. **Migration guide** documenting required schema changes
+2. **Automated migration tool** (when feasible)
+3. **Deprecation period** of at least 6 months for major versions
+
 ---
 
 ## 3. Generated Output Structure
