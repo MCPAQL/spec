@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Request concurrency model documentation (#137)
+  - Section 9.3 in v1.0.0-draft.md with concurrency categories
+  - Serialized, read-concurrent, fully-concurrent, resource-locked modes
+  - Optimistic concurrency control with ETag/version guidance
+  - Protocol metadata extension for concurrency discovery
+  - Cross-reference from CONFLICT_VERSION_MISMATCH in error-codes.md
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors
