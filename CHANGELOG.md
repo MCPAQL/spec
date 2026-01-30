@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Error examples in operations.md now use structured format (#133)
+  - Updated TypeScript interface to use `ErrorDetail` instead of `error: string`
+  - All error response examples now include `code`, `message`, and optional `details`
+  - Error category table aligned with error-codes.md taxonomy
+  - Added cross-references to Structured Error Codes Specification
 - Danger level enum inconsistency across schemas (#99)
   - Aligned all schemas and docs with canonical `danger-levels.md` spec
   - Renamed `moderate` → `reversible` for clearer semantic meaning
