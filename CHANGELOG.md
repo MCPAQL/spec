@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Minor documentation improvements from Sprint 4 review feedback (#129)
+  - Clarified "history" → "historical context" in CONTRIBUTING.md cross-reference guidelines
+  - Added "(strictest mode)" clarification for tolerance=0 in confirmation-tokens.md
+  - Added cross-reference to Section 6.1 (Replay Attack Prevention) in confirmation-tokens.md
+  - Noted numeric severity mapping aligns with syslog conventions in warnings.md
 - Added clock skew tolerance validation code example to confirmation tokens (#111)
   - Shows how to apply tolerance by adding to expiry time
   - Updated validateToken example to reference clock skew handling
