@@ -311,4 +311,5 @@ An MCP-AQL implementation is conformant if it:
 
 - [Operations Reference](./operations.md) - Complete operation reference
 - [Introspection](./introspection.md) - Introspection system specification
+- [MCP Integration](./mcp-integration.md) - MCP protocol integration specification
 - [Response Format](./responses.md) - Response format specification

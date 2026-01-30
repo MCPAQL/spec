@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Error examples in operations.md now use structured format (#133)
+  - Updated TypeScript interface to use `ErrorDetail` instead of `error: string`
+  - All error response examples now include `code`, `message`, and optional `details`
+  - Error category table aligned with error-codes.md taxonomy
+  - Added cross-references to Structured Error Codes Specification
 - Danger level enum inconsistency across schemas (#99)
   - Aligned all schemas and docs with canonical `danger-levels.md` spec
   - Renamed `moderate` → `reversible` for clearer semantic meaning
@@ -51,6 +56,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated introspection-response.schema.json with full constraint support
   - Updated introspection.md Section 3.4 with constraint field documentation
   - Added examples showing constraint usage in operation details
+- MCP Integration specification for protocol bridging (#132)
+  - Tool description templates with normative `introspect` operation reference
+  - Input schema composition rules for CRUDE and Single mode
+  - Error mapping between MCP-AQL and MCP protocols
+  - Progress notification mapping for EXECUTE operations
+  - Multi-adapter deployment patterns with tool prefix support
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors
