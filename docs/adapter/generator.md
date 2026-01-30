@@ -165,6 +165,35 @@ Generators MUST validate input schemas:
 4. **Name uniqueness** - Operation and type names MUST be unique
 5. **Naming conventions** - Names MUST follow snake_case convention
 
+**Validation error codes:**
+
+| Validation | Error Code | Example Message |
+|------------|------------|-----------------|
+| Missing required field | `SCHEMA_MISSING_FIELD` | "Required field 'adapter.name' is missing" |
+| Type mismatch | `SCHEMA_INVALID_TYPE` | "Field 'params[0].required' expected boolean, got string" |
+| Unresolved reference | `SCHEMA_UNRESOLVED_REF` | "Type reference 'Repository' not found in types" |
+| Duplicate name | `SCHEMA_DUPLICATE_NAME` | "Operation 'get_user' defined multiple times in read endpoint" |
+| Invalid naming | `SCHEMA_INVALID_NAME` | "Parameter name 'userName' must be snake_case (try 'user_name')" |
+
+**Example validation error response:**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "SCHEMA_INVALID_TYPE",
+    "message": "Field 'endpoints.read[0].params[0].required' expected boolean, got string",
+    "details": {
+      "field_path": "endpoints.read[0].params[0].required",
+      "expected_type": "boolean",
+      "actual_type": "string",
+      "actual_value": "true",
+      "suggestion": "Use `required: true` instead of `required: \"true\"`"
+    }
+  }
+}
+```
+
 Validation errors MUST include:
 - Field path (e.g., `endpoints.read[0].params[2].name`)
 - Expected value/type
