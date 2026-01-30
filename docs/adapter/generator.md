@@ -18,7 +18,8 @@ This document specifies the requirements and behavior of MCP-AQL adapter generat
 4. [Licensing Artifacts](#4-licensing-artifacts)
 5. [Provenance Information](#5-provenance-information)
 6. [Language Templates](#6-language-templates)
-7. [Conformance Requirements](#7-conformance-requirements)
+7. [Command-Line Interface](#7-command-line-interface)
+8. [Conformance Requirements](#8-conformance-requirements)
 
 ---
 
@@ -665,9 +666,132 @@ Generators MAY support template customization:
 
 ---
 
-## 7. Conformance Requirements
+## 7. Command-Line Interface
 
-### 7.1 Generator Conformance
+### 7.1 CLI Invocation
+
+Generators MUST provide a command-line interface with the following signature:
+
+```bash
+mcpaql-generate --schema <path> --target <language> [options]
+```
+
+### 7.2 Required Arguments
+
+| Argument | Description | Example |
+|----------|-------------|---------|
+| `--schema`, `-s` | Path to the input schema file (YAML or JSON) | `--schema adapter.yaml` |
+| `--target`, `-t` | Target language/platform | `--target typescript` |
+
+### 7.3 Optional Arguments
+
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--output`, `-o` | Output directory for generated code | `./generated` |
+| `--config`, `-c` | Path to generator configuration file | None |
+| `--output-format` | Output format (`human` or `json`) | `human` |
+| `--strict` | Enable strict validation mode (fail on warnings, enforce all optional constraints) | `false` |
+| `--dry-run` | Validate schema without generating output | `false` |
+| `--verbose`, `-v` | Enable verbose output | `false` |
+| `--quiet`, `-q` | Suppress non-error output | `false` |
+| `--version` | Print generator version and exit | - |
+| `--help`, `-h` | Print help message and exit | - |
+
+**Notes:**
+- `--verbose` and `--quiet` are mutually exclusive. If both are specified, generators MUST exit with code 3 (Configuration error).
+- When both `--config` and individual CLI arguments are provided, CLI arguments MUST take precedence over configuration file settings.
+
+### 7.4 Exit Codes
+
+Generators MUST use consistent exit codes:
+
+| Code | Meaning | Description |
+|------|---------|-------------|
+| `0` | Success | Generation completed successfully |
+| `1` | Internal error | Unexpected error (assertion failures, uncaught exceptions) |
+| `2` | Schema validation error | Input schema is invalid |
+| `3` | Configuration error | Invalid generator configuration |
+| `4` | I/O error | File read/write failure |
+| `5` | Template error | Language template processing failed |
+
+### 7.5 Output Format
+
+Generators SHOULD support structured output for integration with other tools:
+
+```bash
+# Human-readable output (default)
+mcpaql-generate --schema adapter.yaml --target typescript
+
+# JSON output for programmatic consumption
+mcpaql-generate --schema adapter.yaml --target typescript --output-format json
+```
+
+**JSON success output:**
+```json
+{
+  "success": true,
+  "output_directory": "./generated",
+  "files_generated": [
+    "src/index.ts",
+    "src/operations/read.ts",
+    "LICENSE",
+    "NOTICE.md"
+  ],
+  "provenance": {
+    "schema_fingerprint": "sha256:abc123...",
+    "generator_version": "1.2.3"
+  },
+  "warnings": []
+}
+```
+
+**JSON error output:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": 2,
+    "type": "SCHEMA_VALIDATION_ERROR",
+    "message": "Schema validation failed",
+    "details": [
+      {
+        "path": "endpoints.read[0].params[2].name",
+        "code": "SCHEMA_INVALID_NAME",
+        "message": "Parameter name 'userName' must be snake_case",
+        "suggestion": "Use 'user_name' instead"
+      }
+    ]
+  }
+}
+```
+
+### 7.6 Example Usage
+
+**Basic generation:**
+```bash
+mcpaql-generate --schema github-api.yaml --target typescript --output ./adapters/github
+```
+
+**With configuration and verbose output:**
+```bash
+mcpaql-generate \
+  --schema adapter.yaml \
+  --target typescript \
+  --output ./generated \
+  --config generator.config.json \
+  --verbose
+```
+
+**Validation only (dry run):**
+```bash
+mcpaql-generate --schema adapter.yaml --target typescript --dry-run
+```
+
+---
+
+## 8. Conformance Requirements
+
+### 8.1 Generator Conformance
 
 A conformant generator MUST:
 
@@ -678,7 +802,7 @@ A conformant generator MUST:
 5. Generate correct provenance information
 6. Produce code that passes basic syntax checks
 
-### 7.2 Generated Adapter Conformance
+### 8.2 Generated Adapter Conformance
 
 Generated adapters MUST:
 
@@ -688,7 +812,7 @@ Generated adapters MUST:
 4. Use structured error codes from the specification
 5. Handle missing/invalid parameters correctly
 
-### 7.3 Conformance Testing
+### 8.3 Conformance Testing
 
 Generators SHOULD include conformance test generation:
 

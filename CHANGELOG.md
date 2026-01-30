@@ -58,6 +58,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provenance information with MCPAQL-PROVENANCE.json
   - Language template guidance (TypeScript, JavaScript required)
   - Generator and adapter conformance requirements
+- Generator CLI interface specification (#113)
+  - Required arguments (--schema, --target)
+  - Optional arguments (--output, --config, --verbose, etc.)
+  - Exit codes for different failure modes
+  - JSON output format for programmatic consumption
 - Conformance Testing specification with Level 1/Level 2 definitions (#10, #55, #56)
   - Level 1 Basic: introspect, endpoint routing, response format, error handling
   - Level 2 Full: field selection, batch operations, cross-cutting params
