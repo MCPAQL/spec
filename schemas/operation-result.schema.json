@@ -55,7 +55,8 @@
             },
             "duration_ms": {
               "type": "number",
-              "description": "Request processing time in milliseconds"
+              "description": "Request processing time in milliseconds",
+              "minimum": 0
             }
           },
           "additionalProperties": true
@@ -79,7 +80,7 @@
                 "$ref": "#"
               }
             },
-            "required": ["index", "result"]
+            "required": ["index", "operation", "result"]
           }
         },
         "summary": {
@@ -88,15 +89,18 @@
           "properties": {
             "total": {
               "type": "integer",
-              "description": "Total number of operations in batch"
+              "description": "Total number of operations in batch",
+              "minimum": 0
             },
             "succeeded": {
               "type": "integer",
-              "description": "Number of successful operations"
+              "description": "Number of successful operations",
+              "minimum": 0
             },
             "failed": {
               "type": "integer",
-              "description": "Number of failed operations"
+              "description": "Number of failed operations",
+              "minimum": 0
             }
           },
           "required": ["total", "succeeded", "failed"]
