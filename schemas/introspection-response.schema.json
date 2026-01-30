@@ -36,7 +36,7 @@
 
     "ParameterInfo": {
       "type": "object",
-      "description": "Parameter definition for an operation",
+      "description": "Parameter definition for an operation, including validation constraints",
       "properties": {
         "name": {
           "type": "string",
@@ -44,7 +44,7 @@
         },
         "type": {
           "type": "string",
-          "description": "Type name (e.g., 'string', 'number', or adapter-defined types)"
+          "description": "Type name (e.g., 'string', 'number', 'boolean', 'array', 'object', or adapter-defined types)"
         },
         "required": {
           "type": "boolean",
@@ -56,9 +56,48 @@
         },
         "default": {
           "description": "Default value if parameter is not provided"
+        },
+        "enum": {
+          "type": "array",
+          "description": "Allowed values for this parameter (enables client-side validation and LLM guidance)"
+        },
+        "minimum": {
+          "type": "number",
+          "description": "Minimum value for numeric parameters (inclusive)"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "Maximum value for numeric parameters (inclusive)"
+        },
+        "minLength": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Minimum length for string parameters"
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Maximum length for string parameters"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern for string validation"
+        },
+        "format": {
+          "type": "string",
+          "description": "Semantic format hint (e.g., 'date-time', 'email', 'uri', 'uuid')"
+        },
+        "items": {
+          "type": "object",
+          "description": "Schema for array element types (nested ParameterInfo)"
+        },
+        "sensitive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether parameter contains sensitive data (passwords, API keys) - clients SHOULD mask input"
         }
       },
-      "required": ["name", "type", "required", "description"],
+      "required": ["name", "type", "required"],
       "additionalProperties": false
     },
 
@@ -435,7 +474,7 @@
       "success": true,
       "data": {
         "_protocol": {
-          "version": "1.0.0",
+          "version": "1.0.0-alpha.1",
           "conformance": "level-1",
           "mode": "crude",
           "capabilities": {
@@ -483,13 +522,33 @@
               "name": "entity_name",
               "type": "string",
               "required": true,
-              "description": "Entity name"
+              "description": "Entity name",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
             },
             {
               "name": "entity_type",
-              "type": "EntityType",
+              "type": "string",
               "required": true,
-              "description": "Type of entity to create"
+              "description": "Type of entity to create",
+              "enum": ["resource", "item", "config", "workflow"]
+            },
+            {
+              "name": "priority",
+              "type": "integer",
+              "required": false,
+              "description": "Priority level (1-10)",
+              "default": 5,
+              "minimum": 1,
+              "maximum": 10
+            },
+            {
+              "name": "api_key",
+              "type": "string",
+              "required": false,
+              "description": "Optional API key for external integration",
+              "sensitive": true
             }
           ],
           "returns": {
