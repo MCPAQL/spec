@@ -50,6 +50,7 @@ This specification covers the Minimum Viable Product error codes:
 - 7 Phase 1 robustness error codes
 - Basic error response structure
 - HTTP status code mapping
+- Generator error code category reference
 
 **Deferred to future specifications:**
 - Full error code taxonomy
@@ -169,7 +170,10 @@ CATEGORY_SPECIFIC_CONDITION
 | `CONFLICT_` | Resource conflicts | 409 |
 | `RATE_LIMIT_` | Rate limiting | 429 |
 | `TOKEN_` | Confirmation token errors | 400, 403 |
+| `SCHEMA_` | Schema validation errors (generators) | N/A |
 | `INTERNAL_` | Server errors | 500+ |
+
+> **Note on `SCHEMA_` category:** Unlike other error categories which occur at runtime, `SCHEMA_` errors are produced by adapter generators during schema validation. These errors do not map to HTTP status codes because they occur during code generation, not API requests. See [Adapter Generator Specification](./adapter/generator.md) Section 2.2 for the complete list of schema validation error codes.
 
 ---
 
