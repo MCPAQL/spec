@@ -46,6 +46,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Constraint metadata fields in ParameterInfo schema (#135)
+  - enum, minimum, maximum, minLength, maxLength, pattern, format, items, sensitive
+  - Updated introspection-response.schema.json with full constraint support
+  - Updated introspection.md Section 3.4 with constraint field documentation
+  - Added examples showing constraint usage in operation details
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors
