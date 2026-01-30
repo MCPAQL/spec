@@ -65,6 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Extension fields in operation-result schema for documented features (#134)
+  - Success: `_meta` (response metadata), `results`/`summary` (batch operations)
+  - Failure: `confirmation` (gating flow), deprecation fields
+  - Schema documentation in schemas/README.md with field reference table
 - Request concurrency model documentation (#137)
   - Section 9.3 in v1.0.0-draft.md with concurrency categories
   - Serialized, read-concurrent, fully-concurrent, resource-locked modes
