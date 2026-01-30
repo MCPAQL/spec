@@ -46,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Proposals directory with template for specification changes (#140)
+  - proposals/README.md with process overview
+  - proposals/TEMPLATE.md with standard proposal format
+  - Reference from docs/process/rfc-process.md
 - SCHEMA_ error code category for generator validation errors (#128)
   - Added to Category Prefixes table in error-codes.md
   - Explanatory note distinguishing generator-time from runtime errors

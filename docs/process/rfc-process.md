@@ -32,6 +32,8 @@ The RFC process ensures that:
 - Breaking changes are carefully considered
 - Implementations can prepare for upcoming changes
 
+Formal proposals are stored in the [`proposals/`](../../proposals/) directory using the standard template.
+
 ### When to Use an RFC
 
 You SHOULD submit an RFC for:
