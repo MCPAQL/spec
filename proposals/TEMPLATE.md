@@ -1,6 +1,6 @@
 # Proposal: [Title]
 
-**Number:** NNNN
+**Number:** TBD (assigned upon acceptance)
 **Author:** [Name] <[email]>
 **Status:** Draft
 **Created:** YYYY-MM-DD
@@ -32,7 +32,15 @@
 
 ## Rationale
 
-[Why this design? What alternatives were considered and why were they rejected?]
+[Why this design? What makes it the best approach among the alternatives?]
+
+## Drawbacks
+
+[What are the potential downsides of this proposal? Are there any trade-offs?]
+
+## Alternatives
+
+[What other approaches were considered? Why were they not chosen?]
 
 ## Backwards Compatibility
 

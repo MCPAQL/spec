@@ -4,14 +4,14 @@ This directory contains proposals for changes to the MCP-AQL specification.
 
 ## Overview
 
-Proposals are formal documents that describe significant changes to the MCP-AQL protocol. They provide a structured process for discussing and reviewing changes before they are incorporated into the specification.
+Proposals are the file-based form of RFCs (Request for Comments) that describe significant changes to the MCP-AQL protocol. They follow the [RFC Process](../docs/process/rfc-process.md) and provide a structured mechanism for discussing and reviewing changes before they are incorporated into the specification.
 
 ## Proposal Process
 
 1. **Create a Proposal**
-   - Copy `TEMPLATE.md` to a new file with a descriptive name
+   - Copy `TEMPLATE.md` to a new file with a descriptive name (e.g., `draft-your-proposal-name.md`)
    - Fill in all sections of the template
-   - Assign a proposal number (next available NNNN)
+   - Leave the number as "TBD" (assigned by maintainers upon acceptance)
 
 2. **Submit for Review**
    - Create a pull request with your proposal
@@ -27,9 +27,10 @@ Proposals are formal documents that describe significant changes to the MCP-AQL 
 
 ## Numbering Scheme
 
-Proposals are numbered sequentially starting from 0001:
-- `0001-example-proposal.md`
-- `0002-another-proposal.md`
+Proposal numbers are assigned sequentially by maintainers when a proposal is accepted:
+- Draft proposals use descriptive names: `draft-example-proposal.md`
+- Accepted proposals are renamed with numbers: `0001-example-proposal.md`
+- Numbers start from 0001 and increment sequentially
 
 ## Relationship to Other Documents
 
@@ -51,5 +52,5 @@ cp proposals/TEMPLATE.md proposals/NNNN-your-proposal-name.md
 
 ## References
 
-- [RFC Process](docs/process/rfc-process.md)
-- [Architecture Decision Records](docs/adr/)
+- [RFC Process](../docs/process/rfc-process.md)
+- [Architecture Decision Records](../docs/adr/)

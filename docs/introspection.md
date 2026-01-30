@@ -4,6 +4,8 @@
 **Status:** Draft
 **Last Updated:** 2026-01-16
 
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
+
 ## Abstract
 
 This document specifies the MCP-AQL introspection system, which provides GraphQL-style discovery capabilities for operations, parameters, types, and examples at runtime. The introspection system is the only operation that MCP-AQL mandates all adapters implement, enabling AI models to discover capabilities dynamically.
@@ -185,15 +187,78 @@ interface EndpointPermissions {
 
 ### 3.4 ParameterInfo
 
-Parameter definition:
+Parameter definition with optional constraint metadata:
 
 ```typescript
 interface ParameterInfo {
+  // Core fields (required)
   name: string;        // Parameter name (snake_case recommended)
-  type: string;        // Type name (e.g., "string", "number", adapter-defined types)
+  type: string;        // Type name (e.g., "string", "number", "boolean", "array", "object")
   required: boolean;   // Whether parameter is required
-  description: string; // Parameter description
-  default?: unknown;   // Default value if any
+
+  // Documentation (optional)
+  description?: string; // Parameter description
+  default?: unknown;    // Default value if any
+
+  // Constraint fields (optional) - enable client-side validation and LLM guidance
+  enum?: unknown[];     // Allowed values for this parameter
+  minimum?: number;     // Minimum value for numeric parameters (inclusive)
+  maximum?: number;     // Maximum value for numeric parameters (inclusive)
+  minLength?: number;   // Minimum length for string parameters
+  maxLength?: number;   // Maximum length for string parameters
+  pattern?: string;     // Regex pattern for string validation
+  format?: string;      // Semantic format hint (e.g., "date-time", "email", "uri", "uuid")
+  items?: object;       // Schema for array element types (nested ParameterInfo)
+
+  // Security (optional)
+  sensitive?: boolean;  // Whether parameter contains sensitive data (passwords, API keys)
+}
+```
+
+#### 3.4.1 Constraint Field Usage
+
+Constraint fields are **the highest-value properties in the introspection system** - they prevent LLM hallucination by telling agents exactly what values are valid.
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `enum` | array | Lists all valid values; LLM can select from these |
+| `minimum`/`maximum` | number | Numeric bounds; LLM can generate values in range |
+| `minLength`/`maxLength` | integer | String length limits |
+| `pattern` | string | Regex pattern for validation |
+| `format` | string | Semantic format hint (date-time, email, uri, uuid) |
+| `items` | object | Element schema for array parameters |
+| `sensitive` | boolean | Flag for passwords/API keys; clients SHOULD mask input |
+
+**Example with constraints:**
+```json
+{
+  "name": "page_size",
+  "type": "integer",
+  "required": false,
+  "description": "Number of items per page",
+  "default": 25,
+  "minimum": 1,
+  "maximum": 100
+}
+```
+
+```json
+{
+  "name": "status",
+  "type": "string",
+  "required": true,
+  "description": "Filter by status",
+  "enum": ["pending", "active", "completed", "cancelled"]
+}
+```
+
+```json
+{
+  "name": "api_key",
+  "type": "string",
+  "required": true,
+  "description": "API key for authentication",
+  "sensitive": true
 }
 ```
 
@@ -310,25 +375,33 @@ interface TypeDetails extends TypeInfo {
           "name": "entity_name",
           "type": "string",
           "required": true,
-          "description": "Entity name"
+          "description": "Entity name",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
         },
         {
           "name": "entity_type",
-          "type": "EntityType",
+          "type": "string",
           "required": true,
-          "description": "Type of entity to create"
+          "description": "Type of entity to create",
+          "enum": ["resource", "item", "config", "workflow"]
         },
         {
           "name": "description",
           "type": "string",
           "required": true,
-          "description": "Entity description"
+          "description": "Entity description",
+          "maxLength": 500
         },
         {
-          "name": "content",
-          "type": "string",
+          "name": "priority",
+          "type": "integer",
           "required": false,
-          "description": "Entity content"
+          "description": "Priority level",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 10
         },
         {
           "name": "metadata",
