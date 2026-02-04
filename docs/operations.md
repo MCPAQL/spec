@@ -338,6 +338,10 @@ operations:
         description: "Search query"
 ```
 
+### 4.5 UPDATE Input Pattern
+
+UPDATE operations SHOULD use a nested `input` object to separate identifier parameters from updateable fields. See [MCP-AQL Specification Section 4.5](./versions/v1.0.0-draft.md#45-update-input-pattern) for normative requirements including deep-merge semantics and field removal. See [ADR-002](./adr/ADR-002-graphql-style-input.md) for design rationale.
+
 ---
 
 ## 5. Operation Schema Definition
