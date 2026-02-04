@@ -181,7 +181,19 @@
         "examples": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of the example"
+              },
+              "request": {
+                "type": "object",
+                "description": "Example request object"
+              }
+            },
+            "required": ["request"],
+            "additionalProperties": false
           },
           "description": "Example invocations of the operation"
         }
@@ -589,7 +601,13 @@
             "description": "Newly created entity"
           },
           "examples": [
-            "{ operation: \"create_entity\", params: { entity_name: \"MyEntity\" } }"
+            {
+              "description": "Create a basic entity",
+              "request": {
+                "operation": "create_entity",
+                "params": { "entity_name": "MyEntity" }
+              }
+            }
           ]
         }
       }
