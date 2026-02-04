@@ -143,6 +143,7 @@ jobs:
           node scripts/validate-schema-examples.mjs
 
       - name: Validate test fixtures
+        if: steps.find-schemas.outputs.found == 'true'
         run: |
           echo "=== Validating Test Fixtures ==="
           node scripts/validate-schema-examples.mjs --fixtures
