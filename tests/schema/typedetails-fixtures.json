@@ -1,0 +1,201 @@
+{
+  "schema": "../../schemas/introspection-response.schema.json",
+  "ref": "#/$defs/TypeDetails",
+  "tests": [
+    {
+      "description": "valid enum type with values",
+      "data": {
+        "name": "Status",
+        "kind": "enum",
+        "description": "Status codes",
+        "values": ["active", "inactive", "archived"]
+      },
+      "valid": true
+    },
+    {
+      "description": "valid enum type (minimal, no description)",
+      "data": {
+        "name": "Color",
+        "kind": "enum",
+        "values": ["red", "green", "blue"]
+      },
+      "valid": true
+    },
+    {
+      "description": "valid object type with fields",
+      "data": {
+        "name": "User",
+        "kind": "object",
+        "description": "A user entity",
+        "fields": [
+          { "name": "id", "type": "string", "required": true },
+          { "name": "email", "type": "string", "required": true, "description": "User email" },
+          { "name": "age", "type": "integer", "required": false, "minimum": 0 }
+        ]
+      },
+      "valid": true
+    },
+    {
+      "description": "valid object type (minimal)",
+      "data": {
+        "name": "EmptyConfig",
+        "kind": "object",
+        "fields": []
+      },
+      "valid": true
+    },
+    {
+      "description": "valid union type with members",
+      "data": {
+        "name": "SearchResult",
+        "kind": "union",
+        "description": "Possible search result types",
+        "members": ["User", "Document", "Comment"]
+      },
+      "valid": true
+    },
+    {
+      "description": "valid scalar type",
+      "data": {
+        "name": "DateTime",
+        "kind": "scalar",
+        "description": "ISO 8601 date-time string"
+      },
+      "valid": true
+    },
+    {
+      "description": "valid scalar type (minimal)",
+      "data": {
+        "name": "JSON",
+        "kind": "scalar"
+      },
+      "valid": true
+    },
+    {
+      "description": "REJECT: enum with fields (cross-variant pollution from object)",
+      "data": {
+        "name": "BadEnum",
+        "kind": "enum",
+        "values": ["a", "b"],
+        "fields": [
+          { "name": "x", "type": "string", "required": false }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: enum with members (cross-variant pollution from union)",
+      "data": {
+        "name": "BadEnum",
+        "kind": "enum",
+        "values": ["a", "b"],
+        "members": ["TypeA", "TypeB"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: object with values (cross-variant pollution from enum)",
+      "data": {
+        "name": "BadObject",
+        "kind": "object",
+        "fields": [],
+        "values": ["a", "b"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: object with members (cross-variant pollution from union)",
+      "data": {
+        "name": "BadObject",
+        "kind": "object",
+        "fields": [],
+        "members": ["TypeA"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: union with fields (cross-variant pollution from object)",
+      "data": {
+        "name": "BadUnion",
+        "kind": "union",
+        "members": ["A", "B"],
+        "fields": [
+          { "name": "x", "type": "string", "required": false }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: union with values (cross-variant pollution from enum)",
+      "data": {
+        "name": "BadUnion",
+        "kind": "union",
+        "members": ["A", "B"],
+        "values": ["x", "y"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: scalar with fields (cross-variant pollution from object)",
+      "data": {
+        "name": "BadScalar",
+        "kind": "scalar",
+        "fields": [
+          { "name": "x", "type": "string", "required": false }
+        ]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: scalar with values (cross-variant pollution from enum)",
+      "data": {
+        "name": "BadScalar",
+        "kind": "scalar",
+        "values": ["a", "b"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: scalar with members (cross-variant pollution from union)",
+      "data": {
+        "name": "BadScalar",
+        "kind": "scalar",
+        "members": ["A", "B"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: missing required name field",
+      "data": {
+        "kind": "enum",
+        "values": ["a"]
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: missing required kind field",
+      "data": {
+        "name": "Incomplete"
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: invalid kind value",
+      "data": {
+        "name": "BadKind",
+        "kind": "map",
+        "description": "Not a valid kind"
+      },
+      "valid": false
+    },
+    {
+      "description": "REJECT: unknown additional property",
+      "data": {
+        "name": "Extra",
+        "kind": "scalar",
+        "unknown_field": true
+      },
+      "valid": false
+    }
+  ]
+}
