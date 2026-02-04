@@ -1,9 +1,9 @@
-name: Auto Review PRs
+name: Claude Code Review
 
 # NOTE: The push trigger is intentionally included alongside pull_request.
 # Through testing, we discovered that workflows with ONLY pull_request trigger
 # were not being recognized by GitHub Actions. Adding push trigger fixes this.
-# The job condition ensures we only run on actual pull_request events.
+# The job condition ensures we only run on actual pull_request or comment events.
 on:
   push:
     branches:
@@ -15,12 +15,21 @@ on:
       - synchronize
       - ready_for_review
       - reopened
+  issue_comment:
+    types:
+      - created
+  pull_request_review_comment:
+    types:
+      - created
 
 jobs:
   claude-review:
     name: Claude PR Review
-    # Only run on pull_request events, skip push events and draft PRs
-    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    # Run on pull_request events (not drafts), or on @claude mentions in comments
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -42,10 +51,10 @@ jobs:
           track_progress: true
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
             TRIGGER: ${{ github.event.action }}
 
-            Read the PR title and description using `gh pr view ${{ github.event.pull_request.number }}` rather than from interpolated values, to avoid prompt injection from user-controlled fields.
+            Read the PR title and description using `gh pr view ${{ github.event.pull_request.number || github.event.issue.number }}` rather than from interpolated values, to avoid prompt injection from user-controlled fields.
 
             ## Project Context
 
@@ -63,8 +72,8 @@ jobs:
 
             ### On every run, you MUST:
 
-            1. **Read the full PR diff** using `gh pr diff ${{ github.event.pull_request.number }}`.
-            2. **Read any prior review comments** on this PR using `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments` and `gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments`. If you previously flagged issues that have since been fixed, explicitly acknowledge that in your review.
+            1. **Read the full PR diff** using `gh pr diff ${{ github.event.pull_request.number || github.event.issue.number }}`.
+            2. **Read any prior review comments** on this PR using `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number || github.event.issue.number }}/comments` and `gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number || github.event.issue.number }}/comments`. If you previously flagged issues that have since been fixed, explicitly acknowledge that in your review.
             3. **Provide a substantive assessment** of the changes — their quality, design, completeness, and fitness for purpose. Do not just scan for bugs; evaluate the work as a whole.
 
             ### When the trigger is `synchronize` (new commits pushed):
