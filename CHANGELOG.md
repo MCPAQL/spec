@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- TypeDetails `allOf`+`oneOf` ambiguity allowing cross-variant field pollution (#154)
+  - Flattened into pure `oneOf` with `additionalProperties: false` on each variant
+  - Each variant (enum, object, union, scalar) now self-contained with all properties
+- `OperationDetails.examples` schema defined as `string[]` but prose showed `object[]` (#152)
+  - Changed to structured `object[]` with `{ description?, request }` format
+  - Updated schema inline examples and introspection.md to match
+- Operation detail response wrapping mismatch between schema and prose (#151)
+  - operations.md Section 9.5 now uses `data.operation.{...}` matching schema
+  - Added required `mcpTool`, `permissions`, and `returns` fields to example
 - MUST/SHOULD contradictions across spec documents (#136)
   - Routing enforcement: operations.md now uses MUST (aligns with v1.0.0-draft.md)
   - Endpoint mode support: overview.md now uses MUST (aligns with v1.0.0-draft.md)
@@ -65,6 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- UPDATE Input Pattern (Section 4.5) in normative spec (#153)
+  - Nested `input` object structure separating identifiers from updateable fields
+  - Deep-merge semantics: top-level replace, nested objects merge, arrays replace, null removes
+  - Validation rules for `input` object
+  - Specification Impact section added to ADR-002
+  - Cross-reference from operations.md
 - Proposals directory with template for specification changes (#140)
   - proposals/README.md with process overview
   - proposals/TEMPLATE.md with standard proposal format
