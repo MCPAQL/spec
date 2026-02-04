@@ -7,9 +7,13 @@ on:
       - develop
     paths:
       - 'schemas/**/*.json'
+      - 'scripts/validate-schema-examples.mjs'
+      - 'tests/schema/**/*.json'
   pull_request:
     paths:
       - 'schemas/**/*.json'
+      - 'scripts/validate-schema-examples.mjs'
+      - 'tests/schema/**/*.json'
   workflow_dispatch:
 
 jobs:
@@ -29,6 +33,7 @@ jobs:
       - name: Install validation tools
         run: |
           npm install -g ajv-cli ajv-formats
+          npm ci
 
       - name: Find schema files
         id: find-schemas
@@ -130,6 +135,17 @@ jobs:
 
           echo ""
           echo "All schemas are valid!"
+
+      - name: Validate schema examples
+        if: steps.find-schemas.outputs.found == 'true'
+        run: |
+          echo "=== Validating Schema Examples ==="
+          node scripts/validate-schema-examples.mjs
+
+      - name: Validate test fixtures
+        run: |
+          echo "=== Validating Test Fixtures ==="
+          node scripts/validate-schema-examples.mjs --fixtures
 
       - name: Schema validation summary
         if: always()
