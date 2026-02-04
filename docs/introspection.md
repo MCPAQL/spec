@@ -176,12 +176,17 @@ interface OperationDetails {
   permissions: EndpointPermissions;
   parameters: ParameterInfo[];     // Parameter definitions
   returns: TypeInfo;               // Return type information
-  examples: string[];              // Example invocations
+  examples: OperationExample[];    // Example invocations
 }
 
 interface EndpointPermissions {
   readOnly: boolean;    // Whether operation modifies state
   destructive: boolean; // Whether operation removes state
+}
+
+interface OperationExample {
+  description?: string; // Human-readable description of the example
+  request: object;      // Example request object
 }
 ```
 
@@ -453,7 +458,17 @@ Clients can use protocol metadata to:
         "description": "Newly created entity"
       },
       "examples": [
-        "{ operation: \"create_entity\", element_type: \"resource\", params: { entity_name: \"MyResource\", description: \"A sample resource\" } }"
+        {
+          "description": "Create a resource entity",
+          "request": {
+            "operation": "create_entity",
+            "element_type": "resource",
+            "params": {
+              "entity_name": "MyResource",
+              "description": "A sample resource"
+            }
+          }
+        }
       ]
     }
   }

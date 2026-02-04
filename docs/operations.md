@@ -338,6 +338,10 @@ operations:
         description: "Search query"
 ```
 
+### 4.5 UPDATE Input Pattern
+
+UPDATE operations SHOULD use a nested `input` object to separate identifier parameters from updateable fields. See [MCP-AQL Specification Section 4.5](./versions/v1.0.0-draft.md#45-update-input-pattern) for normative requirements including deep-merge semantics and field removal. See [ADR-002](./adr/ADR-002-graphql-style-input.md) for design rationale.
+
 ---
 
 ## 5. Operation Schema Definition
@@ -714,43 +718,55 @@ When `query` is "operations" with a `name`:
 {
   "success": true,
   "data": {
-    "name": "create_item",
-    "endpoint": "CREATE",
-    "description": "Create a new item",
-    "parameters": [
-      {
-        "name": "name",
-        "type": "string",
-        "required": true,
-        "description": "Item name"
+    "operation": {
+      "name": "create_item",
+      "endpoint": "CREATE",
+      "mcpTool": "mcp_aql_create",
+      "description": "Create a new item",
+      "permissions": {
+        "readOnly": false,
+        "destructive": false
       },
-      {
-        "name": "category",
-        "type": "string",
-        "required": true,
-        "description": "Item category",
-        "enum": ["product", "service", "subscription"]
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Item name"
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": true,
+          "description": "Item category",
+          "enum": ["product", "service", "subscription"]
+        },
+        {
+          "name": "price",
+          "type": "number",
+          "required": false,
+          "minimum": 0,
+          "description": "Item price in cents"
+        }
+      ],
+      "returns": {
+        "name": "Item",
+        "kind": "object",
+        "description": "Newly created item"
       },
-      {
-        "name": "price",
-        "type": "number",
-        "required": false,
-        "minimum": 0,
-        "description": "Item price in cents"
-      }
-    ],
-    "examples": [
-      {
-        "description": "Create a basic item",
-        "request": {
-          "operation": "create_item",
-          "params": {
-            "name": "Widget",
-            "category": "product"
+      "examples": [
+        {
+          "description": "Create a basic item",
+          "request": {
+            "operation": "create_item",
+            "params": {
+              "name": "Widget",
+              "category": "product"
+            }
           }
         }
-      }
-    ]
+      ]
+    }
   }
 }
 ```

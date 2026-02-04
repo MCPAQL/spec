@@ -181,7 +181,19 @@
         "examples": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "description": "Human-readable description of the example"
+              },
+              "request": {
+                "type": "object",
+                "description": "Example request object"
+              }
+            },
+            "required": ["request"],
+            "additionalProperties": false
           },
           "description": "Example invocations of the operation"
         }
@@ -191,18 +203,93 @@
     },
 
     "TypeDetails": {
-      "type": "object",
       "description": "Complete information for a specific type",
-      "allOf": [
+      "oneOf": [
         {
           "type": "object",
+          "title": "Enum Type Details",
           "properties": {
             "name": {
               "type": "string",
               "description": "Type identifier"
             },
             "kind": {
-              "$ref": "#/$defs/TypeKind",
+              "const": "enum",
+              "description": "The kind of type"
+            },
+            "description": {
+              "type": "string",
+              "description": "Detailed description of the type"
+            },
+            "values": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Allowed values for the enum type"
+            }
+          },
+          "required": ["name", "kind", "values"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Object Type Details",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Type identifier"
+            },
+            "kind": {
+              "const": "object",
+              "description": "The kind of type"
+            },
+            "description": {
+              "type": "string",
+              "description": "Detailed description of the type"
+            },
+            "fields": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ParameterInfo" },
+              "description": "Field definitions for the object type"
+            }
+          },
+          "required": ["name", "kind", "fields"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Union Type Details",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Type identifier"
+            },
+            "kind": {
+              "const": "union",
+              "description": "The kind of type"
+            },
+            "description": {
+              "type": "string",
+              "description": "Detailed description of the type"
+            },
+            "members": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Member type names in the union"
+            }
+          },
+          "required": ["name", "kind", "members"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Scalar Type Details",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Type identifier"
+            },
+            "kind": {
+              "const": "scalar",
               "description": "The kind of type"
             },
             "description": {
@@ -210,51 +297,8 @@
               "description": "Detailed description of the type"
             }
           },
-          "required": ["name", "kind"]
-        }
-      ],
-      "oneOf": [
-        {
-          "title": "Enum Type Details",
-          "properties": {
-            "kind": { "const": "enum" },
-            "values": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Allowed values for the enum type"
-            }
-          },
-          "required": ["values"]
-        },
-        {
-          "title": "Object Type Details",
-          "properties": {
-            "kind": { "const": "object" },
-            "fields": {
-              "type": "array",
-              "items": { "$ref": "#/$defs/ParameterInfo" },
-              "description": "Field definitions for the object type"
-            }
-          },
-          "required": ["fields"]
-        },
-        {
-          "title": "Union Type Details",
-          "properties": {
-            "kind": { "const": "union" },
-            "members": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Member type names in the union"
-            }
-          },
-          "required": ["members"]
-        },
-        {
-          "title": "Scalar Type Details",
-          "properties": {
-            "kind": { "const": "scalar" }
-          }
+          "required": ["name", "kind"],
+          "additionalProperties": false
         }
       ]
     },
@@ -557,7 +601,13 @@
             "description": "Newly created entity"
           },
           "examples": [
-            "{ operation: \"create_entity\", params: { entity_name: \"MyEntity\" } }"
+            {
+              "description": "Create a basic entity",
+              "request": {
+                "operation": "create_entity",
+                "params": { "entity_name": "MyEntity" }
+              }
+            }
           ]
         }
       }

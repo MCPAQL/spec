@@ -71,7 +71,17 @@ Implementations MUST:
 - **Learning curve**: Users unfamiliar with GraphQL may find pattern unusual
 - **Payload size**: Slight increase in request size due to `input` wrapper
 
+## Specification Impact
+
+This ADR is codified in the normative specification:
+
+- **Section 4.5** of [MCP-AQL Specification v1.0.0-draft](../versions/v1.0.0-draft.md#45-update-input-pattern) defines the `input` object structure, deep-merge semantics, field removal via `null`, and validation rules.
+- **Section 4** of [Operations Reference](../operations.md) references the UPDATE input pattern for parameter conventions.
+
+Implementations MUST follow the normative specification. This ADR provides design rationale only.
+
 ## References
 
-- [Protocol Specification: Update Operations](../protocol/operations.md#update)
+- [MCP-AQL Specification v1.0.0-draft — Section 4.5](../versions/v1.0.0-draft.md#45-update-input-pattern)
+- [Operations Reference](../operations.md)
 - ADR-003: snake_case Parameter Convention
