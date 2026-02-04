@@ -714,43 +714,55 @@ When `query` is "operations" with a `name`:
 {
   "success": true,
   "data": {
-    "name": "create_item",
-    "endpoint": "CREATE",
-    "description": "Create a new item",
-    "parameters": [
-      {
-        "name": "name",
-        "type": "string",
-        "required": true,
-        "description": "Item name"
+    "operation": {
+      "name": "create_item",
+      "endpoint": "CREATE",
+      "mcpTool": "mcp_aql_create",
+      "description": "Create a new item",
+      "permissions": {
+        "readOnly": false,
+        "destructive": false
       },
-      {
-        "name": "category",
-        "type": "string",
-        "required": true,
-        "description": "Item category",
-        "enum": ["product", "service", "subscription"]
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Item name"
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": true,
+          "description": "Item category",
+          "enum": ["product", "service", "subscription"]
+        },
+        {
+          "name": "price",
+          "type": "number",
+          "required": false,
+          "minimum": 0,
+          "description": "Item price in cents"
+        }
+      ],
+      "returns": {
+        "name": "Item",
+        "kind": "object",
+        "description": "Newly created item"
       },
-      {
-        "name": "price",
-        "type": "number",
-        "required": false,
-        "minimum": 0,
-        "description": "Item price in cents"
-      }
-    ],
-    "examples": [
-      {
-        "description": "Create a basic item",
-        "request": {
-          "operation": "create_item",
-          "params": {
-            "name": "Widget",
-            "category": "product"
+      "examples": [
+        {
+          "description": "Create a basic item",
+          "request": {
+            "operation": "create_item",
+            "params": {
+              "name": "Widget",
+              "category": "product"
+            }
           }
         }
-      }
-    ]
+      ]
+    }
   }
 }
 ```
