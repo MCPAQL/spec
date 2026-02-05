@@ -74,6 +74,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Automated schema example validation script and CI integration (#172)
+  - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
+  - Supports wrapped example format (danger-level) and standard format
+  - Added example and fixture validation steps to `schema-validate.yml` workflow
+  - `package.json` with ajv/ajv-formats for local and CI validation
+- TypeDetails cross-variant rejection test fixtures (#173)
+  - `tests/schema/typedetails-fixtures.json` with 7 positive and 13 negative test cases
+  - Validates that `additionalProperties: false` on each `oneOf` variant correctly rejects
+    cross-variant field pollution (e.g., enum with fields, object with values)
+  - Fixture runner integrated into `validate-schema-examples.mjs` via `--fixtures` flag
 - UPDATE Input Pattern (Section 4.5) in normative spec (#153)
   - Nested `input` object structure separating identifiers from updateable fields
   - Deep-merge semantics: top-level replace, nested objects merge, arrays replace, null removes

@@ -17,6 +17,9 @@ Desktop.ini
 *.swo
 *~
 
+# Node.js
+node_modules/
+
 # Logs
 *.log
 

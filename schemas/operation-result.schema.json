@@ -188,5 +188,55 @@
       "required": ["success", "error"],
       "additionalProperties": false
     }
+  ],
+  "examples": [
+    {
+      "success": true,
+      "data": {
+        "id": "entity-123",
+        "name": "MyEntity",
+        "created_at": "2025-01-15T10:30:00Z"
+      }
+    },
+    {
+      "success": false,
+      "error": {
+        "code": "VALIDATION_MISSING_PARAM",
+        "message": "Required parameter 'entity_name' is missing"
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "entity-456",
+        "name": "UpdatedEntity"
+      },
+      "warnings": [
+        {
+          "code": "DEPRECATED_FIELD",
+          "message": "Field 'legacy_id' is deprecated and will be removed in v2.0"
+        }
+      ],
+      "_meta": {
+        "request_id": "req-abc-123",
+        "duration_ms": 42
+      }
+    },
+    {
+      "success": false,
+      "error": {
+        "code": "CONFIRMATION_REQUIRED",
+        "message": "This operation requires confirmation before execution"
+      },
+      "confirmation": {
+        "token": "confirm-token-xyz",
+        "expires_at": "2025-01-15T10:35:00Z",
+        "message": "This will permanently delete 47 records. Are you sure?",
+        "reasons": [
+          "Operation is destructive",
+          "Affects 47 records"
+        ]
+      }
+    }
   ]
 }

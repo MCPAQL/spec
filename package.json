@@ -1,0 +1,27 @@
+{
+  "name": "@mcpaql/spec",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "description": "MCP-AQL protocol specification, schemas, and conformance tests",
+  "type": "module",
+  "scripts": {
+    "validate:examples": "node scripts/validate-schema-examples.mjs",
+    "validate:fixtures": "node scripts/validate-schema-examples.mjs --fixtures",
+    "validate": "node scripts/validate-schema-examples.mjs --fixtures",
+    "test": "node scripts/validate-schema-examples.mjs --fixtures"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MCPAQL/spec.git"
+  },
+  "license": "SEE LICENSE IN LICENSING.md",
+  "bugs": {
+    "url": "https://github.com/MCPAQL/spec/issues"
+  },
+  "homepage": "https://mcpaql.org",
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-cli": "^5.0.0",
+    "ajv-formats": "^3.0.1"
+  }
+}
