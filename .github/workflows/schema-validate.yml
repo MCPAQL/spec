@@ -33,9 +33,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install ajv-cli (for schema structure validation)
-        run: npm install -g ajv-cli ajv-formats
-
       - name: Find schema files
         id: find-schemas
         run: |
@@ -105,12 +102,12 @@ jobs:
 
             # Validate using ajv-cli with JSON Schema draft support
             # ajv compile validates that the schema itself is valid
-            if ajv compile -s "$file" --spec=draft2020 -c ajv-formats 2>&1; then
+            if npx ajv compile -s "$file" --spec=draft2020 -c ajv-formats 2>&1; then
               echo "  Result: VALID"
             else
               # Try with draft-07 if 2020-12 fails
               echo "  Trying draft-07 validation..."
-              if ajv compile -s "$file" --spec=draft7 -c ajv-formats 2>&1; then
+              if npx ajv compile -s "$file" --spec=draft7 -c ajv-formats 2>&1; then
                 echo "  Result: VALID (draft-07)"
               else
                 echo "  Result: INVALID"

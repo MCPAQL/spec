@@ -21,6 +21,7 @@
   "homepage": "https://mcpaql.org",
   "devDependencies": {
     "ajv": "^8.17.1",
+    "ajv-cli": "^5.0.0",
     "ajv-formats": "^3.0.1"
   }
 }
