@@ -75,26 +75,46 @@
     }
   ],
   "examples": [
-    "safe",
     {
-      "level": "safe",
-      "reason": "Read-only operation that retrieves data without modification"
+      "title": "Simple danger level (string)",
+      "description": "Basic classification using just the level string",
+      "value": "safe"
     },
     {
-      "level": "reversible",
-      "reason": "Creates new resource, standard confirmation"
+      "title": "READ operation classification",
+      "description": "Typical classification for a list or get operation",
+      "value": {
+        "level": "safe",
+        "reason": "Read-only operation that retrieves data without modification"
+      }
     },
     {
-      "level": "destructive",
-      "reason": "Permanently removes resource and associated data",
-      "requires_confirmation": true,
-      "hook_blockable": true
+      "title": "CREATE operation classification",
+      "description": "Typical classification for an additive operation",
+      "value": {
+        "level": "reversible",
+        "reason": "Creates new resource, standard confirmation"
+      }
     },
     {
-      "level": "forbidden",
-      "reason": "Bulk deletion of all user data - catastrophic if executed incorrectly",
-      "requires_confirmation": true,
-      "hook_blockable": false
+      "title": "DELETE operation with confirmation",
+      "description": "Destructive operation requiring user confirmation",
+      "value": {
+        "level": "destructive",
+        "reason": "Permanently removes resource and associated data",
+        "requires_confirmation": true,
+        "hook_blockable": true
+      }
+    },
+    {
+      "title": "Critical EXECUTE operation",
+      "description": "Dangerous operation that should never auto-execute",
+      "value": {
+        "level": "forbidden",
+        "reason": "Bulk deletion of all user data - catastrophic if executed incorrectly",
+        "requires_confirmation": true,
+        "hook_blockable": false
+      }
     }
   ]
 }

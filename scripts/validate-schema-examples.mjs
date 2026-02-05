@@ -43,8 +43,11 @@ function createAjv() {
  * Validate every entry in a schema's top-level `examples` array against the
  * schema itself. Returns { passed, failed } counts.
  *
- * Per JSON Schema specification, `examples` is an array of instances that
- * MUST validate against the schema.
+ * Supports an annotated wrapper format where each example is
+ * { title, description, value } to provide LLM-readable context alongside
+ * the validatable instance. When every entry in the array has a "value" key,
+ * the wrapper is detected automatically and the value is unwrapped for
+ * validation while the title is used for labelling output.
  */
 function validateInlineExamples(schemaPath) {
   const schema = loadJSON(schemaPath);
@@ -55,6 +58,11 @@ function validateInlineExamples(schemaPath) {
     return { passed: 0, failed: 0 };
   }
 
+  // Detect annotated wrapper format: every example has a "value" key
+  const isWrapped = examples.every(
+    (ex) => ex != null && typeof ex === "object" && "value" in ex
+  );
+
   const ajv = createAjv();
   // Remove examples before compiling to avoid confusing ajv
   const schemaCopy = { ...schema };
@@ -64,8 +72,10 @@ function validateInlineExamples(schemaPath) {
   let passed = 0;
   let failed = 0;
 
-  examples.forEach((instance, i) => {
-    const label = `example[${i}]`;
+  examples.forEach((raw, i) => {
+    const instance = isWrapped ? raw.value : raw;
+    const label = isWrapped && raw.title ? raw.title : `example[${i}]`;
+
     const valid = validate(instance);
 
     if (valid) {
