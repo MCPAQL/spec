@@ -45,9 +45,9 @@ function createAjv() {
  *
  * Supports an annotated wrapper format where each example is
  * { title, description, value } to provide LLM-readable context alongside
- * the validatable instance. When every entry in the array has a "value" key,
- * the wrapper is detected automatically and the value is unwrapped for
- * validation while the title is used for labelling output.
+ * the validatable instance. Schemas using this format SHOULD declare
+ * "x-example-format": "annotated" as a machine-readable signal. The script
+ * also auto-detects the format when every entry has a "value" key.
  */
 function validateInlineExamples(schemaPath) {
   const schema = loadJSON(schemaPath);
@@ -58,10 +58,12 @@ function validateInlineExamples(schemaPath) {
     return { passed: 0, failed: 0 };
   }
 
-  // Detect annotated wrapper format: every example has a "value" key
-  const isWrapped = examples.every(
-    (ex) => ex != null && typeof ex === "object" && "value" in ex
-  );
+  // Detect annotated wrapper format via extension property or heuristic
+  const isWrapped =
+    schema["x-example-format"] === "annotated" ||
+    examples.every(
+      (ex) => ex != null && typeof ex === "object" && "value" in ex
+    );
 
   const ajv = createAjv();
   // Remove examples before compiling to avoid confusing ajv

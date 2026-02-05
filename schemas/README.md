@@ -142,6 +142,40 @@ Validation schema for adapter definition files:
 - `trust` - Trust level metadata
 - `rate_limits` - Rate limiting configuration
 
+## Annotated Examples
+
+MCP-AQL schemas MAY use an annotated example format that wraps each instance with metadata:
+
+```json
+{
+  "x-example-format": "annotated",
+  "examples": [
+    {
+      "title": "DELETE operation with confirmation",
+      "description": "Destructive operation requiring user confirmation",
+      "value": {
+        "level": "destructive",
+        "requires_confirmation": true
+      }
+    }
+  ]
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `title` | No | Short label identifying what the example demonstrates |
+| `description` | No | Explains when or why this pattern applies |
+| `value` | Yes | The actual instance to validate against the schema |
+
+**Why this exists:** When schemas are served to LLMs via MCP tool descriptions, the `title` and `description` annotations provide semantic context that improves tool use accuracy. A bare instance like `"safe"` is parseable but ambiguous — `"Simple danger level (string)"` with `"Basic classification using just the level string"` makes the intent explicit.
+
+**Extension property:** Schemas using this format SHOULD include `"x-example-format": "annotated"` as a machine-readable signal. This allows tooling to detect the format without heuristics and alerts third-party JSON Schema validators that the `examples` array is intentionally non-standard.
+
+**Validation:** The project validation script (`scripts/validate-schema-examples.mjs`) automatically unwraps annotated examples, validating the `value` field against the schema while using the `title` for human-readable output.
+
+**JSON Schema deviation:** This format diverges from JSON Schema 2020-12 §10.6, which defines `examples` as a plain array of instances. Standard JSON Schema validators will not validate annotated examples correctly. This is an intentional trade-off — see [#180](https://github.com/MCPAQL/spec/issues/180) for the design rationale.
+
 ## Conformance
 
 Implementations MUST:

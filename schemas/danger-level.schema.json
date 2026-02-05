@@ -74,6 +74,7 @@
       "$ref": "#/$defs/DangerClassification"
     }
   ],
+  "x-example-format": "annotated",
   "examples": [
     {
       "title": "Simple danger level (string)",
