@@ -30,10 +30,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install validation tools
-        run: |
-          npm install -g ajv-cli ajv-formats
-          npm ci
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install ajv-cli (for schema structure validation)
+        run: npm install -g ajv-cli ajv-formats
 
       - name: Find schema files
         id: find-schemas

@@ -24,7 +24,11 @@ const ROOT = resolve(__dirname, "..");
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function loadJSON(filePath) {
-  return JSON.parse(readFileSync(filePath, "utf-8"));
+  try {
+    return JSON.parse(readFileSync(filePath, "utf-8"));
+  } catch (err) {
+    throw new Error(`Failed to parse ${filePath}: ${err.message}`);
+  }
 }
 
 function createAjv() {
@@ -103,7 +107,15 @@ function validateInlineExamples(schemaPath) {
 function runFixture(fixturePath) {
   const fixture = loadJSON(fixturePath);
   const schemaFile = resolve(dirname(fixturePath), fixture.schema);
-  const rootSchema = loadJSON(schemaFile);
+
+  let rootSchema;
+  try {
+    rootSchema = loadJSON(schemaFile);
+  } catch (err) {
+    throw new Error(
+      `Fixture "${fixturePath}" references schema "${fixture.schema}" that could not be loaded: ${err.message}`
+    );
+  }
 
   const ajv = createAjv();
 
