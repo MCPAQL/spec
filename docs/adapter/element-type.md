@@ -602,7 +602,7 @@ operations:
   delete:
     - name: delete_repo
       maps_to: "DELETE /repos/{owner}/{repo}"
-      danger_level: high
+      danger_level: destructive
       requires_confirmation: true
 ```
 
