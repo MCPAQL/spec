@@ -33,3 +33,9 @@ snake_case
 TTL
 unstar
 validators
+Agentic
+LSP
+ADK
+ACP
+ack
+IPC
