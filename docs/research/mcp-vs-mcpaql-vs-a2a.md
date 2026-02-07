@@ -603,6 +603,12 @@ DollhouseMCP has a planned (but not yet specified) **COMMS element type** design
 inter-agent, inter-session, and inter-computer communication. It is part of the broader
 **TEAM element** hierarchy for multi-computer orchestration.
 
+> **Note:** COMMS elements are **DollhouseMCP-specific** -- they are not part of the
+> core MCP-AQL protocol specification. MCP-AQL is domain-agnostic and does not prescribe
+> element types. COMMS are discussed here because they illustrate how an MCP-AQL
+> implementation can address gaps in the agent communication landscape, but any MCP-AQL
+> adapter could implement its own approach to agent communication.
+
 ### COMMS as a Protocol-Specific Element Category
 
 A critical design decision: COMMS is not a single monolithic element type. It is an
