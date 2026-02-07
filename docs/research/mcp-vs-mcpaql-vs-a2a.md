@@ -5,7 +5,7 @@ status: research
 date: 2026-02-07
 ---
 
-# Protocol Landscape: MCP vs MCP-AQL vs A2A
+## Protocol Landscape: MCP vs MCP-AQL vs A2A
 
 > A strategic comparison of three protocols shaping how AI agents interact with the
 > world: where they overlap, where they diverge, and where the gaps are.
@@ -22,7 +22,7 @@ date: 2026-02-07
 - [7. Overlap and Toe-Stepping Analysis](#7-overlap-and-toe-stepping-analysis)
 - [8. Gap Analysis](#8-gap-analysis)
 - [9. A2A Under the Hood: What It Provides vs. What It Doesn't](#9-a2a-under-the-hood-what-it-provides-vs-what-it-doesnt)
-- [10. The COMMS Element Type and A2A](#10-the-comms-element-type-and-a2a)
+- [10. The COMMS Element Type and Protocol-Specific Variants](#10-the-comms-element-type-and-protocol-specific-variants)
 - [11. The Composite Architecture](#11-the-composite-architecture)
 - [12. Scenario Guide](#12-scenario-guide)
 - [13. Maturity and Adoption](#13-maturity-and-adoption)
