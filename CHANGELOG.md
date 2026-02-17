@@ -74,6 +74,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Unknown parameter rejection requirement (#157)
+  - New Section 4.6 in v1.0.0-draft.md defines normative requirement for unknown parameter handling
+  - `VALIDATION_UNKNOWN_PARAM` error code added to MVP error code registry
+  - Error response includes `unknown_params` and `valid_params` arrays for actionable feedback
+  - Prevents LLM hallucination of non-existent parameters and silent typo failures
+  - Optional `strict_mode` configuration allows development-time warnings instead of rejection
 - Automated schema example validation script and CI integration (#172)
   - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
   - Supports wrapped example format (danger-level) and standard format

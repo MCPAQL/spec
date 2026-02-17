@@ -426,6 +426,7 @@ Before executing an operation, adapters MUST:
 2. Validate parameter types match the schema
 3. Apply any constraints (enum, minimum, maximum, pattern)
 4. Apply default values for missing optional parameters
+5. Reject unknown parameters not defined in the operation schema (see [MCP-AQL Specification Section 4.6](./versions/v1.0.0-draft.md#46-unknown-parameter-handling))
 
 Validation failures MUST return an error response (not throw exceptions).
 
