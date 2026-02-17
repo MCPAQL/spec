@@ -84,6 +84,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Error response includes `unknown_params` and `valid_params` arrays for actionable feedback
   - Prevents LLM hallucination of non-existent parameters and silent typo failures
   - Optional `strict_mode` configuration allows development-time warnings instead of rejection
+- Data types and encoding requirements section (#156)
+  - New Section 4.7 in v1.0.0-draft.md defining interoperability requirements
+  - UTF-8 character encoding requirement with `VALIDATION_INVALID_ENCODING` error
+  - ISO 8601 date/time format requirement
+  - IEEE 754 number handling with guidance for high-precision values
+  - Base64 binary data encoding with metadata fields
+  - Payload size limits (request, response, string, array, nesting depth)
+  - `VALIDATION_PAYLOAD_TOO_LARGE` error code for limit violations
+  - Null handling semantics documentation
 - Automated schema example validation script and CI integration (#172)
   - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
   - Supports wrapped example format (danger-level) and standard format
