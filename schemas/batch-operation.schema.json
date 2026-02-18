@@ -46,7 +46,11 @@
               "type": "object",
               "properties": {
                 "code": { "type": "string" },
-                "message": { "type": "string" }
+                "message": { "type": "string" },
+                "details": {
+                  "type": "object",
+                  "description": "Additional error context (e.g., confirmation token for CONFIRMATION_REQUIRED)"
+                }
               },
               "required": ["code", "message"]
             }
@@ -73,9 +77,59 @@
         "result": {
           "$ref": "#/$defs/OperationResult",
           "description": "The individual operation result (success or failure)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["completed", "pending_confirmation"],
+          "description": "Status for skip-and-continue mode: 'pending_confirmation' when CONFIRMATION_REQUIRED"
         }
       },
       "required": ["index", "operation", "result"],
+      "additionalProperties": false
+    },
+
+    "HaltedOperation": {
+      "type": "object",
+      "description": "Information about the operation that caused the batch to halt",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based index of the halted operation"
+        },
+        "operation": {
+          "type": "string",
+          "description": "The operation name that triggered halting"
+        },
+        "result": {
+          "$ref": "#/$defs/OperationResult",
+          "description": "The CONFIRMATION_REQUIRED result"
+        }
+      },
+      "required": ["index", "operation", "result"],
+      "additionalProperties": false
+    },
+
+    "PendingOperationItem": {
+      "type": "object",
+      "description": "An operation that did not execute due to batch halting",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based index of this operation in the original request"
+        },
+        "operation": {
+          "type": "string",
+          "description": "The operation name"
+        },
+        "params": {
+          "type": "object",
+          "description": "The operation parameters (for continuation)",
+          "additionalProperties": true
+        }
+      },
+      "required": ["index", "operation"],
       "additionalProperties": false
     },
 
@@ -97,6 +151,21 @@
           "type": "integer",
           "minimum": 0,
           "description": "Number of operations that failed"
+        },
+        "halted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of operations that triggered halting (CONFIRMATION_REQUIRED)"
+        },
+        "pending": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of operations that did not execute due to halting"
+        },
+        "pending_confirmation": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of operations awaiting confirmation (skip-and-continue mode)"
         }
       },
       "required": ["total", "succeeded", "failed"],
@@ -125,18 +194,33 @@
     {
       "type": "object",
       "title": "Batch Success Response",
-      "description": "Successful batch response (batch completed processing)",
+      "description": "Successful batch response (batch completed processing or halted for confirmation)",
       "properties": {
         "success": {
           "const": true,
-          "description": "Indicates batch processing completed (individual ops may have failed)"
+          "description": "Indicates batch processing completed or halted (individual ops may have failed or need confirmation)"
+        },
+        "data": {
+          "description": "Always null for batch responses",
+          "type": "null"
         },
         "results": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/BatchResultItem"
           },
-          "description": "Individual results for each operation"
+          "description": "Individual results for operations that executed"
+        },
+        "halted_at": {
+          "$ref": "#/$defs/HaltedOperation",
+          "description": "Present when batch halted due to CONFIRMATION_REQUIRED"
+        },
+        "pending_operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PendingOperationItem"
+          },
+          "description": "Operations that did not execute due to halting (for continuation)"
         },
         "summary": {
           "$ref": "#/$defs/BatchSummary",
@@ -186,11 +270,40 @@
     },
     {
       "success": true,
+      "data": null,
       "results": [
         { "index": 0, "operation": "create_item", "result": { "success": true, "data": { "id": "item_1" } } },
         { "index": 1, "operation": "create_item", "result": { "success": true, "data": { "id": "item_2" } } }
       ],
       "summary": { "total": 2, "succeeded": 2, "failed": 0 }
+    },
+    {
+      "success": true,
+      "data": null,
+      "results": [
+        { "index": 0, "operation": "update_user", "result": { "success": true, "data": { "id": "alice" } } }
+      ],
+      "halted_at": {
+        "index": 1,
+        "operation": "delete_user",
+        "result": {
+          "success": false,
+          "error": {
+            "code": "CONFIRMATION_REQUIRED",
+            "message": "This operation requires confirmation",
+            "details": {
+              "operation": "delete_user",
+              "danger_level": "destructive",
+              "confirmation_token": "conf_abc123",
+              "expires_at": "2026-02-04T12:05:00Z"
+            }
+          }
+        }
+      },
+      "pending_operations": [
+        { "index": 2, "operation": "send_notification", "params": { "user_id": "alice", "message": "Account deleted" } }
+      ],
+      "summary": { "total": 3, "succeeded": 1, "failed": 0, "halted": 1, "pending": 1 }
     },
     {
       "success": false,

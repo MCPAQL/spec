@@ -93,6 +93,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Payload size limits (request, response, string, array, nesting depth)
   - `VALIDATION_PAYLOAD_TOO_LARGE` error code for limit violations
   - Null handling semantics documentation
+- Batch confirmation behavior specification (#158)
+  - New Section 7.5 (Confirmation-Gated Batch Operations) in operations.md
+  - Defines batch halting behavior when CONFIRMATION_REQUIRED is encountered
+  - Includes continuation mechanism with confirmation token
+  - Documents alternative skip-and-continue mode with warnings about state consistency
+  - `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
+  - Updated batch-operation.schema.json with `halted_at`, `pending_operations`, and extended `summary`
 - Automated schema example validation script and CI integration (#172)
   - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
   - Supports wrapped example format (danger-level) and standard format
