@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-02-18
 
 > **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
@@ -93,7 +93,10 @@ Operations that query state without modification.
 | `search` | Search across resources |
 | `introspect` | Discover available operations |
 | `get_status` | Get current system status |
+| `get_execution_status` | Query execution progress |
 | `export_data` | Export data to portable format |
+
+> **Note:** Operations that query execution state are READ operations, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
 
 ### 2.3 UPDATE Endpoint
 
@@ -153,9 +156,10 @@ Operations that manage the runtime execution lifecycle.
 |-----------|-------------|
 | `run_job` | Start a background job |
 | `cancel_task` | Cancel a running task |
-| `get_execution_status` | Query execution progress |
 | `resume_workflow` | Resume a paused workflow |
 | `trigger_build` | Trigger a build process |
+
+> **Note:** Operations that only query execution state (like `get_execution_status`) belong to READ, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
 
 ---
 
@@ -296,7 +300,20 @@ The adapter is authoritative for operation routing. Clients cannot bypass routin
 
 ## 6. Classification Guidelines
 
-### 6.1 How to Classify Operations
+### 6.1 Classification Principle
+
+Operations are classified by their **effect on state**, not by their **subject matter**.
+
+An operation that queries the status of an EXECUTE operation (like `get_execution_status`) is still a READ operation because it only reads data.
+
+**Examples:**
+- `get_execution_status` → READ (queries state, no side effects)
+- `get_task_log` → READ (retrieves execution output, no side effects)
+- `run_job` → EXECUTE (creates new execution, non-idempotent)
+- `cancel_task` → EXECUTE (modifies execution state)
+- `pause_execution` → EXECUTE (modifies execution state)
+
+### 6.2 How to Classify Operations
 
 When building an adapter, classify each operation by asking:
 
@@ -306,7 +323,7 @@ When building an adapter, classify each operation by asking:
 4. **Does it remove data permanently?** → DELETE
 5. **Does it manage runtime execution?** → EXECUTE
 
-### 6.2 Decision Tree
+### 6.3 Decision Tree
 
 ```
                     Does it modify state?
@@ -328,7 +345,9 @@ When building an adapter, classify each operation by asking:
                                        EXECUTE   UPDATE
 ```
 
-### 6.3 Edge Cases
+> **Important:** Classification is by **effect**, not subject. See [Section 6.1](#61-classification-principle) for the guiding principle.
+
+### 6.4 Edge Cases
 
 **Upsert Operations:**
 - If creates when not exists, updates when exists: Prefer CREATE
@@ -347,7 +366,7 @@ When building an adapter, classify each operation by asking:
 - If imports without overwriting: CREATE
 - If may overwrite existing: Discuss in operation description
 
-### 6.4 Documentation Requirement
+### 6.5 Documentation Requirement
 
 Adapters MUST document their operation classification via introspection. Each operation's endpoint MUST be discoverable.
 

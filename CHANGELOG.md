@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `get_execution_status` misclassified as EXECUTE instead of READ (#161)
+  - Moved to READ examples in crude-pattern.md Section 2.2
+  - Added Section 6.1 clarifying classification is by effect, not subject
+  - Renumbered subsequent classification guideline sections (6.2→6.3, 6.3→6.4, 6.4→6.5)
 - TypeDetails `allOf`+`oneOf` ambiguity allowing cross-variant field pollution (#154)
   - Flattened into pure `oneOf` with `additionalProperties: false` on each variant
   - Each variant (enum, object, union, scalar) now self-contained with all properties
