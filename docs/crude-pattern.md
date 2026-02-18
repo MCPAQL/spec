@@ -96,6 +96,8 @@ Operations that query state without modification.
 | `get_execution_status` | Query execution progress |
 | `export_data` | Export data to portable format |
 
+> **Note:** Operations that query execution state are READ operations, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
+
 ### 2.3 UPDATE Endpoint
 
 **Identifier:** `UPDATE`
@@ -156,6 +158,8 @@ Operations that manage the runtime execution lifecycle.
 | `cancel_task` | Cancel a running task |
 | `resume_workflow` | Resume a paused workflow |
 | `trigger_build` | Trigger a build process |
+
+> **Note:** Operations that only query execution state (like `get_execution_status`) belong to READ, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
 
 ---
 
@@ -304,8 +308,10 @@ An operation that queries the status of an EXECUTE operation (like `get_executio
 
 **Examples:**
 - `get_execution_status` → READ (queries state, no side effects)
+- `get_task_log` → READ (retrieves execution output, no side effects)
 - `run_job` → EXECUTE (creates new execution, non-idempotent)
 - `cancel_task` → EXECUTE (modifies execution state)
+- `pause_execution` → EXECUTE (modifies execution state)
 
 ### 6.2 How to Classify Operations
 
@@ -338,6 +344,8 @@ When building an adapter, classify each operation by asking:
                                           |         |
                                        EXECUTE   UPDATE
 ```
+
+> **Important:** Classification is by **effect**, not subject. See [Section 6.1](#61-classification-principle) for the guiding principle.
 
 ### 6.4 Edge Cases
 
