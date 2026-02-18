@@ -369,7 +369,21 @@ When building an adapter, classify each operation by asking:
 - If imports without overwriting: CREATE
 - If may overwrite existing: Discuss in operation description
 
-### 6.5 Documentation Requirement
+### 6.5 Canonical Verbs
+
+Each endpoint has canonical verbs that adapters SHOULD use for standard operations:
+
+| Endpoint | Canonical Verb | Example Operation |
+|----------|----------------|-------------------|
+| CREATE | `create` | `create_user` |
+| READ | `get` (single), `list` (multiple) | `get_document`, `list_users` |
+| UPDATE | `update` | `update_profile` |
+| DELETE | `delete` | `delete_account` |
+| EXECUTE | `run` (initiate), `cancel` (terminate) | `run_job`, `cancel_task` |
+
+Non-canonical verbs (e.g., `upload`, `search`, `remove`) MAY be used when domain semantics require it. See [Section 8.5](versions/v1.0.0-draft.md#85-operation-naming-grammar) of the normative specification for the full naming grammar.
+
+### 6.6 Documentation Requirement
 
 Adapters MUST document their operation classification via introspection. Each operation's endpoint MUST be discoverable.
 

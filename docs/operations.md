@@ -450,13 +450,17 @@ Operations MUST be assigned to endpoints based on their semantics:
 
 ### 6.2 Common Verbs by Endpoint
 
-| Endpoint | Common Verbs |
-|----------|--------------|
-| CREATE | create, add, upload, register, import, insert |
-| READ | get, list, search, find, export, count, introspect |
-| UPDATE | update, edit, set, rename, move, patch, merge |
-| DELETE | delete, remove, purge, unregister, clear, drop |
-| EXECUTE | run, start, stop, cancel, resume, trigger, invoke |
+Each endpoint has canonical verbs (shown in bold) that SHOULD be used for standard operations, plus additional verbs for domain-specific semantics. See [Section 8.5](versions/v1.0.0-draft.md#85-operation-naming-grammar) of the normative specification for naming requirements.
+
+| Endpoint | Canonical | Additional Verbs |
+|----------|-----------|------------------|
+| CREATE | **create** | add, upload, register, import, insert |
+| READ | **get**, **list** | search, find, export, count |
+| UPDATE | **update** | edit, set, rename, move, patch, merge |
+| DELETE | **delete** | remove, purge, unregister, clear, drop |
+| EXECUTE | **run**, **cancel** | start, stop, resume, trigger, invoke |
+
+> **Note:** The `introspect` operation is a reserved protocol operation and is not listed as a common verb. See [Section 8.5.4](versions/v1.0.0-draft.md#854-reserved-operations) of the normative specification.
 
 ### 6.3 Endpoint Routing Enforcement
 
