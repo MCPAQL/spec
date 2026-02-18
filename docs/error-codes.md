@@ -314,6 +314,24 @@ When multiple unknown parameters are detected, adapters SHOULD either:
 }
 ```
 
+**Example (single unknown parameter):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_UNKNOWN_PARAM",
+    "message": "Unknown parameter(s) for operation 'create_user': force_create",
+    "details": {
+      "operation": "create_user",
+      "unknown_params": ["force_create"],
+      "valid_params": ["user_name", "password", "email"]
+    }
+  }
+}
+```
+
+> **Note:** The `parameter(s)` format and array structure work for both singular and plural cases. Implementers do not need special-case logic based on the count.
+
 **HTTP Status Mapping:** This error SHOULD map to HTTP 400 (Bad Request) or 422 (Unprocessable Entity).
 
 **Reference:** [MCP-AQL Specification Section 4.6](./versions/v1.0.0-draft.md#46-unknown-parameter-handling)
