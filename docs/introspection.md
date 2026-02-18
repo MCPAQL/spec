@@ -771,10 +771,13 @@ Step 3: Execute operation
 
 ### 7.3 Caching Recommendations
 
+A **session** is the lifetime of a single MCP connection (see [Section 2.3](versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification).
+
 Implementations SHOULD:
-- Cache introspection responses during a session
+- Cache introspection responses for the duration of the MCP connection (session)
 - Return consistent results for the same query within a session
-- Invalidate cache only when server configuration changes
+- Invalidate all cached introspection data when the session ends
+- Invalidate cache mid-session only when server configuration changes
 
 ---
 

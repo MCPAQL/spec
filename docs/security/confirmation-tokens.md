@@ -393,7 +393,7 @@ function redeemToken(tokenId) {
 Tokens MAY be revoked before expiration:
 
 **Automatic revocation triggers:**
-- Session termination
+- Session termination (MCP connection ends; see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification)
 - User logout
 - Adapter configuration change
 - Security event detection
@@ -427,7 +427,7 @@ interface SessionScopedToken extends TokenPayload {
 ```
 
 Session tokens:
-- Are invalidated when the session ends
+- Are invalidated when the MCP connection terminates (see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification)
 - MAY be reused within the session for identical operations
 - MUST still respect expiration time
 
