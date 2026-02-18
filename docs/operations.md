@@ -595,6 +595,9 @@ When an operation returns `CONFIRMATION_REQUIRED`, the batch SHOULD halt:
         "code": "CONFIRMATION_REQUIRED",
         "message": "This operation requires confirmation",
         "details": {
+          "operation": "delete_user",
+          "danger_level": "destructive",
+          "reasons": ["Permanently deletes user account and associated data"],
           "confirmation_token": "conf_abc123",
           "expires_at": "2026-02-04T12:05:00Z"
         }
@@ -640,7 +643,11 @@ Clients MAY use the `pending_operations` array from the halted response to const
 
 #### 7.5.4 Alternative: Skip and Continue (MAY)
 
-Adapters MAY implement skip-and-continue behavior, where the gated operation is skipped and subsequent operations execute:
+Adapters MAY implement skip-and-continue behavior, where the gated operation is skipped and subsequent operations execute.
+
+> **Mode Selection:** Whether an adapter uses halt-and-wait (recommended) or skip-and-continue is an adapter configuration decision, not a per-request option. Clients can detect which mode is in use by examining the response:
+> - **Halt mode:** Response includes `halted_at` and `pending_operations`
+> - **Skip mode:** Response includes results for all operations, with `status: "pending_confirmation"` on gated operations
 
 ```json
 {
@@ -667,7 +674,7 @@ For batch processing purposes:
 - The `summary.halted` count indicates operations that triggered halting
 - The `summary.pending` count indicates operations that did not execute
 
-See [Confirmation Token Specification](./security/confirmation-tokens.md) for token lifecycle details.
+See [Confirmation Token Specification](./security/confirmation-tokens.md) for token lifecycle details and [CONFIRMATION_REQUIRED Error Code](./error-codes.md#54-confirmation_required) for the complete response format.
 
 ---
 

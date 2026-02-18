@@ -46,7 +46,11 @@
               "type": "object",
               "properties": {
                 "code": { "type": "string" },
-                "message": { "type": "string" }
+                "message": { "type": "string" },
+                "details": {
+                  "type": "object",
+                  "description": "Additional error context (e.g., confirmation token for CONFIRMATION_REQUIRED)"
+                }
               },
               "required": ["code", "message"]
             }
@@ -286,7 +290,13 @@
           "success": false,
           "error": {
             "code": "CONFIRMATION_REQUIRED",
-            "message": "This operation requires confirmation"
+            "message": "This operation requires confirmation",
+            "details": {
+              "operation": "delete_user",
+              "danger_level": "destructive",
+              "confirmation_token": "conf_abc123",
+              "expires_at": "2026-02-04T12:05:00Z"
+            }
           }
         }
       },
