@@ -162,14 +162,17 @@
         },
         "supports_cancel": {
           "type": "boolean",
+          "default": false,
           "description": "Whether the operation supports cancellation"
         },
         "supports_retry": {
           "type": "boolean",
+          "default": false,
           "description": "Whether failed executions can be retried"
         },
         "progress_reporting": {
           "type": "boolean",
+          "default": false,
           "description": "Whether the operation reports progress updates"
         }
       },
