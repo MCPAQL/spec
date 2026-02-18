@@ -46,7 +46,7 @@ Structured error codes address several challenges with string-based error messag
 This specification covers the Minimum Viable Product error codes:
 
 **Included:**
-- 6 essential error codes (MVP)
+- 8 essential error codes (MVP)
 - 7 Phase 1 robustness error codes
 - Basic error response structure
 - HTTP status code mapping
