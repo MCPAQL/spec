@@ -100,6 +100,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Documents alternative skip-and-continue mode with warnings about state consistency
   - `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
   - Updated batch-operation.schema.json with `halted_at`, `pending_operations`, and extended `summary`
+- Execution lifecycle state machine for EXECUTE operations (#155)
+  - Core states: pending, running, completed, failed, cancelled
+  - State transition diagram with valid transitions
+  - State response format with required and optional fields
+  - Progress reporting object specification
+  - Adapter extension rules for custom states
+  - LifecycleInfo schema in introspection-response.schema.json
+  - Cross-reference from crude-pattern.md Section 2.5
 - Automated schema example validation script and CI integration (#172)
   - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
   - Supports wrapped example format (danger-level) and standard format
