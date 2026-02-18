@@ -143,6 +143,43 @@
       "additionalProperties": false
     },
 
+    "ExecutionState": {
+      "type": "string",
+      "enum": ["pending", "running", "completed", "failed", "cancelled"],
+      "description": "Core execution lifecycle states"
+    },
+
+    "LifecycleInfo": {
+      "type": "object",
+      "description": "Execution lifecycle metadata for EXECUTE operations that manage long-running processes",
+      "properties": {
+        "states": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Supported execution states (core states plus any adapter extensions)"
+        },
+        "supports_cancel": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the operation supports cancellation"
+        },
+        "supports_retry": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether failed executions can be retried"
+        },
+        "progress_reporting": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the operation reports progress updates"
+        }
+      },
+      "required": ["states"],
+      "additionalProperties": false
+    },
+
     "OperationDetails": {
       "type": "object",
       "description": "Complete information for a specific operation",
@@ -196,6 +233,10 @@
             "additionalProperties": false
           },
           "description": "Example invocations of the operation"
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/LifecycleInfo",
+          "description": "Execution lifecycle metadata (for EXECUTE operations that manage long-running processes)"
         }
       },
       "required": ["name", "endpoint", "mcpTool", "description", "permissions", "parameters", "returns"],

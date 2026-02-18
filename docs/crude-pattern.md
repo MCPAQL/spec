@@ -161,6 +161,8 @@ Operations that manage the runtime execution lifecycle.
 
 > **Note:** Operations that only query execution state (like `get_execution_status`) belong to READ, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
 
+For operations that manage long-running processes, see [Execution Lifecycle](versions/v1.0.0-draft.md#84-execution-lifecycle) in the normative specification.
+
 ---
 
 ## 3. Permission Model
@@ -346,6 +348,7 @@ When building an adapter, classify each operation by asking:
 ```
 
 > **Important:** Classification is by **effect**, not subject. See [Section 6.1](#61-classification-principle) for the guiding principle.
+
 
 ### 6.4 Edge Cases
 
