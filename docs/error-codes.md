@@ -46,7 +46,7 @@ Structured error codes address several challenges with string-based error messag
 This specification covers the Minimum Viable Product error codes:
 
 **Included:**
-- 6 essential error codes (MVP)
+- 8 essential error codes (MVP)
 - 7 Phase 1 robustness error codes
 - Basic error response structure
 - HTTP status code mapping
@@ -181,13 +181,15 @@ CATEGORY_SPECIFIC_CONDITION
 
 ### 4.1 Error Code Registry
 
-The MVP includes 6 essential error codes:
+The MVP includes 8 essential error codes:
 
 | Code | Category | Description |
 |------|----------|-------------|
 | `VALIDATION_MISSING_PARAM` | Validation | Required parameter not provided |
 | `VALIDATION_INVALID_TYPE` | Validation | Parameter has wrong type |
 | `VALIDATION_UNKNOWN_PARAM` | Validation | Request contains parameter not defined in operation schema |
+| `VALIDATION_INVALID_ENCODING` | Validation | Request contains invalid character encoding |
+| `VALIDATION_PAYLOAD_TOO_LARGE` | Validation | Request or response exceeds size limits |
 | `NOT_FOUND_OPERATION` | Not Found | Requested operation does not exist |
 | `NOT_FOUND_RESOURCE` | Not Found | Target resource not found (HTTP 404) |
 | `PERMISSION_DENIED` | Permission | Access denied (HTTP 401/403) |
@@ -336,7 +338,79 @@ When multiple unknown parameters are detected, adapters SHOULD either:
 
 **Reference:** [MCP-AQL Specification Section 4.6](./versions/v1.0.0-draft.md#46-unknown-parameter-handling)
 
-### 4.6 NOT_FOUND_OPERATION
+### 4.6 VALIDATION_INVALID_ENCODING
+
+**When used:** A request contains invalid character encoding (non-UTF-8 sequences).
+
+**Message format:** `Invalid character encoding in request`
+
+**Details:**
+```typescript
+{
+  /** Location where invalid encoding was detected */
+  location?: string;
+  /** Byte offset of the invalid sequence (if available) */
+  byte_offset?: number;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_INVALID_ENCODING",
+    "message": "Invalid character encoding in request",
+    "details": {
+      "location": "params.description",
+      "byte_offset": 42
+    }
+  }
+}
+```
+
+**Reference:** [MCP-AQL Specification Section 4.7.1](./versions/v1.0.0-draft.md#471-character-encoding)
+
+### 4.7 VALIDATION_PAYLOAD_TOO_LARGE
+
+**When used:** A request or response exceeds configured size limits.
+
+**Message format:** `Payload exceeds {limit_type} limit of {limit_value}`
+
+**Details:**
+```typescript
+{
+  /** Type of limit exceeded */
+  limit_type: 'request_size' | 'response_size' | 'string_length' | 'array_elements' | 'nesting_depth';
+  /** The configured limit */
+  limit_value: number;
+  /** The actual size/count */
+  actual_value: number;
+  /** Unit of measurement */
+  unit: 'bytes' | 'elements' | 'levels';
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_PAYLOAD_TOO_LARGE",
+    "message": "Payload exceeds request_size limit of 1048576",
+    "details": {
+      "limit_type": "request_size",
+      "limit_value": 1048576,
+      "actual_value": 2500000,
+      "unit": "bytes"
+    }
+  }
+}
+```
+
+**Reference:** [MCP-AQL Specification Section 4.7.5](./versions/v1.0.0-draft.md#475-payload-size-limits)
+
+### 4.8 NOT_FOUND_OPERATION
 
 **When used:** The requested operation does not exist in the adapter schema.
 
@@ -370,7 +444,7 @@ When multiple unknown parameters are detected, adapters SHOULD either:
 
 **Reference:** This specification (MVP error code)
 
-### 4.7 NOT_FOUND_RESOURCE
+### 4.9 NOT_FOUND_RESOURCE
 
 **When used:** The target API returned HTTP 404 - the requested resource does not exist.
 
@@ -406,7 +480,7 @@ When multiple unknown parameters are detected, adapters SHOULD either:
 
 **Reference:** This specification (MVP error code); [RFC 9110 Section 15.5.5](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.5) (HTTP 404)
 
-### 4.8 PERMISSION_DENIED
+### 4.10 PERMISSION_DENIED
 
 **When used:** The target API returned HTTP 401 (unauthorized) or 403 (forbidden).
 
@@ -441,7 +515,7 @@ When multiple unknown parameters are detected, adapters SHOULD either:
 
 **Reference:** This specification (MVP error code); [RFC 9110 Section 15.5.2](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.2) (HTTP 401), [Section 15.5.4](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.4) (HTTP 403)
 
-### 4.9 INTERNAL_ERROR
+### 4.11 INTERNAL_ERROR
 
 **When used:** Server error from target API (HTTP 500+) or unexpected error in the runtime.
 
