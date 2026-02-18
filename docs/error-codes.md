@@ -276,9 +276,15 @@ All error codes define a **message format** template that implementations SHOULD
 
 ### 4.5 VALIDATION_UNKNOWN_PARAM
 
-**When used:** A request contains one or more parameters not defined in the operation schema.
+**When used:** A request contains one or more parameters not defined in the operation schema at the `params` level.
 
-**Message format:** `Unknown parameter '{param_name}' for operation '{operation}'`
+> **Note:** This code applies to unknown parameters in the `params` object. For unknown fields within the nested `input` object (used in UPDATE operations per Section 4.5 of the normative spec), use `VALIDATION_UNKNOWN_FIELD` instead. The distinction enables precise error handling: `VALIDATION_UNKNOWN_PARAM` indicates a top-level parameter error, while `VALIDATION_UNKNOWN_FIELD` indicates an error within the update payload.
+
+**Message format:** `Unknown parameter(s) for operation '{operation}': {param_list}`
+
+When multiple unknown parameters are detected, adapters SHOULD either:
+- List all unknown parameters in a comma-separated format: `Unknown parameter(s) for operation 'create_user': force_create, admin_override`
+- Report the first unknown parameter with a count: `Unknown parameter 'force_create' for operation 'create_user' (and 1 other)`
 
 **Details:**
 ```typescript
@@ -292,13 +298,13 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
-**Example:**
+**Example (multiple unknown parameters):**
 ```json
 {
   "success": false,
   "error": {
     "code": "VALIDATION_UNKNOWN_PARAM",
-    "message": "Unknown parameter 'force_create' for operation 'create_user'",
+    "message": "Unknown parameter(s) for operation 'create_user': force_create, admin_override",
     "details": {
       "operation": "create_user",
       "unknown_params": ["force_create", "admin_override"],
@@ -307,6 +313,8 @@ All error codes define a **message format** template that implementations SHOULD
   }
 }
 ```
+
+**HTTP Status Mapping:** This error SHOULD map to HTTP 400 (Bad Request) or 422 (Unprocessable Entity).
 
 **Reference:** [MCP-AQL Specification Section 4.6](./versions/v1.0.0-draft.md#46-unknown-parameter-handling)
 
@@ -925,7 +933,9 @@ The runtime maps HTTP status codes to MCP-AQL error codes:
 
 | HTTP Status | Error Code | Description |
 |-------------|------------|-------------|
-| 400 | `VALIDATION_INVALID_TYPE` | Bad request |
+| 400 | `VALIDATION_INVALID_TYPE` | Bad request (default for validation errors) |
+| 400 | `VALIDATION_MISSING_PARAM` | Bad request (missing required parameter) |
+| 400 | `VALIDATION_UNKNOWN_PARAM` | Bad request (unknown parameter) |
 | 401 | `PERMISSION_DENIED` | Authentication required |
 | 403 | `PERMISSION_DENIED` | Forbidden |
 | 404 | `NOT_FOUND_RESOURCE` | Not found |
