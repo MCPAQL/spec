@@ -551,6 +551,124 @@ When using CRUDE mode (separate endpoints), batch operations SHOULD be constrain
 
 Mixing operations across endpoints in a single batch is NOT RECOMMENDED. Implementations MAY reject mixed batches or MAY process them with explicit endpoint routing per operation.
 
+### 7.5 Confirmation-Gated Batch Operations
+
+When a batch operation encounters a `CONFIRMATION_REQUIRED` response, special handling is needed to maintain state consistency.
+
+#### 7.5.1 The Problem
+
+Consider a batch where operations depend on each other:
+
+```json
+{
+  "operations": [
+    { "operation": "delete_user", "params": { "user_id": "alice" } },
+    { "operation": "send_notification", "params": { "user_id": "alice", "message": "Account deleted" } }
+  ]
+}
+```
+
+If `delete_user` requires confirmation, executing `send_notification` anyway would create inconsistent state (notification sent, but user not deleted).
+
+#### 7.5.2 Batch Halting (RECOMMENDED)
+
+When an operation returns `CONFIRMATION_REQUIRED`, the batch SHOULD halt:
+
+1. Operations before the gated operation execute normally
+2. The gated operation returns `CONFIRMATION_REQUIRED` with a confirmation token
+3. Subsequent operations do NOT execute
+4. Response includes partial results and continuation information
+
+```json
+{
+  "success": true,
+  "data": null,
+  "results": [
+    { "index": 0, "operation": "update_user", "result": { "success": true, "data": { "id": "alice" } } }
+  ],
+  "halted_at": {
+    "index": 1,
+    "operation": "delete_user",
+    "result": {
+      "success": false,
+      "error": {
+        "code": "CONFIRMATION_REQUIRED",
+        "message": "This operation requires confirmation",
+        "details": {
+          "confirmation_token": "conf_abc123",
+          "expires_at": "2026-02-04T12:05:00Z"
+        }
+      }
+    }
+  },
+  "pending_operations": [
+    { "index": 2, "operation": "send_notification", "params": { "user_id": "alice", "message": "Account deleted" } }
+  ],
+  "summary": {
+    "total": 3,
+    "succeeded": 1,
+    "failed": 0,
+    "halted": 1,
+    "pending": 1
+  }
+}
+```
+
+#### 7.5.3 Continuation After Confirmation
+
+To continue after the user confirms, submit a new batch starting from the halted operation with the confirmation token:
+
+```json
+{
+  "operations": [
+    {
+      "operation": "delete_user",
+      "params": {
+        "user_id": "alice",
+        "confirmation_token": "conf_abc123"
+      }
+    },
+    {
+      "operation": "send_notification",
+      "params": { "user_id": "alice", "message": "Account deleted" }
+    }
+  ]
+}
+```
+
+Clients MAY use the `pending_operations` array from the halted response to construct the continuation batch.
+
+#### 7.5.4 Alternative: Skip and Continue (MAY)
+
+Adapters MAY implement skip-and-continue behavior, where the gated operation is skipped and subsequent operations execute:
+
+```json
+{
+  "success": true,
+  "data": null,
+  "results": [
+    { "index": 0, "operation": "update_user", "result": { "success": true, "data": { "id": "alice" } } },
+    { "index": 1, "operation": "delete_user", "result": { "success": false, "error": { "code": "CONFIRMATION_REQUIRED", ... } }, "status": "pending_confirmation" },
+    { "index": 2, "operation": "send_notification", "result": { "success": true, "data": {} } }
+  ],
+  "summary": { "total": 3, "succeeded": 2, "failed": 0, "pending_confirmation": 1 }
+}
+```
+
+> **Warning:** Skip-and-continue risks inconsistent state when operations depend on each other. This approach is NOT RECOMMENDED unless operations are known to be independent.
+
+#### 7.5.5 Semantics
+
+For batch processing purposes:
+
+- `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
+- The batch overall `success` is `true` (batch processing succeeded; an operation requires confirmation)
+- Halted batches include `halted_at` and `pending_operations` for continuation
+- The `summary.halted` count indicates operations that triggered halting
+- The `summary.pending` count indicates operations that did not execute
+
+See [Confirmation Token Specification](./security/confirmation-tokens.md) for token lifecycle details.
+
 ---
 
 ## 8. Error Handling
