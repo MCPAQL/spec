@@ -189,10 +189,10 @@ Client confirms by including the token:
 
 ### 4.3 Session-Scoped Confirmations
 
-Confirmations MAY be cached per session:
+Confirmations MAY be cached per session (see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification):
 - Confirmations expire after configurable timeout
 - Confirmations are scoped to specific operation
-- Session end clears all confirmations
+- Session end (MCP connection termination) clears all confirmations
 
 ---
 
