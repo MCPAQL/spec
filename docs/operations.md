@@ -458,7 +458,7 @@ Each endpoint has canonical verbs (shown in bold) that SHOULD be used for standa
 | READ | **get**, **list** | search, find, export, count |
 | UPDATE | **update** | edit, set, rename, move, patch, merge |
 | DELETE | **delete** | remove, purge, unregister, clear, drop |
-| EXECUTE | **run**, **cancel** | start, stop, resume, trigger, invoke |
+| EXECUTE | **execute**, **cancel** | run, start, stop, resume, trigger, invoke |
 
 > **Note:** The `introspect` operation is a reserved protocol operation and is not listed as a common verb. See [Section 8.5.4](versions/v1.0.0-draft.md#854-reserved-operations) of the normative specification.
 

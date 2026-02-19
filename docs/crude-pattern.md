@@ -36,7 +36,7 @@ The CRUDE pattern provides semantic grouping of operations by their effect on sy
 
 Traditional CRUD patterns assume operations are primarily concerned with data persistence. However, many services provide executable functionality (jobs, workflows, tasks, processes) that require:
 
-- **Non-idempotent operations** - Calling `run_job` twice creates two separate executions
+- **Non-idempotent operations** - Calling `execute_job` twice creates two separate executions
 - **Lifecycle management** - Start, monitor, update progress, complete
 - **Runtime state** - Distinct from stored data
 
@@ -154,7 +154,7 @@ Operations that manage the runtime execution lifecycle.
 **Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `run_job` | Start a background job |
+| `execute_job` | Start a background job |
 | `cancel_task` | Cancel a running task |
 | `resume_workflow` | Resume a paused workflow |
 | `trigger_build` | Trigger a build process |
@@ -311,7 +311,7 @@ An operation that queries the status of an EXECUTE operation (like `get_executio
 **Examples:**
 - `get_execution_status` → READ (queries state, no side effects)
 - `get_task_log` → READ (retrieves execution output, no side effects)
-- `run_job` → EXECUTE (creates new execution, non-idempotent)
+- `execute_job` → EXECUTE (creates new execution, non-idempotent)
 - `cancel_task` → EXECUTE (modifies execution state)
 - `pause_execution` → EXECUTE (modifies execution state)
 
@@ -379,7 +379,7 @@ Each endpoint has canonical verbs that adapters SHOULD use for standard operatio
 | READ | `get` (single), `list` (multiple) | `get_document`, `list_users` |
 | UPDATE | `update` | `update_profile` |
 | DELETE | `delete` | `delete_account` |
-| EXECUTE | `run` (initiate), `cancel` (terminate) | `run_job`, `cancel_task` |
+| EXECUTE | `execute` (initiate), `cancel` (terminate) | `execute_workflow`, `cancel_task` |
 
 Non-canonical verbs (e.g., `upload`, `search`, `remove`) MAY be used when domain semantics require it. See [Section 8.5](versions/v1.0.0-draft.md#85-operation-naming-grammar) of the normative specification for the full naming grammar.
 
