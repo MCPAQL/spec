@@ -71,7 +71,7 @@ MCP-AQL extends traditional CRUD with an **EXECUTE** endpoint, creating the CRUD
 | **READ** | Read-only | Safe operations that query state | `list_entities`, `get_entity`, `search`, `introspect` |
 | **UPDATE** | Modifying | Operations that modify existing state | `update_entity`, `update_resource` |
 | **DELETE** | Destructive | Operations that remove state | `delete_entity`, `clear` |
-| **EXECUTE** | Runtime | Lifecycle operations for executable elements | `run_workflow`, `cancel_task`, `get_execution_state` |
+| **EXECUTE** | Runtime | Lifecycle operations for executable elements | `execute_workflow`, `cancel_task`, `get_execution_state` |
 
 ### Permission Characteristics
 

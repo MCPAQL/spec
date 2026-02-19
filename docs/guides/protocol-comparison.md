@@ -708,7 +708,7 @@ mcp_aql_execute - EXECUTE operations (execute workflows, update state)
 | `edit_<type>` | `update_resource` + `resource_type` | UPDATE |
 | `delete_<type>` | `delete_resource` + `resource_type` | DELETE |
 | `search_<type>s` | `search` | READ |
-| `execute_<workflow>` | `run_workflow` | EXECUTE |
+| `execute_<workflow>` | `execute_workflow` | EXECUTE |
 
 ### Permission Model Changes
 

@@ -347,7 +347,7 @@ interface TypeDetails extends TypeInfo {
         "description": "Delete an entity"
       },
       {
-        "name": "run_workflow",
+        "name": "execute_workflow",
         "endpoint": "EXECUTE",
         "description": "Start execution of a workflow"
       },
@@ -736,7 +736,7 @@ getSummary(): string
 //   READ: list_entities, get_entity, introspect
 //   UPDATE: update_entity
 //   DELETE: delete_entity
-//   EXECUTE: run_workflow
+//   EXECUTE: execute_workflow
 //
 // Types: EntityType, CRUDEndpoint, OperationInput, OperationResult
 //

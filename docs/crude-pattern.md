@@ -379,7 +379,7 @@ Each endpoint has canonical verbs that adapters SHOULD use for standard operatio
 | READ | `get` (single), `list` (multiple) | `get_document`, `list_users` |
 | UPDATE | `update` | `update_profile` |
 | DELETE | `delete` | `delete_account` |
-| EXECUTE | `run` (initiate), `cancel` (terminate) | `run_job`, `cancel_task` |
+| EXECUTE | `execute` (initiate), `cancel` (terminate) | `execute_workflow`, `cancel_task` |
 
 Non-canonical verbs (e.g., `upload`, `search`, `remove`) MAY be used when domain semantics require it. See [Section 8.5](versions/v1.0.0-draft.md#85-operation-naming-grammar) of the normative specification for the full naming grammar.
 
