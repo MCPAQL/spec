@@ -78,6 +78,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Canonical operation verbs per CRUDE endpoint (#159)
+  - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
+  - Canonical verbs: create, get/list, update, delete, run/cancel
+  - `{verb}_{resource}` naming pattern with non-canonical verb guidance
+  - Reserved operation names (`introspect`)
+  - HTTP method mapping table for REST developers
+  - Updated operations.md Section 6.2 to mark canonical vs additional verbs
+  - Added Section 6.5 (Canonical Verbs) to crude-pattern.md
 - Unknown parameter rejection requirement (#157)
   - New Section 4.6 in v1.0.0-draft.md defines normative requirement for unknown parameter handling
   - `VALIDATION_UNKNOWN_PARAM` error code added to MVP error code registry
