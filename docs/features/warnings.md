@@ -586,7 +586,7 @@ Implementations SHOULD deduplicate warnings before including them in responses:
 
 Clients MAY implement additional deduplication when:
 
-1. **Session-level deduplication** - Suppress warnings already shown in the current session
+1. **Session-level deduplication** - Suppress warnings already shown in the current session (a session is the lifetime of a single MCP connection; see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle))
 2. **Time-based deduplication** - Suppress warnings seen within a configurable window (e.g., 5 minutes)
 3. **Code-based filtering** - Allow users to dismiss specific warning codes
 

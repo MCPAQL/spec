@@ -92,6 +92,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - HTTP method mapping table for REST developers
   - Updated operations.md Section 6.2 to mark canonical vs additional verbs
   - Added Section 6.5 (Canonical Verbs) to crude-pattern.md
+- Session lifecycle definition (#160)
+  - New Section 2.3 (Session Lifecycle) in v1.0.0-draft.md
+  - Session defined as lifetime of a single MCP connection (initialize → shutdown/disconnect)
+  - Session-scoped vs cross-session persistent state distinguished
+  - Session identification guidance for adapters
+  - Updated confirmation-tokens.md with explicit session cross-references
+  - Updated introspection.md caching guidance with session definition
+  - Added session cross-references in gatekeeper.md and warnings.md
 - Unknown parameter rejection requirement (#157)
   - New Section 4.6 in v1.0.0-draft.md defines normative requirement for unknown parameter handling
   - `VALIDATION_UNKNOWN_PARAM` error code added to MVP error code registry
