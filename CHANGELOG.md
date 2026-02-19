@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Aligned example operation names with canonical verbs from Section 8.5 (#159)
+  - `run` → `execute` as canonical verb for EXECUTE endpoint in informative docs
   - `run_job` → `execute_job` in v1.0.0-draft.md and crude-pattern.md
   - `edit_entity` → `update_entity` in overview.md endpoint table
   - `get_execution_state` → `resume_workflow` in overview.md EXECUTE examples (READ op was misplaced)
