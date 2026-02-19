@@ -116,6 +116,8 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
                      +-------------------+           +-------------------+
 ```
 
+> **Note:** This diagram shows a runtime lifecycle flow, not endpoint classification. Operations like `get_execution_state` that query execution state belong to the READ endpoint, not EXECUTE. See [CRUDE Pattern Classification](crude-pattern.md#61-classification-principle) for details.
+
 ---
 
 ## Endpoint Modes
