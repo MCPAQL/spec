@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Upgraded snake_case naming from SHOULD to MUST for operation names and parameters (#162)
+  - Aligns prose with schema enforcement (`^[a-z][a-z0-9_]*$` pattern already rejects non-conforming names)
+  - Separates snake_case format requirement (MUST) from verb_resource convention (SHOULD)
+
 ### Fixed
 
 - `get_execution_status` misclassified as EXECUTE instead of READ (#161)
