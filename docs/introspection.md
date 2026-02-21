@@ -174,7 +174,7 @@ interface OperationDetails {
   mcpTool: string;                 // MCP tool name (e.g., "mcp_aql_create")
   description: string;             // Detailed description
   permissions: EndpointPermissions;
-  parameters: ParameterInfo[];     // Parameter definitions
+  parameters: ParameterInfo[];     // Parameter definitions (see note below)
   returns: TypeInfo;               // Return type information
   examples: OperationExample[];    // Example invocations
 }
@@ -189,6 +189,8 @@ interface OperationExample {
   request: object;      // Example request object
 }
 ```
+
+> **Terminology Note:** The `parameters` array here describes the definitions of accepted parameters. At request time, callers provide parameter values via the `params` object (see [Section 4.1 of the normative spec](versions/v1.0.0-draft.md#41-standard-request-structure)). The keys of `params` correspond to the `name` field of each `ParameterInfo` entry.
 
 ### 3.4 ParameterInfo
 

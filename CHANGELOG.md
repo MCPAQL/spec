@@ -9,9 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clarified `params` vs `parameters` terminology across spec documents (#163)
+  - `params` is the request-time object carrying runtime values
+  - `parameters` is the introspection-time array of `ParameterInfo` definitions
+  - Added terminology notes to normative spec (Section 4.3), introspection.md, and operations.md
 - Upgraded snake_case naming from SHOULD to MUST for operation names and parameters (#162)
   - Aligns operation name prose with schema enforcement (`^[a-z][a-z0-9_]*$` pattern); establishes normative prose requirement for parameter names
   - Separates snake_case format requirement (MUST) from verb_resource convention (SHOULD)
+- Aligned example operation names with canonical verbs from Section 8.5 (#159)
+  - `run` → `execute` as canonical verb for EXECUTE endpoint in informative docs
+  - `run_job` → `execute_job` in v1.0.0-draft.md and crude-pattern.md
+  - `edit_entity` → `update_entity` in overview.md endpoint table
+  - `get_execution_state` → `resume_workflow` in overview.md EXECUTE examples (READ op was misplaced)
+  - Restored `execute_workflow` as canonical example in introspection.md and protocol-comparison.md
+- Minor documentation improvements from Sprint 4 review feedback (#129)
+  - Clarified "history" → "historical context" in CONTRIBUTING.md cross-reference guidelines
+  - Added "(strictest mode)" clarification for tolerance=0 in confirmation-tokens.md
+  - Added cross-reference to Section 6.1 (Replay Attack Prevention) in confirmation-tokens.md
+  - Noted numeric severity mapping aligns with syslog conventions in warnings.md
+- Added clock skew tolerance validation code example to confirmation tokens (#111)
+  - Shows how to apply tolerance by adding to expiry time
+  - Updated validateToken example to reference clock skew handling
+- Added deployment environment table for clock skew tolerance (#112)
+  - Recommended values for typical, air-gapped, IoT, high-security, and zero-trust environments
+- Added reference links to MVP error codes for consistency with Phase 1 codes (#86)
+  - MVP codes reference this specification as primary source
+  - HTTP-mapped codes include RFC 9110 section links
+- Enhanced RATE_LIMIT_QUOTA_WARNING note to better distinguish it from error codes (#87)
+  - Added warning emoji and IMPORTANT label for visual prominence
+  - Cross-reference to Warnings Specification
+- Added explanatory notes for CONFIRMATION_REQUIRED error code category placement (#85)
+  - Explains why it's under "Permission" category (part of permission gating flow)
+  - Documents conditional denial with recovery path pattern
+- Added bidirectional navigation links between spec documents for improved discoverability (#69)
+  - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
 
 ### Fixed
 
@@ -53,35 +84,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - docs/ISSUE_MAPPING.md - Issue tracker mapping
   - docs/process/session-notes-2026-01-26-prioritization.md - Prioritization session
 
-### Changed
-
-- Aligned example operation names with canonical verbs from Section 8.5 (#159)
-  - `run` → `execute` as canonical verb for EXECUTE endpoint in informative docs
-  - `run_job` → `execute_job` in v1.0.0-draft.md and crude-pattern.md
-  - `edit_entity` → `update_entity` in overview.md endpoint table
-  - `get_execution_state` → `resume_workflow` in overview.md EXECUTE examples (READ op was misplaced)
-  - Restored `execute_workflow` as canonical example in introspection.md and protocol-comparison.md
-- Minor documentation improvements from Sprint 4 review feedback (#129)
-  - Clarified "history" → "historical context" in CONTRIBUTING.md cross-reference guidelines
-  - Added "(strictest mode)" clarification for tolerance=0 in confirmation-tokens.md
-  - Added cross-reference to Section 6.1 (Replay Attack Prevention) in confirmation-tokens.md
-  - Noted numeric severity mapping aligns with syslog conventions in warnings.md
-- Added clock skew tolerance validation code example to confirmation tokens (#111)
-  - Shows how to apply tolerance by adding to expiry time
-  - Updated validateToken example to reference clock skew handling
-- Added deployment environment table for clock skew tolerance (#112)
-  - Recommended values for typical, air-gapped, IoT, high-security, and zero-trust environments
-- Added reference links to MVP error codes for consistency with Phase 1 codes (#86)
-  - MVP codes reference this specification as primary source
-  - HTTP-mapped codes include RFC 9110 section links
-- Enhanced RATE_LIMIT_QUOTA_WARNING note to better distinguish it from error codes (#87)
-  - Added warning emoji and IMPORTANT label for visual prominence
-  - Cross-reference to Warnings Specification
-- Added explanatory notes for CONFIRMATION_REQUIRED error code category placement (#85)
-  - Explains why it's under "Permission" category (part of permission gating flow)
-  - Documents conditional denial with recovery path pattern
-- Added bidirectional navigation links between spec documents for improved discoverability (#69)
-  - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
 - Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
 - Deduplicated trust-to-danger gating matrix (#81)
   - danger-levels.md is now the canonical source for the gating matrix

@@ -63,6 +63,8 @@ All operations MUST follow a consistent input structure:
 
 The `operation` field MUST be a non-empty string matching a defined operation name.
 
+> **Terminology Note:** The request field `params` (an object) carries runtime parameter values. The introspection field `parameters` (an array of `ParameterInfo`) describes the accepted parameter definitions. The keys of `params` correspond to the `name` field of each `ParameterInfo` entry. See [Introspection — OperationDetails](introspection.md#33-operationdetails-detail-response).
+
 ### 2.3 Parameter Resolution
 
 Adapters MAY support parameter resolution from multiple locations. The RECOMMENDED resolution order is:
