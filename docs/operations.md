@@ -89,7 +89,7 @@ When the same parameter appears at multiple levels, the value in `params` takes 
 
 ### 2.4 Case Sensitivity
 
-Operation names MUST be case-sensitive. Operation names MUST use snake_case (lowercase letters, digits, and underscores), matching the schema pattern `^[a-z][a-z0-9_]*$`.
+Operation names MUST be case-sensitive. Operation names MUST use snake_case (a lowercase letter followed by lowercase letters, digits, and underscores), matching the schema pattern `^[a-z][a-z0-9_]*$`.
 
 ---
 
