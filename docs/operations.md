@@ -185,17 +185,17 @@ Metadata fields MUST be prefixed with underscore (`_`) to distinguish them from 
 
 ### 4.1 Naming Convention
 
-MCP-AQL RECOMMENDS **snake_case** for all parameter names:
+All public-facing parameter names MUST use **snake_case** (matching the pattern `^[a-z][a-z0-9_]*$`):
 
 ```javascript
-// RECOMMENDED
+// Correct
 { item_id: "123", created_after: "2024-01-01" }
 
-// NOT RECOMMENDED
+// Non-conforming
 { itemId: "123", createdAfter: "2024-01-01" }
 ```
 
-For backward compatibility, adapters MAY support both snake_case and camelCase variants of parameters, with snake_case taking precedence.
+For backward compatibility, adapters MAY accept camelCase variants as aliases and normalize them to snake_case internally, but the canonical parameter names MUST be snake_case.
 
 ### 4.2 Common Parameter Patterns
 
