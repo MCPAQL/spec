@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clarified `params` vs `parameters` terminology across spec documents (#163)
+  - `params` is the request-time object carrying runtime values
+  - `parameters` is the introspection-time array of `ParameterInfo` definitions
+  - Added terminology notes to normative spec (Section 4.3), introspection.md, and operations.md
 - Upgraded snake_case naming from SHOULD to MUST for operation names and parameters (#162)
   - Aligns operation name prose with schema enforcement (`^[a-z][a-z0-9_]*$` pattern); establishes normative prose requirement for parameter names
   - Separates snake_case format requirement (MUST) from verb_resource convention (SHOULD)
