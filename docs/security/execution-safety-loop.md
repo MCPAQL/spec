@@ -588,6 +588,7 @@ Adapters that support the execution safety loop:
 - MUST place `execute_agent`, `complete_execution`, and `abort_execution` on the EXECUTE endpoint
 - MUST NOT set `stopped: true` when operating in monitoring mode
 - MUST include a `danger_zone` notification broadcast to all executing agents when returning `stopped: true` ([Section 8.8.1](../versions/v1.0.0-draft.md#881-trigger-conditions))
+- MUST include an `autonomy_pause` notification with `metadata.verificationId` when issuing a `verify` tier challenge ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
 - MUST persist hard-blocked agent state across server restarts when implementing `stopped: true` semantics (file-based or database storage, [Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
 
 ### 9.2 SHOULD Requirements
@@ -597,7 +598,7 @@ Adapters that support the execution safety loop:
 - SHOULD implement `confirm_operation` for Gatekeeper blocks and `confirm` tier pauses
 - SHOULD implement `verify_challenge` for `verify` tier pauses and Danger Zone unblocking
 - SHOULD support configurable policy patterns (deny, requiresApproval, autoApprove)
-- SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events
+- SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events other than `verify` tier (which is a MUST — see Section 9.1)
 - SHOULD log all safety evaluations for audit purposes
 - SHOULD support the `"monitoring"` partial mode for gradual rollout
 
