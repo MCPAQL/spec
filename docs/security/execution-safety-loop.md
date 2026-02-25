@@ -412,18 +412,27 @@ When the Autonomy Evaluator assigns a high risk score to a `nextActionHint`, the
 |------------|------|----------|
 | 0-30 | `advisory` | Log and continue |
 | 31-60 | `confirm` | Pause for human review (`continue: false`) |
-| 61-85 | `verify` | Pause + create verification challenge |
-| 86-100 | `danger_zone` | Hard stop + out-of-band verification |
+| 61-85 | `verify` | Pause + out-of-band verification via `verify_challenge` (Section 8.8) |
+| 86-100 | `danger_zone` | Hard stop + out-of-band verification via `verify_challenge` (Section 8.8) |
 
-### 6.2 Hard Stops and Out-of-Band Verification
+### 6.2 Out-of-Band Verification
 
-When a `danger_zone` action is detected, the system triggers a hard stop:
+Both the `verify` and `danger_zone` tiers trigger out-of-band verification, but with different enforcement severity.
+
+**Danger Zone hard stop** (`danger_zone` tier or `deny` pattern match):
 
 1. The `AutonomyDirective` returns `stopped: true`
 2. A verification challenge is generated with a cryptographically random code
 3. The code is displayed through a channel **inaccessible to the AI** (OS dialog, hardware token, SMS, etc.)
-4. The agent is blocked until a human provides the correct code via `verify_challenge`
+4. The agent is blocked at the agent level until a human provides the correct code via `verify_challenge`
 5. The block persists across server restarts
+
+**Verify tier pause** (`verify` tier):
+
+1. The `AutonomyDirective` returns `continue: false` (without `stopped: true`)
+2. A verification challenge is generated and displayed out-of-band (same as above)
+3. The agent is paused — subsequent `record_execution_step` calls return `continue: false` until verified
+4. Unlike Danger Zone blocks, verify pauses do not persist across restarts and do not prevent new executions
 
 See [Section 8.8 of the core specification](../versions/v1.0.0-draft.md#88-out-of-band-verification) for the full out-of-band verification protocol.
 
