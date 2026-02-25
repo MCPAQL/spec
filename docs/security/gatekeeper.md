@@ -42,6 +42,10 @@ The Gatekeeper is an **optional** feature. Adapters MAY implement it based on th
 
 Security is enforced server-side by the adapter, not by client behavior. Clients cannot bypass security through endpoint selection or parameter manipulation.
 
+### 1.4 Relationship to the Execution Safety Loop
+
+The Gatekeeper can operate as a standalone security layer for individual operations, or as part of the [Execution Safety Loop](execution-safety-loop.md) — a continuous monitoring pattern where the LLM reports every intended action for safety evaluation. When deployed as a safety dongle (see [Section 2 of the Execution Safety Loop specification](execution-safety-loop.md#2-the-safety-dongle-deployment-model)), the Gatekeeper evaluates `nextActionHint` strings against configured policies, providing go/no-go directives for actions across all connected MCP servers.
+
 ---
 
 ## 2. Security Layers

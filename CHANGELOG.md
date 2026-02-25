@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Continuous enforcement via `AutonomyDirective` responses
   - Scope includes ALL tool calls, not only MCP-AQL operations
   - Support for disabling, monitoring-only, and logging-only modes
+- Safety dongle deployment model and execution safety loop specification (#205)
+  - New document `docs/security/execution-safety-loop.md`
+  - Defines the safety dongle as a standalone MCP-AQL server for safety enforcement
+  - Minimal operation surface: 7 operations across 3 endpoints
+  - Permission architecture: endpoint classification determines friction levels
+  - Gatekeeper integration with pattern-based policy evaluation
+  - Danger Zone integration with out-of-band verification
+  - Deployment examples: minimal dongle, multi-server, embedded safety
 - Canonical operation verbs per CRUDE endpoint (#159)
   - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
   - Canonical verbs: create, get/list, update, delete, execute/cancel
