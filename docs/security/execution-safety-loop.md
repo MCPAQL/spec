@@ -276,8 +276,8 @@ A safety dongle implements a minimal set of operations:
 | `record_execution_step` | CREATE | Report intended action, receive `AutonomyDirective` |
 | `complete_execution` | EXECUTE | Signal normal completion of the safety loop |
 | `abort_execution` | EXECUTE | Signal abnormal termination |
-| `confirm_operation` | EXECUTE | Approve pending Gatekeeper blocks |
-| `verify_challenge` | CREATE | Submit verification code for Danger Zone unblocking |
+| `confirm_operation` | EXECUTE | Confirm Gatekeeper blocks or Autonomy Evaluator `confirm` tier pauses |
+| `verify_challenge` | CREATE | Submit out-of-band verification code (`verify` tier and Danger Zone) |
 | `introspect` | READ | Discover available operations and capabilities |
 
 This is 7 operations across 3 endpoints — a fraction of a full MCP-AQL adapter's surface.
@@ -320,7 +320,7 @@ EXECUTE (CONFIRM_SINGLE_USE)
 
 > **Implementation Note:** `confirm_operation` has an `AUTO_APPROVE` override despite being on the EXECUTE endpoint. This prevents an infinite confirmation loop where confirming an operation itself requires confirmation.
 >
-> **Security Note:** Because `confirm_operation` is auto-approved, the LLM could theoretically call it to approve its own Gatekeeper-blocked operations without human involvement. Implementations MUST prevent self-approval — the entity confirming an operation MUST NOT be the same agent that triggered the block. Server-side controls (caller identity validation, confirmation tokens bound to a human channel, or out-of-band confirmation delivery) are required. See [Section 8.7.3](../versions/v1.0.0-draft.md#873-agent-notification-system) for the normative requirement.
+> **Security Note:** Because `confirm_operation` is auto-approved, the LLM could theoretically call it to approve its own blocked operations (Gatekeeper blocks or Autonomy Evaluator `confirm` tier pauses) without human involvement. Implementations MUST prevent self-approval — the entity confirming an operation MUST NOT be the same agent that triggered the block. Server-side controls (caller identity validation, confirmation tokens bound to a human channel, or out-of-band confirmation delivery) are required. See [Section 8.7.3](../versions/v1.0.0-draft.md#873-agent-notification-system) for the normative requirement.
 
 ---
 
@@ -592,8 +592,8 @@ Adapters that support the execution safety loop:
 
 Adapters that support the execution safety loop:
 
-- SHOULD implement `confirm_operation` for Gatekeeper approval flows
-- SHOULD implement `verify_challenge` for Danger Zone unblocking
+- SHOULD implement `confirm_operation` for Gatekeeper blocks and `confirm` tier pauses
+- SHOULD implement `verify_challenge` for `verify` tier pauses and Danger Zone unblocking
 - SHOULD support configurable policy patterns (deny, requiresApproval, autoApprove)
 - SHOULD include `notifications` in `AutonomyDirective` responses
 - SHOULD log all safety evaluations for audit purposes
@@ -607,7 +607,7 @@ Adapters that support the execution safety loop:
 - MAY support configurable risk tolerance thresholds
 - MAY support step limits (`maxAutonomousSteps`)
 - MAY implement pattern-based automatic danger level classification
-- MAY support out-of-band verification for Danger Zone events
+- MAY support out-of-band verification for `verify` tier pauses and Danger Zone events
 - MAY persist blocked agent state across server restarts
 
 ---
@@ -616,7 +616,7 @@ Adapters that support the execution safety loop:
 
 - [Core Specification — Section 8.6: Execution Safety Loop](../versions/v1.0.0-draft.md#86-execution-safety-loop) — Normative requirements
 - [Core Specification — Section 8.7: Autonomy Evaluation](../versions/v1.0.0-draft.md#87-autonomy-evaluation) — AutonomyDirective contract and evaluation pipeline
-- [Core Specification — Section 8.8: Out-of-Band Verification](../versions/v1.0.0-draft.md#88-out-of-band-verification) — Danger Zone hard stop protocol
+- [Core Specification — Section 8.8: Out-of-Band Verification](../versions/v1.0.0-draft.md#88-out-of-band-verification) — Out-of-band verification protocol (`verify` tier and Danger Zone)
 - [Gatekeeper Specification](gatekeeper.md) — Multi-layer access control architecture
 - [Danger Levels Specification](../adapter/danger-levels.md) — Risk classification and trust-to-danger gating
 - [Confirmation Tokens Specification](confirmation-tokens.md) — Token protocol for operation confirmation
