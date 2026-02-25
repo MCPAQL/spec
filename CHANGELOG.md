@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Execution safety loop as opt-in enforcement boundary for agent actions (#208)
+  - New normative Section 8.6 defining the execution safety loop pattern
+  - Opt-in activation via `execute_agent` or adapter configuration
+  - Mandatory action reporting (`nextActionHint`) when active
+  - Continuous enforcement via `AutonomyDirective` responses
+  - Scope includes ALL tool calls, not only MCP-AQL operations
+  - Support for disabling, monitoring-only, and logging-only modes
+- Canonical operation verbs per CRUDE endpoint (#159)
+  - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
+  - Canonical verbs: create, get/list, update, delete, execute/cancel
+  - `{verb}_{resource}` naming pattern with non-canonical verb guidance
+  - Reserved operation names (`introspect`)
+  - HTTP method mapping table for REST developers
+  - Updated operations.md Section 6.2 to mark canonical vs additional verbs
+  - Added Section 6.5 (Canonical Verbs) to crude-pattern.md
+- Session lifecycle definition (#160)
+  - New Section 2.3 (Session Lifecycle) in v1.0.0-draft.md
+  - Session defined as lifetime of a single MCP connection (initialize → shutdown/disconnect)
+  - Session-scoped vs cross-session persistent state distinguished
+  - Session identification guidance for adapters
+  - Updated confirmation-tokens.md with explicit session cross-references
+  - Updated introspection.md caching guidance with session definition
+  - Added session cross-references in gatekeeper.md and warnings.md
+- Unknown parameter rejection requirement (#157)
+  - New Section 4.6 in v1.0.0-draft.md defines normative requirement for unknown parameter handling
+  - `VALIDATION_UNKNOWN_PARAM` error code added to MVP error code registry
+  - Error response includes `unknown_params` and `valid_params` arrays for actionable feedback
+  - Prevents LLM hallucination of non-existent parameters and silent typo failures
+  - Optional `strict_mode` configuration allows development-time warnings instead of rejection
+- Data types and encoding requirements section (#156)
+  - New Section 4.7 in v1.0.0-draft.md defining interoperability requirements
+  - UTF-8 character encoding requirement with `VALIDATION_INVALID_ENCODING` error
+  - ISO 8601 date/time format requirement
+  - IEEE 754 number handling with guidance for high-precision values
+  - Base64 binary data encoding with metadata fields
+  - Payload size limits (request, response, string, array, nesting depth)
+  - `VALIDATION_PAYLOAD_TOO_LARGE` error code for limit violations
+  - Null handling semantics documentation
+- Batch confirmation behavior specification (#158)
+  - New Section 7.5 (Confirmation-Gated Batch Operations) in operations.md
+  - Defines batch halting behavior when CONFIRMATION_REQUIRED is encountered
+  - Includes continuation mechanism with confirmation token
+  - Documents alternative skip-and-continue mode with warnings about state consistency
+  - `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
+  - Updated batch-operation.schema.json with `halted_at`, `pending_operations`, and extended `summary`
+- Execution lifecycle state machine for EXECUTE operations (#155)
+  - Core states: pending, running, completed, failed, cancelled
+  - State transition diagram with valid transitions
+  - State response format with required and optional fields
+  - Progress reporting object specification
+  - Adapter extension rules for custom states
+  - LifecycleInfo schema in introspection-response.schema.json
+  - Cross-reference from crude-pattern.md Section 2.5
+- Automated schema example validation script and CI integration (#172)
+  - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
+  - Supports wrapped example format (danger-level) and standard format
+  - Added example and fixture validation steps to `schema-validate.yml` workflow
+
 ### Changed
 
 - Clarified `params` vs `parameters` terminology across spec documents (#163)
@@ -90,58 +150,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - trust-levels.md references danger-levels.md instead of duplicating the matrix
   - Consistent terminology: `introspect_only` instead of `introspect`
 
-### Added
-
-- Canonical operation verbs per CRUDE endpoint (#159)
-  - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
-  - Canonical verbs: create, get/list, update, delete, execute/cancel
-  - `{verb}_{resource}` naming pattern with non-canonical verb guidance
-  - Reserved operation names (`introspect`)
-  - HTTP method mapping table for REST developers
-  - Updated operations.md Section 6.2 to mark canonical vs additional verbs
-  - Added Section 6.5 (Canonical Verbs) to crude-pattern.md
-- Session lifecycle definition (#160)
-  - New Section 2.3 (Session Lifecycle) in v1.0.0-draft.md
-  - Session defined as lifetime of a single MCP connection (initialize → shutdown/disconnect)
-  - Session-scoped vs cross-session persistent state distinguished
-  - Session identification guidance for adapters
-  - Updated confirmation-tokens.md with explicit session cross-references
-  - Updated introspection.md caching guidance with session definition
-  - Added session cross-references in gatekeeper.md and warnings.md
-- Unknown parameter rejection requirement (#157)
-  - New Section 4.6 in v1.0.0-draft.md defines normative requirement for unknown parameter handling
-  - `VALIDATION_UNKNOWN_PARAM` error code added to MVP error code registry
-  - Error response includes `unknown_params` and `valid_params` arrays for actionable feedback
-  - Prevents LLM hallucination of non-existent parameters and silent typo failures
-  - Optional `strict_mode` configuration allows development-time warnings instead of rejection
-- Data types and encoding requirements section (#156)
-  - New Section 4.7 in v1.0.0-draft.md defining interoperability requirements
-  - UTF-8 character encoding requirement with `VALIDATION_INVALID_ENCODING` error
-  - ISO 8601 date/time format requirement
-  - IEEE 754 number handling with guidance for high-precision values
-  - Base64 binary data encoding with metadata fields
-  - Payload size limits (request, response, string, array, nesting depth)
-  - `VALIDATION_PAYLOAD_TOO_LARGE` error code for limit violations
-  - Null handling semantics documentation
-- Batch confirmation behavior specification (#158)
-  - New Section 7.5 (Confirmation-Gated Batch Operations) in operations.md
-  - Defines batch halting behavior when CONFIRMATION_REQUIRED is encountered
-  - Includes continuation mechanism with confirmation token
-  - Documents alternative skip-and-continue mode with warnings about state consistency
-  - `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
-  - Updated batch-operation.schema.json with `halted_at`, `pending_operations`, and extended `summary`
-- Execution lifecycle state machine for EXECUTE operations (#155)
-  - Core states: pending, running, completed, failed, cancelled
-  - State transition diagram with valid transitions
-  - State response format with required and optional fields
-  - Progress reporting object specification
-  - Adapter extension rules for custom states
-  - LifecycleInfo schema in introspection-response.schema.json
-  - Cross-reference from crude-pattern.md Section 2.5
-- Automated schema example validation script and CI integration (#172)
-  - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
-  - Supports wrapped example format (danger-level) and standard format
-  - Added example and fixture validation steps to `schema-validate.yml` workflow
   - `package.json` with ajv/ajv-formats for local and CI validation
 - TypeDetails cross-variant rejection test fixtures (#173)
   - `tests/schema/typedetails-fixtures.json` with 7 positive and 13 negative test cases
