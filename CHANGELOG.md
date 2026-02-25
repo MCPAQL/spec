@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Execution safety loop as opt-in enforcement boundary for agent actions (#208)
+  - New normative Section 8.6 defining the execution safety loop pattern
+  - Opt-in activation via `execute_agent` or adapter configuration
+  - Mandatory action reporting (`nextActionHint`) when active
+  - Continuous enforcement via `AutonomyDirective` responses
+  - Scope includes ALL tool calls, not only MCP-AQL operations
+  - Support for disabling, monitoring-only, and logging-only modes
+
 ### Changed
 
 - Clarified `params` vs `parameters` terminology across spec documents (#163)
