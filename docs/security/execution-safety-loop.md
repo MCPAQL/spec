@@ -314,7 +314,7 @@ EXECUTE (CONFIRM_SINGLE_USE)
 
 > **Implementation Note:** `confirm_operation` has an `AUTO_APPROVE` override despite being on the EXECUTE endpoint. This prevents an infinite confirmation loop where confirming an operation itself requires confirmation.
 >
-> **Security Note:** Because `confirm_operation` is auto-approved, the LLM could theoretically call it to approve its own Gatekeeper-blocked operations without human involvement. Implementations MUST prevent self-approval — the entity confirming an operation MUST NOT be the same agent that triggered the block. Server-side controls (caller identity validation, confirmation tokens bound to a human channel, or out-of-band confirmation delivery) are required. See [Section 8.7.3](../versions/v1.0.0-draft.md#87-autonomy-evaluation) for the normative requirement.
+> **Security Note:** Because `confirm_operation` is auto-approved, the LLM could theoretically call it to approve its own Gatekeeper-blocked operations without human involvement. Implementations MUST prevent self-approval — the entity confirming an operation MUST NOT be the same agent that triggered the block. Server-side controls (caller identity validation, confirmation tokens bound to a human channel, or out-of-band confirmation delivery) are required. See [Section 8.7.3](../versions/v1.0.0-draft.md#873-agent-notification-system) for the normative requirement.
 
 ---
 
