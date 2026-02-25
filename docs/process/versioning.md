@@ -257,5 +257,5 @@ Implementations should be designed for forward compatibility where possible:
 ## See Also
 
 - [Semantic Versioning 2.0.0](https://semver.org/)
-- [CHANGELOG.md](/CHANGELOG.md)
-- [Contributing Guide](/CONTRIBUTING.md)
+- [CHANGELOG.md](../../CHANGELOG.md)
+- [Contributing Guide](../../CONTRIBUTING.md)

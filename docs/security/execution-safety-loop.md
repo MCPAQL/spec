@@ -196,9 +196,14 @@ The execution safety loop monitors **all intended actions**, not only MCP-AQL op
 
 This broad scope is what makes the safety dongle deployment model possible: the dongle does not need to understand or proxy the actual operations — it only needs to evaluate the LLM's description of what it intends to do.
 
-### 3.3 The `nextActionHint` Field
+### 3.3 The `record_execution_step` Parameters
 
-The `nextActionHint` is a human-readable string describing the intended action with sufficient detail for safety evaluation. It is provided as a parameter to `record_execution_step`.
+The `record_execution_step` operation accepts several parameters. The full parameter table is defined normatively in [Section 8.6.3 of the core specification](../versions/v1.0.0-draft.md#863-mandatory-action-reporting). The two most important fields are:
+
+- **`nextActionHint`** (MUST) — describes the intended next action for safety evaluation
+- **`outcome`** (SHOULD) — reports the result of the previous step (`"success"`, `"failure"`, or `"skipped"`), which drives Stage 2 of the Autonomy Evaluator pipeline (Section 8.7.2)
+
+The `nextActionHint` is a human-readable string describing the intended action with sufficient detail for safety evaluation.
 
 **Good `nextActionHint` examples:**
 
