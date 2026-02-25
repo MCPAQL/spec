@@ -30,6 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Agent notification system (`permission_pending`, `autonomy_pause`, `danger_zone`)
   - Configurable elements: step limits, risk tolerance, approval/auto-approve patterns
   - Minimum viable implementation requirements (step limit is the only MUST stage)
+- Out-of-band verification protocol for Danger Zone enforcement (#207)
+  - New normative Section 8.8 defining challenge-response protocol for highest-risk actions
+  - Trigger conditions: `danger_zone` safety tier or hard-block pattern match
+  - Challenge protocol: 128-bit entropy codes displayed through AI-inaccessible channels
+  - Blocking semantics: agent-level blocks that persist across server restarts
+  - Channel separation requirements ensuring AI cannot observe verification codes
+  - Rate limiting for failed verification attempts (brute-force prevention)
+  - Implementation flexibility: OS dialogs, hardware tokens, SMS, dashboards
 - Canonical operation verbs per CRUDE endpoint (#159)
   - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
   - Canonical verbs: create, get/list, update, delete, execute/cancel
