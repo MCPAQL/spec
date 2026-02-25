@@ -396,7 +396,7 @@ Notification types:
 |------|---------|----------------|
 | `permission_pending` | Gatekeeper blocked an operation | Call `confirm_operation` to approve |
 | `autonomy_pause` | Autonomy Evaluator returned `continue: false` | For `confirm` tier: call `confirm_operation`; for `verify` tier: out-of-band `verify_challenge` (Section 6) |
-| `danger_zone` | Danger Zone hard block triggered | Out-of-band verification required (Section 6) |
+| `danger_zone` | Hard block triggered (`danger_zone` tier or `deny` pattern) | Out-of-band `verify_challenge` required (Section 6) |
 
 The notification system is **pull-based**: notifications are included in `record_execution_step` responses. There is no push channel — the LLM must call `record_execution_step` to discover pending events. This aligns with the MCP protocol's request-response model.
 

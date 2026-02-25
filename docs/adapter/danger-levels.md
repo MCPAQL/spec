@@ -536,9 +536,11 @@ The Autonomy Evaluator maps danger levels to safety tiers using a numeric risk s
 
 > **Note:** The exact risk score assigned depends on additional factors evaluated by the Autonomy Evaluator pipeline (step history, action patterns, risk tolerance configuration). The danger level provides the baseline, not the final score.
 
-### 8.2 Forbidden Operations and Out-of-Band Verification
+### 8.2 Out-of-Band Verification by Danger Level
 
-Operations at danger level `forbidden` (level 4) trigger the most severe enforcement during execution:
+Operations at danger level `dangerous` (level 3) and `forbidden` (level 4) both trigger out-of-band verification during execution, but with different enforcement severity:
+
+**Forbidden (level 4) — Hard block (`danger_zone` tier):**
 
 1. The Autonomy Evaluator assigns `danger_zone` safety tier
 2. The `AutonomyDirective` returns `stopped: true`
@@ -546,6 +548,16 @@ Operations at danger level `forbidden` (level 4) trigger the most severe enforce
 4. The agent is blocked at the agent level (not just the current execution)
 5. A verification challenge is generated with a code displayed through an AI-inaccessible channel
 6. Only successful out-of-band verification or admin override can unblock the agent
+7. The block persists across server restarts
+
+**Dangerous (level 3) — Pause (`verify` tier):**
+
+1. The Autonomy Evaluator assigns `verify` safety tier
+2. The `AutonomyDirective` returns `continue: false` (without `stopped: true`)
+3. An `autonomy_pause` notification is sent to the executing agent (not broadcast)
+4. A verification challenge is generated and displayed through an AI-inaccessible channel
+5. The agent is paused until verification succeeds or the challenge expires
+6. The pause does not persist across server restarts and does not prevent new executions
 
 See [Section 8.8 (Out-of-Band Verification)](../versions/v1.0.0-draft.md#88-out-of-band-verification) of the core specification for the full challenge-response protocol.
 
