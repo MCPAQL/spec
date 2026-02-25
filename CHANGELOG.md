@@ -24,6 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Gatekeeper integration with pattern-based policy evaluation
   - Danger Zone integration with out-of-band verification
   - Deployment examples: minimal dongle, multi-server, embedded safety
+- Autonomy Evaluator model for per-action risk assessment (#206)
+  - New normative Section 8.7 defining the `AutonomyDirective` response contract
+  - 5-stage evaluation pipeline: step limit, outcome check, pattern matching, safety tier, risk tolerance
+  - Agent notification system (`permission_pending`, `autonomy_pause`, `danger_zone`)
+  - Configurable elements: step limits, risk tolerance, approval/auto-approve patterns
+  - Minimum viable implementation requirements (step limit is the only MUST stage)
 - Canonical operation verbs per CRUDE endpoint (#159)
   - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
   - Canonical verbs: create, get/list, update, delete, execute/cancel
