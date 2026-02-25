@@ -152,8 +152,8 @@ The execution safety loop follows a simple protocol:
 │       ▼                             │
 │  ┌──────────┐                       │
 │  │  Report  │  record_execution_step│
-│  │  intent  │  { nextActionHint,   │
-│  │          │    outcome? }        │
+│  │  intent  │  { nextActionHint,    │
+│  │          │    outcome? }         │
 │  └────┬─────┘                       │
 │       │                             │
 │       ▼                             │
