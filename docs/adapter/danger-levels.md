@@ -530,8 +530,8 @@ The Autonomy Evaluator maps danger levels to safety tiers using a numeric risk s
 |--------------|-----------------|-------------|-------------|
 | safe (0) | 0-15 | `advisory` | No intervention |
 | reversible (1) | 16-40 | `advisory` or `confirm` | Depends on risk tolerance |
-| destructive (2) | 41-65 | `confirm` | Requires approval |
-| dangerous (3) | 66-85 | `verify` | Mandatory pause + approval |
+| destructive (2) | 41-60 | `confirm` | Requires approval |
+| dangerous (3) | 61-85 | `verify` | Mandatory pause + approval |
 | forbidden (4) | 86-100 | `danger_zone` | Hard stop + out-of-band verification |
 
 > **Note:** The exact risk score assigned depends on additional factors evaluated by the Autonomy Evaluator pipeline (step history, action patterns, risk tolerance configuration). The danger level provides the baseline, not the final score.
