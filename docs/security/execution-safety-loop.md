@@ -666,7 +666,6 @@ Adapters that support the execution safety loop:
 **Monitoring & Audit:**
 
 - SHOULD support the `"monitoring"` partial mode for gradual rollout ([Section 8.6.7](../versions/v1.0.0-draft.md#867-disabling-the-safety-loop))
-- SHOULD log all safety evaluations for audit purposes
 
 ### 9.3 MAY Requirements
 
