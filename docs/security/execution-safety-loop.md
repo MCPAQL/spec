@@ -589,6 +589,7 @@ Adapters that support the execution safety loop:
 - MUST NOT set `stopped: true` when operating in monitoring mode
 - MUST include a `danger_zone` notification broadcast to all executing agents when returning `stopped: true` ([Section 8.8.1](../versions/v1.0.0-draft.md#881-trigger-conditions))
 - MUST include an `autonomy_pause` notification with `metadata.verificationId` when issuing a `verify` tier challenge ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+- MUST implement the Step Limit stage with a configurable `maxAutonomousSteps` threshold ([Section 8.7.5](../versions/v1.0.0-draft.md#875-minimum-viable-implementation))
 - MUST persist hard-blocked agent state across server restarts when implementing `stopped: true` semantics (file-based or database storage, [Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
 
 ### 9.2 SHOULD Requirements
@@ -598,7 +599,7 @@ Adapters that support the execution safety loop:
 - SHOULD implement `confirm_operation` for Gatekeeper blocks and `confirm` tier pauses
 - SHOULD implement `verify_challenge` for `verify` tier pauses and Danger Zone unblocking
 - SHOULD support configurable policy patterns (deny, requiresApproval, autoApprove)
-- SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events other than `verify` tier (which is a MUST — see Section 9.1)
+- SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events other than `verify` tier challenges, for which the `autonomy_pause` notification with `metadata.verificationId` is a MUST (see Section 9.1)
 - SHOULD log all safety evaluations for audit purposes
 - SHOULD support the `"monitoring"` partial mode for gradual rollout
 
@@ -608,7 +609,6 @@ Adapters that support the execution safety loop:
 
 - MAY support the `"logging"` partial mode
 - MAY support configurable risk tolerance thresholds
-- MAY support step limits (`maxAutonomousSteps`)
 - MAY implement pattern-based automatic danger level classification
 - MAY support out-of-band verification for `verify` tier pauses and Danger Zone events
 
