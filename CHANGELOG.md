@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Comprehensive rewrite of `docs/security/execution-safety-loop.md` Section 9 compliance checklist (#216)
+  - Every normative MUST/SHOULD/MAY in Sections 8.6–8.8 now mapped to a compliance bullet
+  - Section 9.1 expanded from 11 to 23 MUST requirements (organized by topic area)
+  - Section 9.2 expanded from 7 to 21 SHOULD requirements (covering rate limiting, verify tier, configuration)
+  - Section 9.3 expanded from 4 to 5 MAY requirements (with normative section references)
+  - New Section 9.4 cross-reference table mapping normative sections to compliance bullets
+
 ### Added
 
 - Execution safety loop as opt-in enforcement boundary for agent actions (#208)

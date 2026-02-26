@@ -576,42 +576,133 @@ Between full enforcement and fully disabled, adapters MAY support intermediate m
 
 ## 9. Implementation Requirements
 
+This section provides a compliance checklist for adapters implementing the execution safety loop. Every requirement listed here corresponds to a normative MUST, SHOULD, or MAY in [Sections 8.6–8.8 of the core specification](../versions/v1.0.0-draft.md). See [Section 9.4](#94-normative-cross-reference) for the complete mapping between normative sections and compliance bullets.
+
 ### 9.1 MUST Requirements
 
 Adapters that support the execution safety loop:
 
-- MUST expose the `execution_safety_loop` capability via introspection
-- MUST implement `execute_agent`, `record_execution_step`, `complete_execution`, and `abort_execution`
-- MUST return an `AutonomyDirective` on every `record_execution_step` call
-- MUST respect the `continue` and `stopped` directive semantics as defined in [Section 8.6.4 of the core specification](../versions/v1.0.0-draft.md#864-continuous-enforcement)
-- MUST place `record_execution_step` on the CREATE endpoint
-- MUST place `execute_agent`, `complete_execution`, and `abort_execution` on the EXECUTE endpoint
-- MUST NOT set `stopped: true` when operating in monitoring mode
-- MUST include a `danger_zone` notification broadcast to all executing agents when returning `stopped: true` ([Section 8.8.1](../versions/v1.0.0-draft.md#881-trigger-conditions))
-- MUST include an `autonomy_pause` notification with `metadata.verificationId` when issuing a `verify` tier challenge ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+**Core Operations & Introspection:**
+
+- MUST document whether they support the execution safety loop via introspection ([Section 8.6.1](../versions/v1.0.0-draft.md#861-opt-in-activation))
+- MUST clearly indicate via introspection whether safety enforcement is active or disabled ([Section 8.6.7](../versions/v1.0.0-draft.md#867-disabling-the-safety-loop))
+- MUST implement `execute_agent`, `record_execution_step`, `complete_execution`, and `abort_execution` ([Section 8.6.2](../versions/v1.0.0-draft.md#862-enforcement-boundary-property))
+- MUST place `record_execution_step` on the CREATE endpoint ([Section 8.5.4](../versions/v1.0.0-draft.md#854-reserved-operations))
+- MUST place `execute_agent`, `complete_execution`, and `abort_execution` on the EXECUTE endpoint ([Section 8.5.4](../versions/v1.0.0-draft.md#854-reserved-operations))
+
+**AutonomyDirective Contract:**
+
+- MUST return an `AutonomyDirective` on every `record_execution_step` call ([Section 8.7.1](../versions/v1.0.0-draft.md#871-the-autonomydirective-contract))
+- MUST include `continue` and `factors` in every `AutonomyDirective` ([Section 8.7.1](../versions/v1.0.0-draft.md#871-the-autonomydirective-contract))
+- MUST NOT allow agents to proceed after a stop directive (`stopped: true`) ([Section 8.6.4](../versions/v1.0.0-draft.md#864-continuous-enforcement))
+- MUST NOT set `stopped: true` when operating in monitoring mode ([Section 8.6.4](../versions/v1.0.0-draft.md#864-continuous-enforcement))
+- MUST return `stopped: true` in the `AutonomyDirective` for `danger_zone` tier and `deny` pattern triggers ([Section 8.8.1](../versions/v1.0.0-draft.md#881-trigger-conditions))
+
+**Step Limit:**
+
 - MUST implement the Step Limit stage with a configurable `maxAutonomousSteps` threshold ([Section 8.7.5](../versions/v1.0.0-draft.md#875-minimum-viable-implementation))
-- MUST persist hard-blocked agent state across server restarts when implementing `stopped: true` semantics (file-based or database storage, [Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
+
+**Notifications & Self-Approval:**
+
+- MUST include a `danger_zone` notification broadcast to all executing agents when returning `stopped: true` ([Section 8.8.1](../versions/v1.0.0-draft.md#881-trigger-conditions))
+- MUST include a `danger_zone` notification with `metadata.verificationId` for `danger_zone` tier and `deny` pattern challenges ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+- MUST include an `autonomy_pause` notification with `metadata.verificationId` when issuing a `verify` tier challenge ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+- MUST prevent self-approval — the entity confirming an operation MUST NOT be the same agent that triggered the block ([Section 8.7.3](../versions/v1.0.0-draft.md#873-agent-notification-system))
+
+**Out-of-Band Verification (when the adapter implements `verify` or `danger_zone` tier evaluation, or `deny` pattern matching):**
+
+- MUST require out-of-band human verification when a `verify` or `danger_zone` safety tier is assigned, or when a `deny` pattern matches ([Section 8.8](../versions/v1.0.0-draft.md#88-out-of-band-verification))
+- MUST generate verification codes with at least 128 bits of entropy from a cryptographically secure random source; codes MUST be cryptographically unpredictable ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+- MUST display verification codes through a channel inaccessible to the AI agent — codes MUST NOT appear in any MCP response, tool result, `_meta` field, log, error message, or diagnostic output accessible to the AI ([Sections 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol), [8.8.4](../versions/v1.0.0-draft.md#884-channel-separation-requirements))
+- MUST treat expired verification challenges as failed ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+
+**Blocking Semantics (when the adapter implements `stopped: true` behavior):**
+
+- MUST reject all subsequent execution operations for a hard-blocked agent until unblocked via `verify_challenge` or admin override ([Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
+- MUST NOT allow an agent to bypass a hard block by starting a new execution — blocks apply at the agent level, not the execution level ([Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
+- MUST persist hard-blocked agent state across server restarts (file-based or database storage) ([Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
 
 ### 9.2 SHOULD Requirements
 
 Adapters that support the execution safety loop:
 
-- SHOULD implement `confirm_operation` for Gatekeeper blocks and `confirm` tier pauses
-- SHOULD implement `verify_challenge` for `verify` tier pauses and Danger Zone unblocking
-- SHOULD evaluate the `outcome` field in `record_execution_step` calls and return `continue: false` on reported failures ([Stage 2, Section 8.7.5](../versions/v1.0.0-draft.md#875-minimum-viable-implementation))
-- SHOULD support configurable policy patterns (deny, requiresApproval, autoApprove)
-- SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events other than `verify` tier challenges, for which the `autonomy_pause` notification with `metadata.verificationId` is a MUST (see Section 9.1)
+**Evaluation Pipeline:**
+
+- SHOULD evaluate actions through the multi-stage pipeline defined in [Section 8.7.2](../versions/v1.0.0-draft.md#872-evaluation-pipeline)
+- SHOULD return `continue: false` with an appropriate reason when the step limit is exceeded ([Section 8.7.2, Stage 1](../versions/v1.0.0-draft.md#872-evaluation-pipeline))
+- SHOULD document the default step limit via introspection ([Section 8.7.2, Stage 1](../versions/v1.0.0-draft.md#872-evaluation-pipeline))
+- SHOULD evaluate the `outcome` field in `record_execution_step` calls and return `continue: false` on reported failures ([Section 8.7.2, Stage 2](../versions/v1.0.0-draft.md#872-evaluation-pipeline))
+- SHOULD support configurable policy patterns (`deny`, `requiresApproval`, `autoApprove`) ([Section 8.7.2, Stage 3](../versions/v1.0.0-draft.md#872-evaluation-pipeline))
+- SHOULD NOT allow agents to proceed after `continue: false` without human intervention ([Section 8.6.4](../versions/v1.0.0-draft.md#864-continuous-enforcement))
+
+**Operations:**
+
+- SHOULD implement `confirm_operation` for Gatekeeper blocks and `confirm` tier pauses ([Section 8.7.3](../versions/v1.0.0-draft.md#873-agent-notification-system))
+- SHOULD implement `verify_challenge` for `verify` tier pauses and Danger Zone unblocking ([Section 8.8](../versions/v1.0.0-draft.md#88-out-of-band-verification))
+
+**Configuration & Introspection:**
+
+- SHOULD expose the `execution_safety_loop` capability value in the introspection response ([Section 8.6.1](../versions/v1.0.0-draft.md#861-opt-in-activation))
+- SHOULD make evaluation pipeline elements configurable per agent or per adapter ([Section 8.7.4](../versions/v1.0.0-draft.md#874-configurable-elements))
+- SHOULD document default configuration and supported options via introspection ([Section 8.7.4](../versions/v1.0.0-draft.md#874-configurable-elements))
+
+**Notifications:**
+
+- SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events (note: `verify` tier `autonomy_pause` with `metadata.verificationId` and `danger_zone` notifications are MUST — see Section 9.1) ([Section 8.7.3](../versions/v1.0.0-draft.md#873-agent-notification-system))
+
+**Verify Tier Behavior:**
+
+- SHOULD return `continue: false` with the pending challenge ID for subsequent `record_execution_step` calls while a `verify` challenge is pending ([Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
+- SHOULD re-evaluate actions normally when a `verify` challenge expires, generating a new challenge if the same action is reported again ([Section 8.8.3](../versions/v1.0.0-draft.md#883-blocking-semantics))
+- SHOULD expire verification challenges after a configurable timeout (default: 5 minutes) ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
+
+**Rate Limiting:**
+
+- SHOULD rate-limit failed verification attempts (no more than 10 per 60-second window per agent) ([Section 8.8.5](../versions/v1.0.0-draft.md#885-rate-limiting))
+- SHOULD reject subsequent verification attempts after the rate limit is exceeded ([Section 8.8.5](../versions/v1.0.0-draft.md#885-rate-limiting))
+- SHOULD persist rate limit state across server restarts ([Section 8.8.5](../versions/v1.0.0-draft.md#885-rate-limiting))
+- SHOULD trigger security audit events on failed verification attempts ([Section 8.8.5](../versions/v1.0.0-draft.md#885-rate-limiting))
+
+**Monitoring & Audit:**
+
+- SHOULD support the `"monitoring"` partial mode for gradual rollout ([Section 8.6.7](../versions/v1.0.0-draft.md#867-disabling-the-safety-loop))
 - SHOULD log all safety evaluations for audit purposes
-- SHOULD support the `"monitoring"` partial mode for gradual rollout
 
 ### 9.3 MAY Requirements
 
 Adapters that support the execution safety loop:
 
-- MAY support the `"logging"` partial mode
-- MAY support configurable risk tolerance thresholds
-- MAY implement pattern-based automatic danger level classification
-- MAY use OS dialogs, hardware tokens, SMS/email, or other display channels for presenting verification codes to operators
+- MAY support the `"logging"` partial mode ([Section 8.6.7](../versions/v1.0.0-draft.md#867-disabling-the-safety-loop))
+- MAY implement Safety Tier evaluation (Stage 4) using pattern matching, LLM-provided risk assessments, or adapter-specific heuristics for risk scoring ([Section 8.7.2, Stage 4](../versions/v1.0.0-draft.md#872-evaluation-pipeline))
+- MAY support configurable risk tolerance thresholds (`conservative`, `moderate`, `aggressive`) ([Section 8.7.2, Stage 5](../versions/v1.0.0-draft.md#872-evaluation-pipeline))
+- MAY apply progressive lockout (e.g., doubling the window duration) after repeated rate-limit violations ([Section 8.8.5](../versions/v1.0.0-draft.md#885-rate-limiting))
+- MAY use OS dialogs, hardware tokens, SMS/email, or other display channels for presenting verification codes to operators ([Section 8.8.6](../versions/v1.0.0-draft.md#886-implementation-flexibility))
+
+### 9.4 Normative Cross-Reference
+
+The following table maps each normative section to its corresponding Section 9 requirements, providing an audit trail for compliance verification.
+
+| Normative Section | Key Requirements | Section 9 Coverage |
+|---|---|---|
+| 8.6.1 Opt-In Activation | MUST document support; SHOULD expose capability value | 9.1 (introspection); 9.2 (capability value) |
+| 8.6.2 Enforcement Boundary | MUST report and evaluate all actions | 9.1 (operations, AutonomyDirective on every call) |
+| 8.6.3 Action Reporting | MUST/SHOULD/MAY parameter requirements | 9.1 (operations — parameter validation is part of implementing `record_execution_step`) |
+| 8.6.4 Continuous Enforcement | MUST NOT proceed after stop; SHOULD NOT after pause; MUST NOT `stopped` in monitoring | 9.1 (stop directive, monitoring mode); 9.2 (SHOULD NOT after pause) |
+| 8.6.5 Non-Bypass Property | Agent MUST NOT act outside loop | Agent-side protocol obligation (not adapter-specific) |
+| 8.6.6 Scope of Monitoring | Monitors all actions (informative) | Described in Sections 3.2, 2.2 of this document |
+| 8.6.7 Disabling | MAY disable; MUST indicate via introspection | 9.1 (introspection); 9.2 (monitoring); 9.3 (logging) |
+| 8.7.1 AutonomyDirective | MUST include `continue` + `factors` | 9.1 (AutonomyDirective fields) |
+| 8.7.2 Pipeline Stages 1–5 | MUST step limit; SHOULD stages 2–3; MAY stages 4–5 | 9.1 (step limit); 9.2 (stages 1–3); 9.3 (stages 4–5) |
+| 8.7.3 Notifications | MUST notification contents; MUST prevent self-approval | 9.1 (notifications, self-approval); 9.2 (non-hard-block notifications) |
+| 8.7.4 Configurable Elements | SHOULD configurable; SHOULD document | 9.2 (configuration, introspection) |
+| 8.7.5 Minimum Viable | MUST Step Limit; SHOULD Previous Outcome + Pattern Matching; MAY Safety Tier + Risk Tolerance | 9.1 (step limit); 9.2 (outcome, patterns); 9.3 (tier, tolerance) |
+| 8.8 Introduction | MUST require OOB for `verify`/`danger_zone` | 9.1 (OOB verification) |
+| 8.8.1 Trigger Conditions | MUST `stopped: true` + `danger_zone` notification | 9.1 (`stopped: true`, notification broadcast) |
+| 8.8.2 Challenge Protocol | MUST entropy, display, notification, expiration | 9.1 (code generation, display, challenge ID, expiration); 9.2 (timeout) |
+| 8.8.3 Blocking Semantics | MUST reject, persist, no bypass; SHOULD verify behavior | 9.1 (blocking); 9.2 (verify tier) |
+| 8.8.4 Channel Separation | MUST NOT expose code (5 specific prohibitions) | 9.1 (display/channel separation — consolidated) |
+| 8.8.5 Rate Limiting | SHOULD rate-limit, persist, audit; MAY progressive lockout | 9.2 (rate limiting); 9.3 (lockout) |
+| 8.8.6 Implementation Flexibility | MAY any display channel | 9.3 (display channels) |
 
 ---
 
