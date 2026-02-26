@@ -613,7 +613,7 @@ Adapters that support the execution safety loop:
 
 - MUST require out-of-band human verification when a `verify` or `danger_zone` safety tier is assigned, or when a `deny` pattern matches ([Section 8.8](../versions/v1.0.0-draft.md#88-out-of-band-verification))
 - MUST generate verification codes with at least 128 bits of entropy from a cryptographically secure random source; codes MUST be cryptographically unpredictable ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
-- MUST display verification codes through a channel inaccessible to the AI agent — codes MUST NOT appear in any MCP response, tool result, `_meta` field, log, error message, or diagnostic output accessible to the AI ([Sections 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol), [8.8.4](../versions/v1.0.0-draft.md#884-channel-separation-requirements))
+- MUST display verification codes through a channel inaccessible to the AI agent — codes MUST NOT appear in any MCP response, tool result, `_meta` field, log, error message, or diagnostic output accessible to the AI, and MUST NOT be derivable from any information available to the AI (e.g., timestamps, sequential IDs) ([Sections 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol), [8.8.4](../versions/v1.0.0-draft.md#884-channel-separation-requirements))
 - MUST treat expired verification challenges as failed ([Section 8.8.2](../versions/v1.0.0-draft.md#882-challenge-protocol))
 
 **Blocking Semantics (when the adapter implements `stopped: true` behavior):**
@@ -692,7 +692,7 @@ The following table maps each normative section to its corresponding Section 9 r
 | 8.6.6 Scope of Monitoring | Monitors all actions (informative) | Described in Sections 3.2, 2.2 of this document |
 | 8.6.7 Disabling | MAY disable; MUST indicate via introspection | 9.1 (introspection); 9.2 (monitoring); 9.3 (logging) |
 | 8.7.1 AutonomyDirective | MUST include `continue` + `factors` | 9.1 (AutonomyDirective fields) |
-| 8.7.2 Pipeline Stages 1–5 | MUST step limit; SHOULD stages 2–3; MAY stages 4–5 | 9.1 (step limit); 9.2 (stages 1–3); 9.3 (stages 4–5) |
+| 8.7.2 Pipeline Stages 1–5 | MUST step limit; SHOULD stages 2–3; MAY stages 4–5 | 9.1 (step limit MUST); 9.2 (stage 1 documentation SHOULDs, stages 2–3 SHOULDs); 9.3 (stages 4–5) |
 | 8.7.3 Notifications | MUST notification contents; MUST prevent self-approval | 9.1 (notifications, self-approval); 9.2 (non-hard-block notifications) |
 | 8.7.4 Configurable Elements | SHOULD configurable; SHOULD document | 9.2 (configuration, introspection) |
 | 8.7.5 Minimum Viable | MUST Step Limit; SHOULD Previous Outcome + Pattern Matching; MAY Safety Tier + Risk Tolerance | 9.1 (step limit); 9.2 (outcome, patterns); 9.3 (tier, tolerance) |
