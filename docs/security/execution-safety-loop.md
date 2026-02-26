@@ -598,6 +598,7 @@ Adapters that support the execution safety loop:
 
 - SHOULD implement `confirm_operation` for Gatekeeper blocks and `confirm` tier pauses
 - SHOULD implement `verify_challenge` for `verify` tier pauses and Danger Zone unblocking
+- SHOULD evaluate the `outcome` field in `record_execution_step` calls and return `continue: false` on reported failures ([Stage 2, Section 8.7.5](../versions/v1.0.0-draft.md#875-minimum-viable-implementation))
 - SHOULD support configurable policy patterns (deny, requiresApproval, autoApprove)
 - SHOULD include `notifications` in `AutonomyDirective` responses for non-hard-block events other than `verify` tier challenges, for which the `autonomy_pause` notification with `metadata.verificationId` is a MUST (see Section 9.1)
 - SHOULD log all safety evaluations for audit purposes
@@ -610,7 +611,7 @@ Adapters that support the execution safety loop:
 - MAY support the `"logging"` partial mode
 - MAY support configurable risk tolerance thresholds
 - MAY implement pattern-based automatic danger level classification
-- MAY support out-of-band verification for `verify` tier pauses and Danger Zone events
+- MAY use OS dialogs, hardware tokens, SMS/email, or other display channels for presenting verification codes to operators
 
 ---
 
