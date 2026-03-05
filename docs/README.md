@@ -1,6 +1,11 @@
 # MCP-AQL Specification Documentation
 
-This directory contains the **normative protocol specification** for MCP-AQL (Model Context Protocol - Advanced Agent API Adapter Query Language).
+This directory contains the MCP-AQL specification set:
+
+- **Normative source:** [versions/v1.0.0-draft.md](versions/v1.0.0-draft.md)
+- **Informative support documents:** all other files under `docs/`
+
+In case of conflict, the versioned normative document takes precedence.
 
 Implementation architecture documentation is maintained in the [mcpaql-adapter](https://github.com/MCPAQL/mcpaql-adapter) repository. Example adapters are in the [examples](https://github.com/MCPAQL/examples) repository.
 
@@ -44,6 +49,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | [RFC Process](process/rfc-process.md) | How to propose specification changes |
 | [Breaking Changes](process/breaking-changes.md) | Policy for handling breaking changes |
 | [Versioning](process/versioning.md) | Version numbering and release process |
+| [Preliminary Launch Checklist](process/preliminary-public-launch-checklist.md) | Coordinated draft-launch criteria |
 
 ### Guides
 
@@ -104,9 +110,9 @@ MCP-AQL follows a four-level protocol model:
 
 Example adapters: [examples](https://github.com/MCPAQL/examples)
 
-## Reference Implementation
+## Reference Profile
 
-[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) serves as the reference implementation for MCP-AQL, demonstrating all implemented features in a production environment.
+[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) is treated as a practical reference profile for MCP-AQL. It validates feasibility at scale, but protocol authority remains with the normative specification in this repository.
 
 ## Contributing
 
