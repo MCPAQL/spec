@@ -9,11 +9,13 @@ on:
       - '**.md'
       - '.markdownlint.json'
       - '.github/workflows/docs-lint.yml'
+      - 'scripts/sync-doc-dates.mjs'
   pull_request:
     paths:
       - '**.md'
       - '.markdownlint.json'
       - '.github/workflows/docs-lint.yml'
+      - 'scripts/sync-doc-dates.mjs'
 
 jobs:
   markdownlint:
@@ -22,11 +24,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Check documentation date policy
+        if: github.event_name == 'pull_request'
+        run: node scripts/sync-doc-dates.mjs --check --base "origin/${{ github.base_ref }}"
 
       - name: Install markdownlint-cli2
         run: npm install -g markdownlint-cli2

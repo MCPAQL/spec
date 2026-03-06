@@ -2,8 +2,7 @@
 
 **Version:** 1.0.0-draft  
 **Status:** Working  
-**Last Updated:** 2026-03-05
-
+**Last Updated:** 2026-03-06
 This checklist defines the minimum quality bar for a coordinated preliminary public launch of:
 
 - The MCP-AQL specification draft (`MCPAQL/spec`)

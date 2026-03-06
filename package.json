@@ -5,6 +5,8 @@
   "description": "MCP-AQL protocol specification, schemas, and conformance tests",
   "type": "module",
   "scripts": {
+    "docs:dates": "node scripts/sync-doc-dates.mjs",
+    "docs:dates:check": "node scripts/sync-doc-dates.mjs --check",
     "validate:examples": "node scripts/validate-schema-examples.mjs",
     "validate:fixtures": "node scripts/validate-schema-examples.mjs --fixtures",
     "validate": "node scripts/validate-schema-examples.mjs --fixtures",
