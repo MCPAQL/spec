@@ -64,7 +64,7 @@ function updateFrontMatterDate(content, newDate) {
   }
 
   const frontMatter = frontMatterMatch[1];
-  const updatedMatch = frontMatter.match(/^updated:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})\s*$/m);
+  const updatedMatch = frontMatter.match(/^updated:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})[ \t]*$/m);
 
   if (!updatedMatch) {
     return { content, previousDate: null, hadField: false, changed: false };
@@ -76,7 +76,7 @@ function updateFrontMatterDate(content, newDate) {
   }
 
   const updatedFrontMatter = frontMatter.replace(
-    /^updated:\s*[0-9]{4}-[0-9]{2}-[0-9]{2}\s*$/m,
+    /^updated:\s*[0-9]{4}-[0-9]{2}-[0-9]{2}[ \t]*$/m,
     `updated: ${newDate}`
   );
   const nextContent = content.replace(frontMatterMatch[1], updatedFrontMatter);
@@ -84,7 +84,9 @@ function updateFrontMatterDate(content, newDate) {
 }
 
 function updateLastUpdatedDate(content, newDate) {
-  const lastUpdatedMatch = content.match(/^\*\*Last Updated:\*\*\s*([0-9]{4}-[0-9]{2}-[0-9]{2})\s*$/m);
+  const lastUpdatedMatch = content.match(
+    /^\*\*Last Updated:\*\*\s*([0-9]{4}-[0-9]{2}-[0-9]{2})[ \t]*$/m
+  );
   if (!lastUpdatedMatch) {
     return { content, previousDate: null, hadField: false, changed: false };
   }
@@ -95,7 +97,7 @@ function updateLastUpdatedDate(content, newDate) {
   }
 
   const nextContent = content.replace(
-    /^\*\*Last Updated:\*\*\s*[0-9]{4}-[0-9]{2}-[0-9]{2}\s*$/m,
+    /^\*\*Last Updated:\*\*\s*[0-9]{4}-[0-9]{2}-[0-9]{2}[ \t]*$/m,
     `**Last Updated:** ${newDate}`
   );
   return { content: nextContent, previousDate, hadField: true, changed: true };
