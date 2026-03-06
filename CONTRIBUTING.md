@@ -146,7 +146,7 @@ Follow RFC 2119 for normative language:
 ### Document Date Metadata
 
 - Use ISO date format (`YYYY-MM-DD`) for document metadata fields (`**Last Updated:**` and front matter `updated:`).
-- Avoid narrative calendar dates in body text for mutable status notes (for example, `Status Note (March 5, 2026)`).
+- Avoid narrative calendar dates in body text for mutable status notes (for example, `Status Note (current status)`).
 - For docs changed in a branch, run `npm run docs:dates` before opening or updating a pull request.
 - CI enforces this policy on pull requests with `scripts/sync-doc-dates.mjs --check`.
 
