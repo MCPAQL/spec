@@ -93,10 +93,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Clarified preliminary public draft positioning and launch boundaries (PR #218)
   - Added explicit preliminary-draft status language to README and v1.0.0-draft status section
+  - Removed hardcoded date from README conformance status note to avoid stale timestamp drift
   - Clarified normative vs informative document authority in docs index
   - Marked conformance framework status as informative with current implementation note
   - Added coordinated preliminary launch checklist spanning spec and Dollhouse reference profile tracks
   - Aligned `SPEC_VERSION` to `v1.0.0-draft`
+  - Documented draft-label convention in `docs/process/versioning.md` to explain why `v1.0.0-draft` is the active target after earlier `v1.0.0-alpha.1` snapshots
 - Comprehensive rewrite of `docs/security/execution-safety-loop.md` Section 9 compliance checklist (#216)
   - Every normative MUST/SHOULD/MAY in Sections 8.6–8.8 now mapped to a compliance bullet
   - Section 9.1 expanded from 11 to 23 MUST requirements (organized by topic area)

@@ -121,7 +121,7 @@ Implementations claiming MCP-AQL conformance MUST:
 
 Implementations SHOULD also pass the conformance test suite in [tests/](tests/).
 
-> **Status Note (March 5, 2026):** Schema/example validation is implemented in this repository today. The full cross-implementation conformance runner described in `docs/conformance-testing.md` is still being finalized.
+> **Status Note:** Schema/example validation is implemented in this repository. The full cross-implementation conformance runner described in `docs/conformance-testing.md` is still being finalized.
 
 ## Contributing
 
