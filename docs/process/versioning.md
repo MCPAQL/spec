@@ -4,14 +4,14 @@ description: Version numbering scheme and release process for the MCPAQL specifi
 version: 1.0.0-draft
 status: draft
 created: 2025-01-14
-updated: 2025-01-14
+updated: 2026-03-06
 ---
 
 This document describes the version numbering scheme and release process for the MCPAQL specification.
 
 ## Overview
 
-MCPAQL follows [Semantic Versioning 2.0.0](https://semver.org/) (SemVer) for all specification releases. Semantic versioning provides a clear, predictable versioning scheme that communicates the nature of changes between releases to implementers and users of the specification.
+MCPAQL follows [Semantic Versioning 2.0.0](https://semver.org/) (SemVer) for core `MAJOR.MINOR.PATCH` compatibility signaling. For publication stages, MCP-AQL also uses project-specific draft lifecycle tags (`draft`, `alpha.N`, `beta.N`, `rc.N`) to communicate spec maturity.
 
 ## Version Format
 
@@ -82,6 +82,14 @@ Release candidate. Final testing before stable release. Only critical bug fixes 
 ```
 draft -> alpha.1 -> alpha.N -> beta.1 -> beta.N -> rc.1 -> rc.N -> stable
 ```
+
+### Draft Label Convention
+
+`v1.0.0-draft` is intentionally treated as the active public working-draft line, even though earlier snapshots such as `v1.0.0-alpha.1` exist in repository history.
+
+This is a deliberate publication-stage convention (RFC/W3C-style draft signaling), not a strict semver precedence claim across mixed pre-release labels.
+
+Implementations and tooling SHOULD use `SPEC_VERSION` and release notes as the source of truth for the current normative draft target rather than inferring maturity solely from lexical pre-release sorting.
 
 ## Version Increment Rules
 

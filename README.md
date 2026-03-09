@@ -11,6 +11,18 @@
 
 MCP-AQL is a protocol specification that consolidates multiple MCP (Model Context Protocol) tools into semantic endpoints, providing approximately **96% token reduction** while maintaining full functionality. It enables structured communication between AI models and context-providing services through a unified query language.
 
+## Preliminary Draft Positioning
+
+The current publication target is a **preliminary public draft** of MCP-AQL.
+
+This draft is intended to:
+
+- Demonstrate protocol viability and real-world utility
+- Show how semantic endpoint consolidation reduces token bloat
+- Validate flexibility for modular integrations (security, execution, code/compute workflows)
+
+This draft is not yet a final certification baseline. Some conformance automation and ecosystem hardening work is still in progress.
+
 ## The CRUDE Pattern
 
 MCP-AQL extends traditional CRUD with an **Execute** endpoint, creating the CRUDE pattern:
@@ -92,9 +104,11 @@ The savings scale with adapter complexity - the more operations your adapter sup
 | [Documentation Index](docs/README.md) | Full documentation structure |
 | [Changelog](CHANGELOG.md) | Version history |
 
-## Reference Implementation
+## Reference Profile
 
-[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) serves as the reference implementation of MCP-AQL, demonstrating all protocol features in a production environment.
+[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) serves as a **practical reference profile** for MCP-AQL.
+
+It demonstrates the protocol in a large, production-oriented server, including security-loop integrations (Gatekeeper and Danger Zone). It is not the canonical definition of the protocol itself; normative behavior is defined by this repository's specification documents.
 
 ## Conformance
 
@@ -106,6 +120,8 @@ Implementations claiming MCP-AQL conformance MUST:
 4. Document supported operations via introspection
 
 Implementations SHOULD also pass the conformance test suite in [tests/](tests/).
+
+> **Status Note:** Schema/example validation is implemented in this repository. The full cross-implementation conformance runner described in `docs/conformance-testing.md` is still being finalized.
 
 ## Contributing
 

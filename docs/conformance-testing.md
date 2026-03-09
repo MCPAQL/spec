@@ -2,7 +2,10 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-03-06
+> **Document Status:** This document is an **informative conformance framework specification** aligned to the normative protocol requirements in `docs/versions/v1.0.0-draft.md`.
+>
+> **Implementation Status:** The full `mcpaql-conformance` runner defined here is not yet published in this repository. Current implemented checks are schema/example validation in `scripts/validate-schema-examples.mjs`.
 
 ## Abstract
 
@@ -415,7 +418,7 @@ A future certification registry MAY track conformant implementations.
 
 ### 7.1 CLI Invocation
 
-Conformance test runners MUST provide a command-line interface:
+Conformance test runners SHOULD provide a command-line interface:
 
 ```bash
 mcpaql-conformance <command> [options]
