@@ -4,16 +4,16 @@ This directory contains the formal JSON Schema definitions for the MCP-AQL proto
 
 ## Schemas
 
-| Schema | Description |
-|--------|-------------|
-| [operation-input.schema.json](./operation-input.schema.json) | Standard operation request format |
-| [operation-result.schema.json](./operation-result.schema.json) | Discriminated union response format |
-| [introspection-response.schema.json](./introspection-response.schema.json) | Introspection query response format |
-| [danger-level.schema.json](./danger-level.schema.json) | Operation danger classification |
-| [batch-operation.schema.json](./batch-operation.schema.json) | Batch operation request/response format |
-| [field-selection.schema.json](./field-selection.schema.json) | Field selection parameters and metadata |
-| [adapter-schema.schema.json](./adapter-schema.schema.json) | Adapter definition file validation |
-| [discovery-bundle.schema.json](./discovery-bundle.schema.json) | MCP server interrogation capture + normalization bundle |
+| Schema | Description | Normative |
+|--------|-------------|-----------|
+| [operation-input.schema.json](./operation-input.schema.json) | Standard operation request format | Yes |
+| [operation-result.schema.json](./operation-result.schema.json) | Discriminated union response format | Yes |
+| [introspection-response.schema.json](./introspection-response.schema.json) | Introspection query response format | Yes |
+| [danger-level.schema.json](./danger-level.schema.json) | Operation danger classification | Yes |
+| [batch-operation.schema.json](./batch-operation.schema.json) | Batch operation request/response format | Yes |
+| [field-selection.schema.json](./field-selection.schema.json) | Field selection parameters and metadata | Yes |
+| [adapter-schema.schema.json](./adapter-schema.schema.json) | Adapter definition file validation | Yes |
+| [discovery-bundle.schema.json](./discovery-bundle.schema.json) | MCP server interrogation capture + normalization bundle used by generator pipelines | No |
 
 ## Usage
 

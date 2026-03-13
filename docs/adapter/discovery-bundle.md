@@ -26,15 +26,20 @@ This split is especially important when adapting third-party MCP servers whose t
 
 `raw_capture` contains source facts captured directly from the MCP server, without semantic rewriting.
 
-Minimum contents:
+Current minimal required contents:
 
 - exact `tools/list` payload
-- server identity/version information returned during MCP initialization
+
+`raw_capture` SHOULD preserve source field names exactly as received.
+
+When an interrogator captures additional source response metadata such as pagination cursors, opaque `_meta` fields, or other transport-specific response facts, those MAY also be preserved in `raw_capture`.
+
+The following capture context belongs in `source`, not `raw_capture`:
+
+- server identity/version information when available
 - capture timestamp
 - connection metadata needed to understand the source context
 - redacted capture configuration
-
-`raw_capture` SHOULD preserve source field names exactly as received.
 
 ### `normalized_bundle`
 
@@ -51,10 +56,10 @@ Minimum contents:
 
 Every inferred field in `normalized_bundle` SHOULD carry enough provenance to explain whether it came from:
 
-1. direct source metadata
-2. deterministic name/shape normalization
-3. heuristic classification
-4. manual override
+1. `direct_source_metadata`
+2. `deterministic_normalization`
+3. `heuristic_classification`
+4. `manual_override`
 
 ## Minimal Record Shape
 
@@ -89,7 +94,22 @@ The schema builder is expected to:
 - preserve source semantics before style normalization
 - classify CRUDE endpoints conservatively
 - surface ambiguous operations for review rather than silently “guessing”
+- transform `normalized_bundle.operations[].params` from an ordered array of parameter records into the keyed `params` object used by the adapter schema
+- treat `params[].source_path` as a dot-path into the raw upstream tool object unless a future version defines a different encoding
+- understand that `maps_to` and `danger_level` may be generator suggestions or manual-review outcomes rather than source-declared facts
+- carry or intentionally discard fields such as parameter `format` when the downstream adapter schema cannot represent them directly
+- preserve the normalized `returns` wrapper contract even when the upstream MCP tool returns a non-object domain payload
 - keep sidecar provenance/warning data outside the adapter schema when the adapter schema cannot represent it directly
+
+## Current Scope Notes
+
+The current minimal schema reflects the first transport and auth milestone for the GitHub golden path:
+
+- `source.transport` currently enumerates `streamable_http` only
+- `source.auth.type` currently enumerates `bearer` and `none` only
+- `source.server` is optional because not every interrogated MCP server exposes stable server identity metadata during initialization
+
+These constraints describe the current capture contract, not the full design space for future interrogators.
 
 ## Non-Goals
 

@@ -3,10 +3,12 @@
   "$id": "https://mcpaql.org/schemas/discovery-bundle.schema.json",
   "title": "MCP Server Discovery Bundle",
   "description": "Intermediate artifact capturing raw MCP server tool metadata plus normalized generator-facing interpretations for MCP-AQL adapter synthesis.",
+  "x-normative": false,
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "const": "1.0.0-draft",
+      "description": "Discovery-bundle artifact version. This is versioned independently from the normative operation schemas."
     },
     "source": {
       "type": "object",
@@ -15,7 +17,8 @@
         "server_url": { "type": "string", "format": "uri" },
         "transport": {
           "type": "string",
-          "enum": ["streamable_http"]
+          "enum": ["streamable_http"],
+          "description": "Transport used during capture. The current minimal contract only standardizes streamable_http."
         },
         "captured_at": {
           "type": "string",
@@ -23,6 +26,7 @@
         },
         "server": {
           "type": "object",
+          "description": "Optional server identity metadata returned during MCP initialization when the source server exposes it.",
           "properties": {
             "name": { "type": "string" },
             "version": { "type": "string" },
@@ -32,6 +36,7 @@
         },
         "auth": {
           "type": "object",
+          "description": "Redacted auth metadata used during capture. The current minimal contract recognizes bearer and none.",
           "properties": {
             "type": {
               "type": "string",
@@ -54,6 +59,7 @@
     },
     "raw_capture": {
       "type": "object",
+      "description": "Opaque source facts captured directly from the MCP server. Additional upstream response metadata MAY be preserved here alongside tools.",
       "properties": {
         "tools": {
           "type": "array",
@@ -61,7 +67,7 @@
         }
       },
       "required": ["tools"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "normalized_bundle": {
       "type": "object",
@@ -85,7 +91,8 @@
               },
               "danger_level": {
                 "type": "string",
-                "enum": ["safe", "reversible", "destructive", "dangerous", "forbidden"]
+                "enum": ["safe", "reversible", "destructive", "dangerous", "forbidden"],
+                "description": "Suggested danger level for downstream schema generation. This may be heuristic or manually reviewed rather than source-declared."
               },
               "needs_review": { "type": "boolean" },
               "review_reasons": {
@@ -111,17 +118,26 @@
                     "maximum": { "type": "number" },
                     "pattern": { "type": "string" },
                     "format": { "type": "string" },
-                    "source_path": { "type": "string" }
+                    "source_path": {
+                      "type": "string",
+                      "description": "Dot-path into the raw upstream tool object, for example 'inputSchema.properties.owner'."
+                    }
                   },
                   "required": ["name", "original_name", "type", "required", "source_path"],
                   "additionalProperties": false
                 }
               },
-              "maps_to": { "type": "string" },
+              "maps_to": {
+                "type": "string",
+                "description": "Generator-facing routing target. This may be a deterministic proxy mapping or a manually reviewed suggestion rather than a source-declared API route."
+              },
               "returns": {
                 "type": "object",
                 "properties": {
-                  "type": { "const": "object" },
+                  "type": {
+                    "const": "object",
+                    "description": "Discovery bundles normalize wrapped operation results to an object envelope even when the upstream MCP tool returns non-object domain content."
+                  },
                   "name": { "type": "string" },
                   "description": { "type": "string" }
                 },
@@ -131,13 +147,46 @@
               "provenance": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string" },
-                  "description": { "type": "string" },
+                  "name": {
+                    "type": "string",
+                    "description": "Source field or attribute used as the basis for the normalized operation name, for example 'name'."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Source field used as the basis for the normalized operation description, for example 'description'."
+                  },
                   "annotations": {
                     "type": "array",
                     "items": { "type": "string" }
                   },
-                  "input_schema_present": { "type": "boolean" }
+                  "input_schema_present": { "type": "boolean" },
+                  "inference_sources": {
+                    "type": "object",
+                    "description": "Machine-readable classification of how key normalized fields were derived.",
+                    "properties": {
+                      "operation_name": {
+                        "type": "string",
+                        "enum": ["direct_source_metadata", "deterministic_normalization", "heuristic_classification", "manual_override"]
+                      },
+                      "description": {
+                        "type": "string",
+                        "enum": ["direct_source_metadata", "deterministic_normalization", "heuristic_classification", "manual_override"]
+                      },
+                      "endpoint": {
+                        "type": "string",
+                        "enum": ["direct_source_metadata", "deterministic_normalization", "heuristic_classification", "manual_override"]
+                      },
+                      "danger_level": {
+                        "type": "string",
+                        "enum": ["direct_source_metadata", "deterministic_normalization", "heuristic_classification", "manual_override"]
+                      },
+                      "maps_to": {
+                        "type": "string",
+                        "enum": ["direct_source_metadata", "deterministic_normalization", "heuristic_classification", "manual_override"]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
                 },
                 "required": ["name", "input_schema_present"],
                 "additionalProperties": false
