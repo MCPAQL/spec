@@ -29,6 +29,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 |----------|-------------|--------|
 | [Plugin Interface Contracts](plugin-contracts.md) | What each plugin type MUST provide | Draft (MVP) |
 | [Element Type Specification](adapter/element-type.md) | Declarative adapter schema format | Draft (MVP) |
+| [MCP Server Discovery Bundle](adapter/discovery-bundle.md) | Raw capture + normalized bundle contract for generator pipelines | Draft |
 
 ### Features
 

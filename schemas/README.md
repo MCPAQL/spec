@@ -13,6 +13,7 @@ This directory contains the formal JSON Schema definitions for the MCP-AQL proto
 | [batch-operation.schema.json](./batch-operation.schema.json) | Batch operation request/response format |
 | [field-selection.schema.json](./field-selection.schema.json) | Field selection parameters and metadata |
 | [adapter-schema.schema.json](./adapter-schema.schema.json) | Adapter definition file validation |
+| [discovery-bundle.schema.json](./discovery-bundle.schema.json) | MCP server interrogation capture + normalization bundle |
 
 ## Usage
 
