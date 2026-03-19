@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-03-19
 
 > **Document Status:** This document is **informative support text** for the current MCP-AQL draft. The normative source of truth remains [Specification v1.0.0-draft](../versions/v1.0.0-draft.md) plus the published schemas in `spec/schemas/`.
 
