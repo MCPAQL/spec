@@ -61,6 +61,8 @@ Every inferred field in `normalized_bundle` SHOULD carry enough provenance to ex
 3. `heuristic_classification`
 4. `manual_override`
 
+Generators SHOULD populate `provenance.inference_sources` whenever a normalized field was derived rather than copied directly from source metadata.
+
 ## Minimal Record Shape
 
 The current minimal discovery bundle contract is captured in [`schemas/discovery-bundle.schema.json`](../../schemas/discovery-bundle.schema.json).
@@ -84,6 +86,7 @@ Important required concepts:
   - `maps_to`
 - `normalized_bundle.warnings`
   - machine-readable warnings emitted during capture/normalization
+  - `review_reasons` remain human-readable operation-local explanations, while `warnings` remain the cross-operation machine-readable signal channel
 
 ## Mapping Expectations
 

@@ -157,6 +157,7 @@
                   },
                   "annotations": {
                     "type": "array",
+                    "description": "Names of upstream annotation fields observed on the raw MCP tool record, for example title or readOnlyHint.",
                     "items": { "type": "string" }
                   },
                   "input_schema_present": { "type": "boolean" },
