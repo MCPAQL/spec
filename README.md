@@ -101,6 +101,7 @@ The savings scale with adapter complexity - the more operations your adapter sup
 | [CRUDE Pattern](docs/crude-pattern.md) | Detailed endpoint semantics |
 | [Introspection](docs/introspection.md) | Discovery system specification |
 | [Operations Guide](docs/operations.md) | Operation design patterns |
+| [MCP Server Discovery Bundle](docs/adapter/discovery-bundle.md) | Interrogation bundle contract for MCP-to-MCP-AQL generation |
 | [Documentation Index](docs/README.md) | Full documentation structure |
 | [Changelog](CHANGELOG.md) | Version history |
 

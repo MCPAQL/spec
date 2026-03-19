@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Discovery-bundle contract and schema for MCP server interrogation pipelines (PR #220)
+  - Added `docs/adapter/discovery-bundle.md` as informative support text for the GitHub golden-path capture workflow
+  - Added `schemas/discovery-bundle.schema.json` as a non-normative intermediate artifact schema
+  - Documented raw capture vs normalized bundle responsibilities, provenance expectations, and current transport/auth scope notes
 - Execution safety loop as opt-in enforcement boundary for agent actions (#208)
   - New normative Section 8.6 defining the execution safety loop pattern
   - Opt-in activation via `execute_agent` or adapter configuration

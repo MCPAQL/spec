@@ -88,6 +88,10 @@
         "pattern": {
           "type": "string",
           "description": "Regex pattern for string validation"
+        },
+        "format": {
+          "type": "string",
+          "description": "Semantic format hint for strings (e.g. date-time, email, uri, uuid)"
         }
       },
       "required": ["type"],
