@@ -22,7 +22,7 @@ Before you name any operations, identify three core pieces:
 |----------|----------------------|---------|
 | What are the primary resources? | MCP-AQL resource or type names | `database`, `table`, `file`, `route`, `device` |
 | How are they identified? | Stable lookup parameters | `database_name`, `table_name`, `file_path`, `route_id`, `device_id` |
-| Which actions matter most? | MCP-AQL operations | `list_tables`, `get_file`, `update_route`, `execute_firmware_check` |
+| Which actions matter most? | MCP-AQL operations | `list_tables`, `get_file`, `update_route`, `execute_firmware_upgrade` |
 
 The best first pass is usually:
 
@@ -51,6 +51,10 @@ more than one resource type.
 
 ## 3. Design Operations Around CRUDE
 
+CRUDE (Create, Read, Update, Delete, Execute) maps each operation to its effect
+on system state. See the [CRUDE Pattern](../crude-pattern.md) for full
+classification rules.
+
 Map each real action to the endpoint that best reflects its effect:
 
 | Endpoint | Use for | Example |
@@ -65,6 +69,10 @@ If an action starts a process or can be retried/cancelled later, it usually
 belongs in `EXECUTE`, not `UPDATE`.
 
 ## 4. Build Introspection First
+
+> **Note:** The `introspect` operation (READ endpoint) is the only operation
+> MCP-AQL requires all adapters to implement. Everything else is
+> adapter-defined.
 
 An adapter is much easier for AI clients to use when the `introspect`
 experience is accurate before the business logic is complete.
@@ -101,6 +109,20 @@ Every operation should still return MCP-AQL’s discriminated response pattern:
 }
 ```
 
+Single-resource lookups keep the same envelope but return one object:
+
+```json
+{
+  "success": true,
+  "data": {
+    "device": {
+      "device_id": "dev_001",
+      "status": "online"
+    }
+  }
+}
+```
+
 ```json
 {
   "success": false,
@@ -112,7 +134,9 @@ Every operation should still return MCP-AQL’s discriminated response pattern:
 ```
 
 That consistency matters more than the domain itself. It lets a client move
-from one adapter to another without re-learning the envelope.
+from one adapter to another without re-learning the envelope. See
+[Error Codes](../error-codes.md) for the standard validation and execution
+error catalog.
 
 ## 6. Domain Examples
 
@@ -161,7 +185,9 @@ from one adapter to another without re-learning the envelope.
 **Useful query controls**
 - `query` for name/content search
 - `fields` for light listings
-- computed fields such as `_computed.size_human`
+- computed fields such as `_computed.size_human` (see
+  [Field Selection](../features/field-selection.md) for computed field
+  semantics)
 
 ### 6.3 API Gateway Administration
 
@@ -211,7 +237,10 @@ from one adapter to another without re-learning the envelope.
 **Useful query controls**
 - `filter` on status, site, or firmware version
 - computed fields like `_computed.is_stale`
-- `EXECUTE` lifecycle introspection for long-running jobs
+
+Long-running jobs such as `execute_firmware_upgrade` SHOULD expose lifecycle
+state through introspection so clients can discover supported statuses and
+follow-up actions.
 
 ## 7. Conformance Checklist
 
@@ -222,7 +251,9 @@ Use this as a pre-release checklist for a new domain adapter:
 - `introspect` documents every accepted parameter.
 - Required parameters fail with structured validation errors.
 - Collection READ operations document their supported query controls.
-- READ responses use `fields` and pagination consistently where supported.
+- READ responses use `fields` and pagination consistently where supported. See
+  [Collection Querying](../features/collection-querying.md) and
+  [Pagination](../features/pagination.md).
 - Errors avoid leaking implementation details.
 - At least one round-trip create/read or update/read example is tested.
 - Any domain-specific constraints are documented in introspection.
@@ -231,25 +262,32 @@ Use this as a pre-release checklist for a new domain adapter:
 
 ### 8.1 Operation Template
 
-```yaml
-name: list_tables
-description: List tables within a database
-endpoint: READ
-params:
-  database_name:
-    type: string
-    required: true
-    description: Database to inspect
-  query:
-    type: string
-    required: false
-    description: Optional free-text table search
-  fields:
-    type: array
-    required: false
-    description: Optional field projection
-returns:
-  ref: TableList
+```json
+{
+  "name": "list_tables",
+  "description": "List tables within a database",
+  "endpoint": "READ",
+  "params": {
+    "database_name": {
+      "type": "string",
+      "required": true,
+      "description": "Database to inspect"
+    },
+    "query": {
+      "type": "string",
+      "required": false,
+      "description": "Optional free-text table search"
+    },
+    "fields": {
+      "type": "array",
+      "required": false,
+      "description": "Optional field projection"
+    }
+  },
+  "returns": {
+    "ref": "TableList"
+  }
+}
 ```
 
 ### 8.2 Introspection Detail Template
@@ -311,7 +349,9 @@ returns:
 - Using overly generic identifiers like `id` when `route_id` or `device_id` is
   clearer.
 - Treating long-running actions as `UPDATE` when they should be `EXECUTE`.
-- Forgetting to document compatibility pagination shapes or alias parameters.
+- Forgetting to document compatibility pagination shapes (such as `limit` /
+  `offset`) or alias parameters that an adapter accepts alongside the preferred
+  MCP-AQL names.
 - Adding query features in implementation without exposing them in introspection.
 
 ## References
