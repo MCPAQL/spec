@@ -268,7 +268,7 @@ For the preferred collection-query contract that combines text search, filters, 
 | Parameter | Type | Operations | Description |
 |-----------|------|------------|-------------|
 | `fields` | `string \| string[]` | All READ operations returning data | Field selection: preset name or array of field paths |
-| `query` | `string` | Search operations | Free-text search input |
+| `query` | `string \| object` | `search_*` and `query_*` collection operations | Free-text search input or documented structured query object |
 | `filter` | `object` | List/search/query operations | Structured filtering criteria |
 | `sort` | `object` | List/search/query operations | Sort object with `field` and `order` |
 | `first`, `after`, `last`, `before` | `number` / `string` | Cursor-paginated collection operations | Cursor-based pagination parameters |
@@ -343,6 +343,8 @@ shared_parameters:
       default: 25
 ```
 
+These `shared_parameters` keys are illustrative rather than normative. Adapters that already expose `$ref` paths such as `#/shared_parameters/pagination` or legacy `sort`/`order` groups SHOULD preserve those existing references, or provide documented aliases, instead of renaming them silently.
+
 #### 4.4.3 Cross-Cutting Parameter Consistency (SHOULD)
 
 When a parameter applies to multiple operations:
@@ -371,6 +373,37 @@ operations:
       - $ref: "#/shared_parameters/filter"
       - $ref: "#/shared_parameters/sorting"
       - $ref: "#/shared_parameters/cursor_pagination"
+      - name: "query"
+        type: "string"
+        required: true
+        description: "Search query"
+```
+
+**Example - Inline expansion returned to clients:**
+```yaml
+operations:
+  search_items:
+    params:
+      - name: "fields"
+        type: "string | string[]"
+        required: false
+        description: "Field selection: preset ('minimal', 'standard', 'full') or array of field paths"
+      - name: "filter"
+        type: "object"
+        required: false
+        description: "Structured filtering criteria"
+      - name: "sort"
+        type: "object"
+        required: false
+        description: "Sort object with 'field' and 'order'"
+      - name: "first"
+        type: "number"
+        required: false
+        description: "Maximum results to return from the start"
+      - name: "after"
+        type: "string"
+        required: false
+        description: "Opaque cursor to continue after"
       - name: "query"
         type: "string"
         required: true

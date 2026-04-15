@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/collection-query.schema.json",
+  "title": "MCP-AQL Collection Query",
+  "description": "Informative helper schema for the preferred MCP-AQL collection-query parameter shapes used by list_*, search_*, and query_* operations.",
+  "$defs": {
+    "FieldSelectionPreset": {
+      "type": "string",
+      "enum": ["minimal", "standard", "full"],
+      "description": "Predefined field-selection presets."
+    },
+    "FieldPath": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+      "description": "A field path using dot notation for nested properties."
+    },
+    "QueryValue": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Free-text search input, typically used by search_* operations."
+        },
+        {
+          "type": "object",
+          "description": "Structured query object for query_* operations when documented by the adapter.",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "SortOrder": {
+      "type": "string",
+      "enum": ["asc", "desc"],
+      "description": "Sort direction."
+    },
+    "SortSpec": {
+      "type": "object",
+      "description": "Preferred sorting control for collection operations.",
+      "properties": {
+        "field": {
+          "type": "string",
+          "description": "Adapter-defined sort field name."
+        },
+        "order": {
+          "$ref": "#/$defs/SortOrder"
+        }
+      },
+      "required": ["field"],
+      "additionalProperties": false
+    },
+    "FieldsValue": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FieldSelectionPreset"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldPath"
+          },
+          "description": "Explicit field paths to include."
+        }
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "query": {
+      "$ref": "#/$defs/QueryValue",
+      "description": "Preferred text-search or structured query parameter, depending on operation family."
+    },
+    "filter": {
+      "type": "object",
+      "description": "Structured filtering criteria using adapter-defined keys.",
+      "additionalProperties": true
+    },
+    "sort": {
+      "$ref": "#/$defs/SortSpec"
+    },
+    "fields": {
+      "$ref": "#/$defs/FieldsValue",
+      "description": "Preferred field-selection control."
+    },
+    "preset": {
+      "$ref": "#/$defs/FieldSelectionPreset",
+      "description": "Compatibility alias for preset-based field selection. New request shapes SHOULD prefer fields instead.",
+      "deprecated": true
+    },
+    "first": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of items to return from the start of a cursor-ordered collection."
+    },
+    "after": {
+      "type": "string",
+      "description": "Opaque cursor to continue after."
+    },
+    "last": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of items to return from the end of a cursor-ordered collection."
+    },
+    "before": {
+      "type": "string",
+      "description": "Opaque cursor to continue before."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Compatibility pagination limit for offset-based adapters."
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Compatibility pagination offset for offset-based adapters."
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Compatibility page number for page-based adapters."
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Compatibility page size for page-based adapters."
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "query": "api reviewer",
+      "filter": {
+        "category": "persona",
+        "status": "active"
+      },
+      "sort": {
+        "field": "updated_at",
+        "order": "desc"
+      },
+      "fields": "minimal",
+      "first": 10,
+      "after": "cursor_abc123"
+    },
+    {
+      "query": {
+        "where": {
+          "status": "active"
+        },
+        "select": ["id", "name"]
+      },
+      "sort": {
+        "field": "created_at",
+        "order": "asc"
+      },
+      "fields": ["id", "name"],
+      "page": 2,
+      "page_size": 25
+    }
+  ]
+}

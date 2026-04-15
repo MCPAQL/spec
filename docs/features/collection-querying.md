@@ -109,6 +109,8 @@ Preferred cursor parameters:
 | `last` | number | Number of items from the end |
 | `before` | string | Cursor to continue before |
 
+For response envelopes and cursor metadata, see [Pagination](./pagination.md).
+
 Adapters MAY expose offset- or page-based variants such as `limit`, `offset`, `page`, or `page_size` when the backend or existing ecosystem strongly favors them. When they do:
 
 - The supported style MUST be documented in introspection
@@ -124,7 +126,7 @@ The following matrix describes the preferred forward direction for collection-re
 | Operation Family | `query` | `filter` | `sort` | Pagination | `fields` |
 |------------------|---------|----------|--------|------------|----------|
 | `list_*` | Not required | SHOULD support | SHOULD support | SHOULD support | SHOULD support |
-| `search_*` | MUST support | SHOULD support | SHOULD support | SHOULD support | SHOULD support |
+| `search_*` | SHOULD support as the canonical text parameter | SHOULD support | SHOULD support | SHOULD support | SHOULD support |
 | `query_*` | MUST document grammar | SHOULD document composition rules | SHOULD support when meaningful | SHOULD support | SHOULD support |
 
 This matrix is intentionally phrased in terms of interoperability rather than backend mechanics. An adapter MAY omit a capability, but it SHOULD make the omission explicit in introspection and operation descriptions.
@@ -139,6 +141,7 @@ For plain-text `query` strings:
 
 - Multi-word queries SHOULD behave consistently with single-word queries
 - The default interpretation SHOULD be OR semantics unless the adapter documents otherwise
+- OR semantics are preferred here because they return broader, more forgiving results for exploratory and LLM-generated queries
 - Adapters MAY support quoted phrases for exact match
 
 ### 4.2 Structured Query Grammars

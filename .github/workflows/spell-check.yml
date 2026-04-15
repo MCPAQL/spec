@@ -6,6 +6,7 @@ on:
       - main
       - develop
   pull_request:
+    # Include workflow edits so runtime/tooling fixes rerun this job on the PR that changed them.
     paths:
       - '**/*.md'
       - '.github/workflows/spell-check.yml'

@@ -12,6 +12,7 @@ This directory contains the formal JSON Schema definitions for the MCP-AQL proto
 | [danger-level.schema.json](./danger-level.schema.json) | Operation danger classification | Yes |
 | [batch-operation.schema.json](./batch-operation.schema.json) | Batch operation request/response format | Yes |
 | [field-selection.schema.json](./field-selection.schema.json) | Field selection parameters and metadata | Yes |
+| [collection-query.schema.json](./collection-query.schema.json) | Preferred collection-query request controls for list/search/query operations | No |
 | [adapter-schema.schema.json](./adapter-schema.schema.json) | Adapter definition file validation | Yes |
 | [discovery-bundle.schema.json](./discovery-bundle.schema.json) | MCP server interrogation capture + normalization bundle used by generator pipelines | No |
 
@@ -132,7 +133,17 @@ Request and response formats for batch operations:
 Field selection parameters for controlling response payloads:
 - `fields` - Array of field paths or preset name
 - `preset` - Optional compatibility alias for predefined field sets (minimal, standard, full)
+- JSON Schema `deprecated: true` is used as an annotation signal for compatibility aliases such as `preset`; tooling support for surfacing that annotation may vary
 - Metadata for introspection of available fields
+
+### Collection Querying
+
+Preferred collection-query controls for collection-returning READ operations:
+- `query` - Free-text search string or documented structured query object
+- `filter` - Structured filtering criteria
+- `sort` - Sort object with `field` and `order`
+- `first`, `after`, `last`, `before` - Preferred cursor-pagination controls
+- `limit`, `offset`, `page`, `page_size` - Compatibility pagination controls when documented
 
 ### Adapter Schema
 
