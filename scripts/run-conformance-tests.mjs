@@ -22,7 +22,12 @@ const FORBIDDEN_ERROR_PATTERNS = [
 ];
 
 function loadJson(path) {
-  return JSON.parse(readFileSync(path, "utf8"));
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    process.stderr.write(`Unable to load JSON from ${path}: ${error.message}\n`);
+    process.exit(3);
+  }
 }
 
 function normalizeText(value) {
@@ -741,7 +746,6 @@ function parseArgs(argv) {
     format: "text",
     tier: "both",
     output: null,
-    verbose: false,
     category: null,
   };
   const positional = [];
@@ -772,10 +776,6 @@ function parseArgs(argv) {
       case "-c":
         options.category = rest[index + 1] ?? null;
         index += 1;
-        break;
-      case "--verbose":
-      case "-v":
-        options.verbose = true;
         break;
       default:
         positional.push(value);
@@ -834,12 +834,19 @@ function runVerifyFixtures(options) {
 
 function runReportCommand(resultPath, options) {
   const report = loadJson(resolve(resultPath));
+  if (!report || typeof report !== "object" || !report.summary || !Array.isArray(report.categories)) {
+    process.stderr.write(
+      `Report input must be a conformance report JSON object with summary and categories: ${resultPath}\n`
+    );
+    process.exit(3);
+  }
   const rendered = renderReport(report, options.format);
   if (options.output) {
     writeFileSync(resolve(options.output), rendered, "utf8");
   } else {
     process.stdout.write(rendered);
   }
+  process.exit(0);
 }
 
 const { command, options, positional } = parseArgs(process.argv);

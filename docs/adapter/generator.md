@@ -910,12 +910,14 @@ Generated adapters MUST:
 Generators SHOULD include conformance test generation:
 
 ```bash
-# Generate fixture evidence alongside the adapter
-./generated-adapter/scripts/export-conformance-evidence.sh > ./generated-adapter/conformance/reference.json
+# Export fixture evidence alongside the adapter using the generator's own tooling
+node ./generated-adapter/scripts/export-conformance-evidence.mjs > ./generated-adapter/conformance/reference.json
 
 # Run conformance tests on generated evidence
 node scripts/run-conformance-tests.mjs test ./generated-adapter/conformance/reference.json --level 1
 ```
+
+`export-conformance-evidence.mjs` is illustrative here: generators SHOULD provide an equivalent export step, but the exact script name and packaging are implementation-defined.
 
 See [Conformance Testing Specification](../conformance-testing.md) for test requirements.
 

@@ -279,12 +279,12 @@ The following test categories MUST pass for Level 1 conformance:
 
 | Category | Tests | Rationale |
 |----------|-------|-----------|
-| Introspection Fidelity | 2 | LLMs must trust introspection |
-| Parameter Handling | 3 | Consistent behavior across operations |
-| Error Quality | 2 | Usable error messages |
+| Introspection Fidelity | 4 | LLMs must trust introspection |
+| Parameter Handling | 4 | Consistent behavior across operations |
+| Error Quality | 3 | Usable error messages |
 | Round-Trip Integrity | 2 | Data consistency guarantee |
 
-**Total MUST PASS tests:** 9
+**Total MUST PASS tests:** 13
 
 ### 4.2 SHOULD PASS Requirements
 
@@ -383,7 +383,6 @@ Implementations SHOULD generate conformance reports:
   "implementation": "example-adapter",
   "version": "1.0.0",
   "specVersion": "1.0.0-draft",
-  "testDate": "2026-01-29T00:00:00Z",
   "conformanceLevel": 1,
   "summary": {
     "total": 11,
@@ -395,7 +394,7 @@ Implementations SHOULD generate conformance reports:
   "categories": [
     {
       "name": "Introspection Fidelity",
-      "required": "MUST",
+      "required": true,
       "result": "PASS",
       "tests": [
         { "name": "Parameter Accuracy", "result": "PASS" },
@@ -455,10 +454,10 @@ node scripts/run-conformance-tests.mjs <command> [options]
 | `--level`, `-l` | Conformance level to test (1 or 2) | `1` |
 | `--output`, `-o` | Output file for results | stdout |
 | `--format`, `-f` | Output format (`json`, `text`, `markdown`) | `text` |
-| `--verbose`, `-v` | Enable verbose output | `false` |
 | `--tier` | Evaluation tier (`1`, `2`, `both`) | `both` |
 | `--category`, `-c` | Run specific test category only | All |
-| `--timeout` | Test timeout in seconds | `30` |
+
+`--tier 2` and `--tier both` currently produce the same semantic-evaluation behavior. The runner reserves the distinction for future live-adapter or split-tier expansion.
 
 ### 7.4 Exit Codes
 
@@ -467,8 +466,7 @@ node scripts/run-conformance-tests.mjs <command> [options]
 | `0` | All tests passed | Conformance achieved at requested level |
 | `1` | Tests failed | One or more MUST PASS tests failed |
 | `2` | Tests warned | All MUST PASS passed, but SHOULD PASS tests warned |
-| `3` | Configuration error | Invalid adapter path or configuration |
-| `4` | Timeout | Tests exceeded timeout limit |
+| `3` | Configuration error | Invalid fixture/report path, malformed JSON, unknown command, or invalid report input |
 | `5` | Internal error | Unexpected error in test runner |
 
 ### 7.5 Example Usage
@@ -497,13 +495,12 @@ node scripts/run-conformance-tests.mjs test \
   --category "Introspection Fidelity"
 ```
 
-**Verbose output with Tier 2 semantic evaluation:**
+**Tier 2 semantic evaluation:**
 ```bash
 node scripts/run-conformance-tests.mjs test \
   tests/conformance/evidence/reference-level2.json \
   --level 2 \
-  --tier both \
-  --verbose
+  --tier both
 ```
 
 **Generate markdown report from results:**
@@ -536,5 +533,4 @@ node scripts/run-conformance-tests.mjs test ./adapter/conformance/reference.json
 - [Introspection Specification](introspection.md)
 - [Operations Specification](operations.md)
 - [GitHub Issue #10](https://github.com/MCPAQL/spec/issues/10) - Conformance test suite
-- [GitHub Issue #55](https://github.com/MCPAQL/spec/issues/55) - Conformance test requirements
 - [GitHub Issue #56](https://github.com/MCPAQL/spec/issues/56) - LLM semantic evaluation
