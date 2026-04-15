@@ -59,6 +59,12 @@ The preferred aggregation vocabulary is:
 Adapters MAY support a subset, but SHOULD expose the supported functions and
 fields through introspection.
 
+Within a single named expression, `group_by` MAY be combined with one or more
+summary functions such as `count`, `sum`, `avg`, `min`, or `max`. Adapters
+SHOULD document any unsupported combinations. A bare `group_by` without at
+least one summary function is NOT RECOMMENDED because it leaves the result shape
+underspecified.
+
 ## 3. Response Shape
 
 When `aggregate` is present, the preferred summary-first response shape is:

@@ -10,6 +10,7 @@
     },
     "RootReference": {
       "type": "object",
+      "description": "Portable root reference shape. Adapters MAY include additional root identifier fields in concrete requests.",
       "properties": {
         "element_type": {
           "type": "string"
@@ -19,7 +20,7 @@
         }
       },
       "required": ["element_type", "element_name"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "RelationshipSection": {
       "type": "string",

@@ -6,6 +6,7 @@
   "$defs": {
     "AggregateExpression": {
       "type": "object",
+      "description": "A single named aggregation expression. `group_by` MAY be combined with summary functions such as `count`, `sum`, `avg`, `min`, or `max` in the same expression.",
       "properties": {
         "count": {
           "type": "boolean"
@@ -57,10 +58,20 @@
             "type": "object",
             "additionalProperties": true
           }
+        },
+        "pageInfo": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional cursor-pagination metadata when aggregated responses also include raw items."
+        },
+        "pagination": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional compatibility pagination metadata for page- or offset-based adapters."
         }
       },
       "required": ["aggregations"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "AggregationSupport": {
       "type": "object",

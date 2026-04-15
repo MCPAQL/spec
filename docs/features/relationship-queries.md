@@ -35,14 +35,14 @@ The preferred operation name is `query_relationships`:
 
 ## 2. Core Parameters
 
-| Parameter | Meaning |
-|-----------|---------|
-| `root` | Starting resource for the traversal |
-| `direction` | `incoming`, `outgoing`, or `both` |
-| `relationship` | Relationship type to match |
-| `depth` | Maximum traversal depth |
-| `include` | Optional response-section selector for `root`, `relationships`, `graph.nodes`, and `graph.edges`; all sections returned if omitted |
-| `first` / `after` | Optional pagination controls when traversals are large |
+| Parameter | Required | Meaning |
+|-----------|----------|---------|
+| `root` | Yes | Starting resource for the traversal |
+| `direction` | Yes | `incoming`, `outgoing`, or `both` |
+| `relationship` | No | Relationship type to match |
+| `depth` | No | Maximum traversal depth |
+| `include` | No | Optional response-section selector for `root`, `relationships`, `graph.nodes`, and `graph.edges`; all sections returned if omitted |
+| `first` / `after` | No | Optional pagination controls when traversals are large |
 
 Adapters MAY add domain-specific root identifiers or filter controls, but SHOULD
 keep the traversal vocabulary stable.
