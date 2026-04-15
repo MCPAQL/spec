@@ -28,7 +28,7 @@ MCP-AQL defines a schema-driven operation dispatch protocol that:
 1. **Consolidates Operations** - Many discrete tools into a small number of semantic endpoint families
 2. **Enables Discovery** - GraphQL-style introspection for runtime operation discovery
 3. **Enforces Safety** - Endpoint classification validates operation/endpoint matching
-4. **Supports Flexibility** - Implementations MAY offer the standard CRUDE profile, adapter-defined semantic endpoint families, or Single mode
+4. **Supports Flexibility** - Implementations MAY offer semantic endpoints mode with the standard CRUDE profile or alternate semantic endpoint families, or Single mode
 
 ```
 +-------------------+
@@ -126,9 +126,9 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
 
 MCP-AQL supports two operational modes. Implementations MUST support at least one mode and SHOULD support both:
 
-### CRUDE Mode
+### Semantic Endpoints Mode
 
-Exposes 5 separate endpoints, each with semantic meaning:
+The standard CRUDE profile exposes 5 separate endpoints, each with semantic meaning:
 
 ```
 mcp_aql_create  - CREATE operations
@@ -169,7 +169,7 @@ The primary motivation for MCP-AQL is reducing the token cost of tool registrati
 | Configuration | Approximate Token Cost | Reduction |
 |--------------|------------------------|-----------|
 | Discrete Tools (50+) | ~30,000 tokens | baseline |
-| CRUDE Mode (5 endpoints) | ~4,500 tokens | ~85% |
+| Semantic Endpoints Mode (CRUDE profile, 5 endpoints) | ~4,500 tokens | ~85% |
 | Single Mode (1 endpoint) | ~1,100 tokens | ~96% |
 
 ### Runtime Discovery
@@ -306,7 +306,7 @@ When batch operations are supported, implementations:
 
 An MCP-AQL implementation is conformant if it:
 
-1. Implements at least one endpoint mode (CRUDE, adapter-defined semantic, or Single)
+1. Implements at least one endpoint mode (semantic or Single)
 2. Enforces endpoint classification for all operations
 3. Provides the `introspect` operation as a READ-category operation on a documented endpoint family
 4. Returns discriminated responses for all operations

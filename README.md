@@ -25,7 +25,7 @@ This draft is not yet a final certification baseline. Some conformance automatio
 
 ## Endpoint Families
 
-MCP-AQL supports semantic endpoint families or a single unified endpoint. The standard semantic-endpoint profile extends traditional CRUD with an **Execute** endpoint, creating the CRUDE pattern:
+MCP-AQL supports semantic endpoints mode or a single unified endpoint. The standard semantic-endpoint profile extends traditional CRUD with an **Execute** endpoint, creating the CRUDE pattern:
 
 | Endpoint | Safety | Description |
 |----------|--------|-------------|
@@ -35,7 +35,7 @@ MCP-AQL supports semantic endpoint families or a single unified endpoint. The st
 | **Delete** | Destructive | Operations that remove state |
 | **Execute** | Stateful | Runtime lifecycle operations (non-idempotent) |
 
-Adapters MAY also define alternate semantic endpoint families when the target API is better represented by domain-specific sets such as `catalog` / `data` / `jobs`, database-oriented profiles like `tables` / `queries` / `admin`, or hardware-oriented profiles like `inventory` / `telemetry` / `control`. Operations still retain standardized semantic categories for CREATE, READ, UPDATE, DELETE, and EXECUTE.
+Adapters MAY also define alternate semantic endpoint families when the target API is better represented by semantically explicit sets such as `discover` / `query` / `manage` / `operate`, database-oriented profiles like `inspect` / `query` / `mutate` / `administer`, or hardware-oriented profiles like `discover` / `observe` / `control` / `maintain`. Operations still retain standardized semantic categories for CREATE, READ, UPDATE, DELETE, and EXECUTE.
 
 ## Token Efficiency
 
@@ -47,7 +47,7 @@ MCP-AQL dramatically reduces token consumption for LLM interactions.
 |--------------|------------|------------|-----------|
 | Discrete Tools | ~30 tools | ~18,000 | Baseline |
 | Discrete Tools | ~50 tools | ~30,000 | Baseline |
-| **Semantic Endpoints (CRUDE profile)** | 5 endpoints | ~4,000 | ~80-85% |
+| **Semantic Endpoints Mode (CRUDE profile)** | 5 endpoints | ~4,000 | ~80-85% |
 | **Single Mode** | 1 endpoint | ~1,000 | **~95%+** |
 
 The savings scale with adapter complexity - the more operations your adapter supports, the greater the benefit of consolidation.
@@ -120,7 +120,7 @@ It demonstrates the protocol in a large, production-oriented server, including s
 Implementations claiming MCP-AQL conformance MUST:
 
 1. Implement the `introspect` operation for runtime discovery
-2. Use a semantic-endpoint mode or single endpoint mode
+2. Use semantic endpoints mode or single endpoint mode
 3. Return discriminated union responses (`{ success, data }` or `{ success, error }`)
 4. Document supported operations via introspection
 

@@ -8,7 +8,7 @@
 
 ## Abstract
 
-MCP-AQL supports three operational modes for exposing endpoints to clients: the standard CRUDE semantic-endpoint profile, adapter-defined Semantic Endpoint mode, and Single mode. This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
+MCP-AQL supports two operational modes for exposing endpoints to clients: Semantic Endpoints mode and Single mode. The standard CRUDE profile is one semantic-endpoint profile within Semantic Endpoints mode. This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
 
 ---
 
@@ -17,12 +17,11 @@ MCP-AQL supports three operational modes for exposing endpoints to clients: the 
 1. [Introduction](#1-introduction)
 2. [Mode Comparison](#2-mode-comparison)
 3. [Configuration](#3-configuration)
-4. [Standard CRUDE Profile](#4-standard-crude-profile)
-5. [Semantic Endpoint Mode](#5-semantic-endpoint-mode)
-6. [Single Mode](#6-single-mode)
-7. [Security Considerations](#7-security-considerations)
-8. [Tool Registration](#8-tool-registration)
-9. [Conformance Requirements](#9-conformance-requirements)
+4. [Semantic Endpoints Mode](#4-semantic-endpoints-mode)
+5. [Single Mode](#5-single-mode)
+6. [Security Considerations](#6-security-considerations)
+7. [Tool Registration](#7-tool-registration)
+8. [Conformance Requirements](#8-conformance-requirements)
 
 ---
 
@@ -49,8 +48,9 @@ This specification covers:
 
 | Term | Definition |
 |------|------------|
-| **CRUDE Profile** | The standard five-family semantic-endpoint profile: Create, Read, Update, Delete, Execute |
-| **Semantic Endpoint Mode** | Adapter-defined semantic endpoint families exposed as multiple MCP tools |
+| **Semantic Endpoints Mode** | Multiple exposed MCP tools whose names and purposes are semantically legible to clients |
+| **Semantic Endpoint Profile** | A specific semantic set exposed in Semantic Endpoints mode (for example CRUDE) |
+| **CRUDE Profile** | The standard five-endpoint semantic profile: Create, Read, Update, Delete, Execute |
 | **Single Mode** | One unified MCP tool that routes internally |
 | **Endpoint Family** | A named MCP tool or logical grouping that contains one or more operations |
 | **Semantic Category** | One of the standardized effect categories: CREATE, READ, UPDATE, DELETE, EXECUTE |
@@ -62,27 +62,52 @@ This specification covers:
 
 ### 2.1 Summary
 
-| Aspect | CRUDE Profile | Semantic Endpoint Mode | Single Mode |
-|--------|---------------|------------------------------|-------------|
-| **Exposed tools** | 5 semantic endpoint tools | Adapter-defined semantic endpoint tools | 1 unified tool |
-| **Semantic categories** | Explicitly aligned to CRUDE tools | Still standardized per operation | Routed internally |
-| **Routing** | Client chooses CRUDE tool | Client chooses endpoint family | Server routes internally |
-| **Permission control** | Strong endpoint-level granularity | Endpoint-level granularity by family | Operation-level only |
-| **Token cost** | Low | Low to medium | Lowest |
-| **Best fit** | General-purpose profile | Domain-shaped adapters | Minimal tool surface |
+| Aspect | Semantic Endpoints Mode | Single Mode |
+|--------|-------------------------|-------------|
+| **Exposed tools** | Multiple semantic endpoint tools | 1 unified tool |
+| **Semantic categories** | Still standardized per operation | Routed internally |
+| **Routing** | Client chooses endpoint family | Server routes internally |
+| **Permission control** | Endpoint-level granularity | Operation-level only |
+| **Token cost** | Low to medium | Lowest |
+| **Best fit** | When endpoint semantics should remain visible to the client | Minimal tool surface |
 
 ### 2.2 Typical Shapes
 
-```text
-CRUDE Profile                     Semantic Endpoint Mode               Single Mode
-================                  ============================          ===========
+Semantic Endpoints mode can expose different semantic profiles. The key requirement is that the endpoint names and descriptions communicate intent clearly enough that a client or LLM can infer where an operation belongs.
 
-mcp_aql_create                    mcp_aql_catalog                       mcp_aql
-mcp_aql_read                      mcp_aql_data                            |
-mcp_aql_update                    mcp_aql_jobs                            v
-mcp_aql_delete                                                           [Internal Router]
+**Standard CRUDE profile**
+```text
+mcp_aql_create
+mcp_aql_read
+mcp_aql_update
+mcp_aql_delete
 mcp_aql_execute
 ```
+
+**Extended CRUDE-style profile**
+```text
+mcp_aql_create
+mcp_aql_read
+mcp_aql_update
+mcp_aql_delete
+mcp_aql_execute
+mcp_aql_authorize
+```
+
+**Alternative semantic profile**
+```text
+mcp_aql_discover
+mcp_aql_query
+mcp_aql_manage
+mcp_aql_operate
+```
+
+**Single mode**
+```text
+mcp_aql
+```
+
+Profiles like `discover`, `query`, `manage`, and `operate` remain semantic because they tell the client what kind of intent belongs there. Profiles built purely from domain buckets without clear action semantics are much weaker for discoverability.
 
 ### 2.3 Token Efficiency
 
@@ -91,7 +116,7 @@ Endpoint consolidation provides significant token reduction compared to fully di
 | Configuration | Typical Token Cost | Reduction |
 |---------------|-------------------|-----------|
 | Discrete tools (e.g., 40+ tools) | ~30,000 tokens | baseline |
-| Semantic endpoint mode (5-8 tools typical) | ~4,300-6,500 tokens | ~78-85% |
+| Semantic endpoints mode (4-8 tools typical) | ~4,300-6,500 tokens | ~78-85% |
 | Single mode (1 tool) | ~1,100 tokens | ~96% |
 
 Note: Actual token costs vary based on operation count, endpoint descriptions, and whether schemas enumerate operations inline.
@@ -106,7 +131,7 @@ Implementations SHOULD provide runtime configuration for endpoint mode selection
 
 **Recommended Environment Variable:**
 ```text
-MCP_AQL_ENDPOINT_MODE=crude|semantic|single|all
+MCP_AQL_ENDPOINT_MODE=semantic|single|all
 ```
 
 **Optional Semantic Profile Selection:**
@@ -118,8 +143,7 @@ MCP_AQL_ENDPOINT_PROFILE=crude|<adapter_profile_name>
 
 | Value | Behavior |
 |-------|----------|
-| `crude` | Register the standard 5-family CRUDE semantic-endpoint profile |
-| `semantic` | Register the adapter's documented semantic endpoint families |
+| `semantic` | Register the active semantic-endpoint profile |
 | `single` | Register 1 unified endpoint |
 | `all` | Register the active semantic-endpoint profile plus the unified endpoint |
 
@@ -138,9 +162,9 @@ If an implementation supports multiple semantic endpoint profiles, it SHOULD doc
 
 ---
 
-## 4. Standard CRUDE Profile
+## 4. Semantic Endpoints Mode
 
-### 4.1 Endpoint Registration
+### 4.1 Standard CRUDE Profile
 
 In the standard CRUDE profile, five MCP tools are registered:
 
@@ -188,31 +212,19 @@ The CRUDE profile is the recommended general-purpose grouping because it:
 - Produces predictable tool names across adapters
 - Works well when the target system does not already imply a better domain partition
 
----
+### 4.4 Alternative Semantic Endpoint Profiles
 
-## 5. Semantic Endpoint Mode
-
-### 5.1 Endpoint Registration
-
-In adapter-defined Semantic Endpoint mode, implementations expose a small number of semantic endpoint families that fit the target API or domain model.
-
-**Example semantic endpoint families:**
-
-| Tool Name | Typical Contents |
-|-----------|------------------|
-| `mcp_aql_catalog` | Resource discovery, listing, creation |
-| `mcp_aql_data` | Querying, fetching, field selection, exports |
-| `mcp_aql_jobs` | Long-running tasks and execution lifecycle |
+Implementations MAY define alternate semantic endpoint profiles when a different semantic split communicates intent more clearly to the client than CRUDE does.
 
 Semantic endpoint families MAY mix multiple semantic categories, but each operation MUST still have exactly one standardized semantic category documented via introspection.
 
-### 5.2 Client Responsibility
+### 4.5 Client Responsibility
 
-In Semantic Endpoint mode, clients MUST choose the correct exposed endpoint family for each operation. Adapters MUST reject operations sent to the wrong semantic endpoint family.
+In Semantic Endpoints mode, clients MUST choose the correct exposed endpoint family for each operation. Adapters MUST reject operations sent to the wrong semantic endpoint family.
 
 **Example: Correct Usage**
 ```javascript
-// Via mcp_aql_data endpoint
+// Via mcp_aql_query endpoint
 {
   operation: "search_documents",
   params: { query: "pricing", limit: 10 }
@@ -221,7 +233,7 @@ In Semantic Endpoint mode, clients MUST choose the correct exposed endpoint fami
 
 **Example: Incorrect Usage**
 ```javascript
-// Via mcp_aql_jobs endpoint (WRONG - search_documents belongs to the data family)
+// Via mcp_aql_operate endpoint (WRONG - search_documents belongs to the query family)
 {
   operation: "search_documents",
   params: { query: "pricing", limit: 10 }
@@ -230,13 +242,13 @@ In Semantic Endpoint mode, clients MUST choose the correct exposed endpoint fami
 // Response:
 {
   success: false,
-  error: "Operation 'search_documents' must be called via mcp_aql_data, not mcp_aql_jobs"
+  error: "Operation 'search_documents' must be called via mcp_aql_query, not mcp_aql_operate"
 }
 ```
 
-### 5.3 Route Enforcement
+### 4.6 Route Enforcement
 
-Adapters in Semantic Endpoint mode MUST validate that operations are sent to their assigned endpoint family.
+Adapters in Semantic Endpoints mode MUST validate that operations are sent to their assigned endpoint family.
 
 **Validation Logic:**
 1. Extract operation name from request
@@ -244,7 +256,7 @@ Adapters in Semantic Endpoint mode MUST validate that operations are sent to the
 3. Compare with the endpoint family that received the request
 4. If mismatch, return an error specifying the correct endpoint family
 
-### 5.4 Endpoint Descriptions
+### 4.7 Endpoint Descriptions
 
 Each semantic endpoint family SHOULD include a description listing:
 
@@ -253,62 +265,79 @@ Each semantic endpoint family SHOULD include a description listing:
 - Available operations (or a sample with introspection guidance)
 - Quick-start examples
 
+Endpoint family names SHOULD be action-oriented or otherwise intent-revealing. Names like `query`, `manage`, `operate`, `observe`, or `control` are usually better semantic signals than opaque domain buckets.
+
 **Example Description Format:**
 ```text
-Catalog-oriented operations for resources and definitions.
+Query-oriented operations for retrieval, filtering, aggregation, and field selection.
 
-Primary semantic categories: CREATE, READ, UPDATE
+Primary semantic categories: READ
 
-Supported operations: create_dataset, list_datasets, update_dataset
+Supported operations: list_datasets, get_dataset, search_datasets
 
 Quick start example:
-{ operation: "list_datasets", params: { limit: 10 } }
+{ operation: "search_datasets", params: { query: "pricing", limit: 10 } }
 
 Discover required parameters:
-{ operation: "introspect", params: { query: "operations", name: "list_datasets" } }
+{ operation: "introspect", params: { query: "operations", name: "search_datasets" } }
 ```
 
-### 5.5 Example Alternative Semantic Endpoint Profiles
+### 4.8 Example Alternative Semantic Endpoint Profiles
 
-The following examples are illustrative only. They show valid semantic endpoint profiles that are more domain-specific than the standard CRUDE profile.
+The following examples are illustrative only. They show valid semantic endpoint profiles besides the standard CRUDE profile.
+
+**Extended CRUDE-style profile**
+
+```text
+mcp_aql_create     - Additive operations
+mcp_aql_read       - Safe, read-only operations
+mcp_aql_update     - Modifying operations
+mcp_aql_delete     - Destructive operations
+mcp_aql_execute    - Runtime lifecycle operations
+mcp_aql_authorize  - Permission grants, approvals, policy assignment
+```
+
+This remains a semantic-endpoint profile because each endpoint communicates a specific kind of intent to the client.
 
 **Database-oriented semantic endpoints**
 
 ```text
-mcp_aql_tables   - Table discovery, schema inspection, lightweight metadata updates
-mcp_aql_queries  - Querying, filtering, aggregations, exports
-mcp_aql_admin    - Migrations, maintenance tasks, index rebuilds, long-running jobs
+mcp_aql_inspect     - Schema discovery, capability checks, metadata inspection
+mcp_aql_query       - Retrieval, filtering, joins, aggregations, exports
+mcp_aql_mutate      - Inserts, updates, deletes, bulk edits
+mcp_aql_administer  - Migrations, maintenance tasks, index rebuilds, long-running jobs
 ```
 
-This is a valid semantic-endpoint profile when the target system is already organized around schema exploration, query execution, and administrative workflows.
+This is a valid semantic-endpoint profile when the target system is best understood through inspection, query, mutation, and administration semantics.
 
 **Hardware / device semantic endpoints**
 
 ```text
-mcp_aql_inventory   - Device discovery, capabilities, configuration metadata
-mcp_aql_telemetry   - Sensor reads, health checks, status polling, event history
-mcp_aql_control     - Actuation, calibration, restart, firmware operations
+mcp_aql_discover   - Device discovery, capabilities, configuration metadata
+mcp_aql_observe    - Sensor reads, health checks, status polling, event history
+mcp_aql_control    - Actuation, calibration, restart, firmware operations
+mcp_aql_maintain   - Diagnostics, firmware staging, lifecycle maintenance tasks
 ```
 
-This is a valid semantic-endpoint profile when the clearest semantic split is between discovering devices, observing live state, and issuing control actions.
+This is a valid semantic-endpoint profile when the clearest semantic split is between discovering devices, observing live state, issuing control actions, and performing maintenance.
 
 **Content / knowledge semantic endpoints**
 
 ```text
-mcp_aql_library   - Collections, documents, taxonomy, metadata maintenance
+mcp_aql_curate    - Collection curation, taxonomy changes, metadata maintenance
 mcp_aql_search    - Search, retrieval, ranking, summaries
-mcp_aql_workflows - Imports, indexing jobs, publishing, review actions
+mcp_aql_publish   - Imports, indexing jobs, publishing, review actions
 ```
 
-This is a valid semantic-endpoint profile when the target API separates content management, retrieval, and asynchronous processing.
+This is a valid semantic-endpoint profile when the target API separates curation, retrieval, and publishing or processing semantics.
 
 In all of these cases, the adapter still documents each operation's standardized semantic category through introspection, even when the semantic endpoints do not map one-to-one to CRUDE tools.
 
 ---
 
-## 6. Single Mode
+## 5. Single Mode
 
-### 6.1 Endpoint Registration
+### 5.1 Endpoint Registration
 
 In Single mode, one MCP tool is registered:
 
@@ -316,7 +345,7 @@ In Single mode, one MCP tool is registered:
 |-----------|---------|
 | `mcp_aql` | All operations through a unified entry point |
 
-### 6.2 Server-Side Routing
+### 5.2 Server-Side Routing
 
 The adapter routes operations internally based on each operation's semantic category and handler mapping.
 
@@ -338,16 +367,16 @@ mcp_aql endpoint
 Response
 ```
 
-### 6.3 Routing Behavior
+### 5.3 Routing Behavior
 
 In Single mode:
 
 1. All operations are accepted through `mcp_aql`
 2. The adapter determines the correct handler based on operation metadata
-3. The same semantic category rules apply as in semantic-endpoint modes
+3. The same semantic category rules apply as in semantic endpoints mode
 4. Permission enforcement occurs server-side
 
-### 6.4 Unified Endpoint Description
+### 5.4 Unified Endpoint Description
 
 The unified endpoint SHOULD provide:
 
@@ -367,9 +396,9 @@ Use introspection to discover available operations:
 
 ---
 
-## 7. Security Considerations
+## 6. Security Considerations
 
-### 7.1 Semantic Endpoint Mode Security
+### 6.1 Semantic Endpoints Mode Security
 
 Semantic endpoint modes, including the CRUDE profile, provide:
 
@@ -384,7 +413,7 @@ Semantic endpoint modes, including the CRUDE profile, provide:
 - Adapter enforces route validation
 - Risk can be isolated into smaller families
 
-### 7.2 Single Mode Security
+### 6.2 Single Mode Security
 
 Single mode provides:
 
@@ -398,7 +427,7 @@ Single mode provides:
 - All routing decisions are server-side
 - Audit logging relies more heavily on operation-level metadata
 
-### 7.3 Security Trade-offs
+### 6.3 Security Trade-offs
 
 | Security Aspect | Semantic Endpoint Modes | Single Mode |
 |-----------------|---------------|-------------|
@@ -408,7 +437,7 @@ Single mode provides:
 | Audit granularity | Endpoint family + operation | Operation only |
 | Bypass resistance | Adapter-enforced | Adapter-enforced |
 
-### 7.4 Common Security Enforcement
+### 6.4 Common Security Enforcement
 
 All modes MUST:
 
@@ -419,9 +448,9 @@ All modes MUST:
 
 ---
 
-## 8. Tool Registration
+## 7. Tool Registration
 
-### 8.1 MCP Tool Annotations
+### 7.1 MCP Tool Annotations
 
 Adapters SHOULD include MCP tool annotations to hint at operation safety.
 
@@ -436,10 +465,10 @@ Adapters SHOULD include MCP tool annotations to hint at operation safety.
 }
 ```
 
-**Adapter-Defined Semantic Endpoint Example:**
+**Alternative Semantic Endpoint Example:**
 ```json
 {
-  "name": "mcp_aql_jobs",
+  "name": "mcp_aql_control",
   "annotations": {
     "readOnlyHint": false,
     "destructiveHint": true
@@ -462,7 +491,7 @@ Semantic endpoint families SHOULD set annotations conservatively based on the ri
 
 Note: Single mode uses `destructiveHint: true` because it can route to destructive operations.
 
-### 8.2 Input Schema
+### 7.2 Input Schema
 
 All modes use the same base input schema:
 
@@ -487,19 +516,19 @@ Adapters MAY extend this schema with additional common properties such as `resou
 
 ---
 
-## 9. Conformance Requirements
+## 8. Conformance Requirements
 
-### 9.1 MUST Requirements
+### 8.1 MUST Requirements
 
 Conforming implementations MUST:
 
-1. Support at least one endpoint mode (`crude`, adapter-defined `semantic`, or `single`)
-2. Enforce operation routing validation in semantic-endpoint modes
+1. Support at least one endpoint mode (`semantic` or `single`)
+2. Enforce operation routing validation in semantic endpoints mode
 3. Return proper error responses for unknown operations
 4. Route operations to correct handlers in Single mode
 5. Apply consistent permission enforcement regardless of mode
 
-### 9.2 SHOULD Requirements
+### 8.2 SHOULD Requirements
 
 Conforming implementations SHOULD:
 

@@ -505,7 +505,7 @@ Each operation MUST be defined by a schema that specifies its behavior, paramete
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `semantic_category` | string | REQUIRED | Standard semantic category: CREATE, READ, UPDATE, DELETE, or EXECUTE |
-| `endpoint` | string | REQUIRED in semantic-endpoint modes | Exposed endpoint family that receives the operation |
+| `endpoint` | string | REQUIRED in semantic endpoints mode | Exposed endpoint family that receives the operation |
 | `description` | string | REQUIRED | Human-readable description |
 | `params` | object | OPTIONAL | Parameter definitions |
 | `handler` | string | OPTIONAL | Internal handler reference |
@@ -699,7 +699,7 @@ Conformant batch implementations MUST follow these semantics:
 
 ### 7.4 Cross-Endpoint Batching
 
-When using semantic-endpoint modes (separate endpoint families), batch operations SHOULD be constrained to a single endpoint family:
+When using semantic endpoints mode (separate endpoint families), batch operations SHOULD be constrained to a single endpoint family:
 
 - All operations assigned to the same endpoint family together in one batch
 - For the CRUDE profile, all CREATE operations together in one batch to the CREATE endpoint, all READ operations together in one batch to the READ endpoint, and so on
@@ -966,31 +966,31 @@ When `query` is "operations" without a `name`:
       {
         "name": "create_item",
         "semantic_category": "CREATE",
-        "endpoint": "catalog",
+        "endpoint": "manage",
         "description": "Create a new item"
       },
       {
         "name": "list_items",
         "semantic_category": "READ",
-        "endpoint": "data",
+        "endpoint": "query",
         "description": "List all items"
       },
       {
         "name": "update_item",
         "semantic_category": "UPDATE",
-        "endpoint": "catalog",
+        "endpoint": "manage",
         "description": "Update item properties"
       },
       {
         "name": "delete_item",
         "semantic_category": "DELETE",
-        "endpoint": "catalog",
+        "endpoint": "manage",
         "description": "Delete an item"
       },
       {
         "name": "introspect",
         "semantic_category": "READ",
-        "endpoint": "data",
+        "endpoint": "query",
         "description": "Discover available operations"
       }
     ]
@@ -1009,8 +1009,8 @@ When `query` is "operations" with a `name`:
     "operation": {
       "name": "create_item",
       "semantic_category": "CREATE",
-      "endpoint": "catalog",
-      "mcpTool": "mcp_aql_catalog",
+      "endpoint": "manage",
+      "mcpTool": "mcp_aql_manage",
       "description": "Create a new item",
       "permissions": {
         "readOnly": false,

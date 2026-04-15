@@ -208,7 +208,7 @@
         },
         "mcpTool": {
           "type": "string",
-          "description": "Actual MCP tool name handling the operation (e.g., 'mcp_aql_catalog')"
+          "description": "Actual MCP tool name handling the operation (e.g., 'mcp_aql_query')"
         },
         "description": {
           "type": "string",
@@ -407,7 +407,7 @@
         "mode": {
           "type": "string",
           "description": "Endpoint mode",
-          "enum": ["crude", "semantic", "single", "all"]
+          "enum": ["semantic", "single", "all"]
         },
         "capabilities": {
           "$ref": "#/$defs/ProtocolCapabilities",
@@ -589,19 +589,19 @@
           {
             "name": "create_entity",
             "semantic_category": "CREATE",
-            "endpoint": "catalog",
+            "endpoint": "manage",
             "description": "Create a new entity"
           },
           {
             "name": "list_entities",
             "semantic_category": "READ",
-            "endpoint": "data",
+            "endpoint": "query",
             "description": "List entities with filtering"
           },
           {
             "name": "introspect",
             "semantic_category": "READ",
-            "endpoint": "data",
+            "endpoint": "query",
             "description": "Discover available operations and types"
           }
         ]
@@ -613,8 +613,8 @@
         "operation": {
           "name": "create_entity",
           "semantic_category": "CREATE",
-          "endpoint": "catalog",
-          "mcpTool": "mcp_aql_catalog",
+          "endpoint": "manage",
+          "mcpTool": "mcp_aql_manage",
           "description": "Create a new entity of any type",
           "permissions": {
             "readOnly": false,

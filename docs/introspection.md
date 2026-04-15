@@ -70,7 +70,7 @@ The introspection system returns information about the adapter's operations and 
 
 ### 2.1 The `introspect` Operation
 
-All introspection is performed through the `introspect` operation as a READ-category operation. In semantic-endpoint modes, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
+All introspection is performed through the `introspect` operation as a READ-category operation. In semantic endpoints mode, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
 
 **Request Format:**
 ```javascript
@@ -159,7 +159,7 @@ Summary information for an operation in list responses:
 interface OperationInfo {
   name: string;               // Operation identifier (e.g., "create_entity")
   semantic_category: string;  // Standard category (e.g., "CREATE")
-  endpoint: string;           // Exposed endpoint family (e.g., "catalog", "create")
+  endpoint: string;           // Exposed endpoint family (e.g., "query", "create")
   description: string;        // Brief description
 }
 ```
@@ -173,7 +173,7 @@ interface OperationDetails {
   name: string;                    // Operation identifier
   semantic_category: string;       // Standard category
   endpoint: string;                // Exposed endpoint family
-  mcpTool: string;                 // Actual MCP tool name (e.g., "mcp_aql_catalog")
+  mcpTool: string;                 // Actual MCP tool name (e.g., "mcp_aql_query")
   description: string;             // Detailed description
   permissions: EndpointPermissions;
   parameters: ParameterInfo[];     // Parameter definitions (see note below)
@@ -328,43 +328,43 @@ interface TypeDetails extends TypeInfo {
       {
         "name": "create_entity",
         "semantic_category": "CREATE",
-        "endpoint": "catalog",
+        "endpoint": "manage",
         "description": "Create a new entity"
       },
       {
         "name": "list_entities",
         "semantic_category": "READ",
-        "endpoint": "data",
+        "endpoint": "query",
         "description": "List entities with filtering and pagination"
       },
       {
         "name": "get_entity",
         "semantic_category": "READ",
-        "endpoint": "data",
+        "endpoint": "query",
         "description": "Get an entity by identifier"
       },
       {
         "name": "update_entity",
         "semantic_category": "UPDATE",
-        "endpoint": "catalog",
+        "endpoint": "manage",
         "description": "Update entity properties"
       },
       {
         "name": "delete_entity",
         "semantic_category": "DELETE",
-        "endpoint": "catalog",
+        "endpoint": "manage",
         "description": "Delete an entity"
       },
       {
         "name": "execute_workflow",
         "semantic_category": "EXECUTE",
-        "endpoint": "jobs",
+        "endpoint": "operate",
         "description": "Start execution of a workflow"
       },
       {
         "name": "introspect",
         "semantic_category": "READ",
-        "endpoint": "data",
+        "endpoint": "query",
         "description": "Discover available operations and types"
       }
     ]
@@ -380,7 +380,7 @@ The `_protocol` object in operations list responses provides version and capabil
 |-------|------|----------|-------------|
 | `version` | string | MUST | MCP-AQL spec version (semver format) |
 | `conformance` | string | SHOULD | Conformance level ("level-1", "level-2") |
-| `mode` | string | SHOULD | Endpoint mode ("crude", "semantic", "single", "all") |
+| `mode` | string | SHOULD | Endpoint mode ("semantic", "single", "all") |
 | `capabilities` | object | MAY | Feature flags for optional capabilities |
 
 **Capabilities flags:**
@@ -417,8 +417,8 @@ Clients can use protocol metadata to:
     "operation": {
       "name": "create_entity",
       "semantic_category": "CREATE",
-      "endpoint": "catalog",
-      "mcpTool": "mcp_aql_catalog",
+      "endpoint": "manage",
+      "mcpTool": "mcp_aql_manage",
       "description": "Create a new entity of any type",
       "permissions": {
         "readOnly": false,
@@ -751,9 +751,9 @@ getSummary(): string
 
 // Example output:
 // MCP-AQL Operations:
-//   catalog: create_entity, update_entity, delete_entity
-//   data: list_entities, get_entity, introspect
-//   jobs: execute_workflow
+//   manage: create_entity, update_entity, delete_entity
+//   query: list_entities, get_entity, introspect
+//   operate: execute_workflow
 //
 // Semantic Categories:
 //   CREATE: create_entity

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Generalized semantic-endpoint model alongside the standard CRUDE profile
   - Updated the normative draft to distinguish standardized semantic categories from exposed endpoint families
-  - Reframed `docs/endpoint-modes.md` around CRUDE, adapter-defined semantic endpoint mode, and single mode
+  - Reframed `docs/endpoint-modes.md` around semantic endpoints mode versus single mode, with CRUDE as the standard profile inside semantic endpoints mode
   - Updated introspection docs and schema so operations disclose both `semantic_category` and `endpoint`
   - Clarified MCP integration, conformance, and top-level docs so CRUDE remains the standard profile rather than the only in-spec semantic-endpoint shape
 - Pagination response structure guidance for collection operations (#164)

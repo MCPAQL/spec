@@ -17,7 +17,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 |----------|-------------|--------|
 | [v1.0.0-draft](versions/v1.0.0-draft.md) | Current specification version | Draft |
 | [CRUDE Pattern](crude-pattern.md) | Standard semantic-endpoint profile and routing | Draft |
-| [Endpoint Modes](endpoint-modes.md) | CRUDE, semantic-endpoint, and Single mode configuration | Draft |
+| [Endpoint Modes](endpoint-modes.md) | Semantic endpoints and Single mode configuration | Draft |
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 | [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |

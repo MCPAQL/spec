@@ -57,9 +57,9 @@ MCP-AQL adapters are MCP servers that expose operations through semantic endpoin
 
 MCP-AQL adapters MUST include the `introspect` operation in their tool descriptions. This solves the bootstrap problem by ensuring agents know how to discover available operations.
 
-#### 2.1.1 Semantic Endpoint Mode Tool Descriptions
+#### 2.1.1 Semantic Endpoints Mode Tool Descriptions
 
-In Semantic Endpoint mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the semantic-endpoint patterns below.
+In semantic endpoints mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the semantic-endpoint patterns below.
 
 **Standard CRUDE Profile:**
 
@@ -153,7 +153,7 @@ Discover required parameters:
 { operation: "introspect", params: { query: "operations", name: "[operation_name]" } }
 ```
 
-**Adapter-Defined Semantic Endpoint Profiles:**
+**Alternative Semantic Endpoint Profiles:**
 
 When the adapter exposes custom semantic endpoint families, each tool description SHOULD follow this template:
 
@@ -212,9 +212,9 @@ Implementations SHOULD use these standard tool names:
 | `mcp_aql_delete` | DELETE operations |
 | `mcp_aql_execute` | EXECUTE operations |
 
-**Adapter-Defined Semantic Endpoint Mode:**
+**Alternative Semantic Endpoint Profiles:**
 
-Adapters MAY use domain-shaped tool names such as `mcp_aql_catalog`, `mcp_aql_data`, or `mcp_aql_jobs`. These names SHOULD remain stable within an adapter and MUST be discoverable via introspection.
+Adapters MAY use semantically explicit tool names such as `mcp_aql_discover`, `mcp_aql_query`, `mcp_aql_manage`, or `mcp_aql_operate`. These names SHOULD remain stable within an adapter and MUST be discoverable via introspection.
 
 **Single Mode:**
 | Tool Name | Purpose |
@@ -272,10 +272,10 @@ Adapters SHOULD include MCP tool annotations to provide permission hints:
 }
 ```
 
-**Adapter-Defined Semantic Endpoint Annotations:**
+**Alternative Semantic Endpoint Annotations:**
 ```json
 {
-  "name": "mcp_aql_jobs",
+  "name": "mcp_aql_control",
   "annotations": {
     "readOnlyHint": false,
     "destructiveHint": true
@@ -374,19 +374,19 @@ Adapters MAY use dynamic `enum` generation for the `operation` property to provi
 
 > **Note:** Dynamic enumeration increases tool registration token cost. Implementations SHOULD consider the trade-off between discoverability and token efficiency. For large operation sets, prefer introspection over enumeration.
 
-### 3.4 Semantic Endpoint Mode Schema Composition
+### 3.4 Semantic Endpoints Mode Schema Composition
 
-In Semantic Endpoint mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
+In semantic endpoints mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
 
 ```json
 {
-  "name": "mcp_aql_data",
+  "name": "mcp_aql_query",
   "inputSchema": {
     "type": "object",
     "properties": {
       "operation": {
         "type": "string",
-        "description": "Data-family operation to execute",
+        "description": "Query-family operation to execute",
         "enum": ["list_elements", "get_element", "search_elements", "introspect"]
       },
       "params": {
@@ -591,7 +591,7 @@ READ, CREATE, UPDATE, and DELETE operations MAY emit progress notifications for 
 
 ### 6.1 The Collision Problem
 
-When multiple MCP-AQL adapters are deployed in a single MCP session, tool names may collide. Two adapters both registering `mcp_aql_read` or `mcp_aql_catalog` creates ambiguity.
+When multiple MCP-AQL adapters are deployed in a single MCP session, tool names may collide. Two adapters both registering `mcp_aql_read` or `mcp_aql_query` creates ambiguity.
 
 ### 6.2 Tool Name Prefixing
 
@@ -606,7 +606,7 @@ MCP_AQL_TOOL_PREFIX=github_
 ```
 github_mcp_aql_create
 github_mcp_aql_read
-github_mcp_aql_catalog
+github_mcp_aql_query
 github_mcp_aql_update
 github_mcp_aql_delete
 github_mcp_aql_execute
