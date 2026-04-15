@@ -4,7 +4,7 @@ description: Version numbering scheme and release process for the MCPAQL specifi
 version: 1.0.0-draft
 status: draft
 created: 2025-01-14
-updated: 2026-03-06
+updated: 2026-04-15
 ---
 
 This document describes the version numbering scheme and release process for the MCPAQL specification.

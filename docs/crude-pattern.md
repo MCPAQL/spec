@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-02-18
+**Last Updated:** 2026-04-15
 
 > **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
