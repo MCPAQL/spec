@@ -83,6 +83,27 @@ Adapters SHOULD omit raw `items` by default when an aggregation request is
 summary-oriented. If an adapter supports returning both summaries and rows in
 one call, it SHOULD use an explicit `include_items: true` flag.
 
+```json
+{
+  "success": true,
+  "data": {
+    "aggregations": {
+      "total": 25,
+      "by_status": {
+        "active": 18,
+        "paused": 7
+      }
+    },
+    "items": [
+      {
+        "widget_id": "w_001",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
 ## 4. Composition Rules
 
 - Aggregations are applied after `query` and `filter`.

@@ -44,6 +44,24 @@
       "required": ["aggregate"],
       "additionalProperties": true
     },
+    "AggregationResponse": {
+      "type": "object",
+      "properties": {
+        "aggregations": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": ["aggregations"],
+      "additionalProperties": false
+    },
     "AggregationSupport": {
       "type": "object",
       "properties": {
@@ -83,6 +101,9 @@
     "request": {
       "$ref": "#/$defs/AggregationRequest"
     },
+    "response": {
+      "$ref": "#/$defs/AggregationResponse"
+    },
     "introspection": {
       "$ref": "#/$defs/AggregationSupport"
     }
@@ -100,6 +121,23 @@
             "count": true
           }
         }
+      }
+    },
+    {
+      "response": {
+        "aggregations": {
+          "total": 25,
+          "by_status": {
+            "active": 18,
+            "paused": 7
+          }
+        },
+        "items": [
+          {
+            "widget_id": "w_001",
+            "status": "active"
+          }
+        ]
       }
     },
     {

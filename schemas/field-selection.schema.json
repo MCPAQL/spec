@@ -88,7 +88,7 @@
       "required": ["name", "type"],
       "additionalProperties": false
     },
-    "ComputedFieldDefinition": {
+    "ComputedFieldInfo": {
       "type": "object",
       "description": "Definition of a computed field exposed by the adapter",
       "properties": {
@@ -167,7 +167,7 @@
         "computed_fields": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/ComputedFieldDefinition"
+            "$ref": "#/$defs/ComputedFieldInfo"
           },
           "description": "Adapter-declared computed fields available through `_computed.` paths"
         },

@@ -259,8 +259,7 @@ Adapters SHOULD use consistent patterns for common functionality:
   aggregate: {
     total: { count: true },
     by_status: { group_by: "status", count: true }
-  },
-  include_items: false
+  }
 }
 ```
 
@@ -285,6 +284,7 @@ For graph traversal and relationship exploration, see [Relationship Queries](./f
 | `query` | `string \| object` | `search_*` and `query_*` collection operations | Free-text search input or documented structured query object |
 | `filter` | `object` | List/search/query operations | Structured filtering criteria |
 | `sort` | `object` | List/search/query operations | Sort object with `field` and `order` |
+| `aggregate` | `object` | Collection READ operations with aggregation support | Named server-side summary expressions such as `count`, `group_by`, `sum`, `avg`, `min`, and `max` |
 | `first`, `after`, `last`, `before` | `number` / `string` | Cursor-paginated collection operations | Cursor-based pagination parameters |
 | `limit`, `offset`, `page`, `page_size` | `number` | Collection operations with adapter-specific pagination | Offset or page-based compatibility parameters when documented |
 | `dry_run` | `boolean` | All mutating operations | Preview without executing |

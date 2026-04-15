@@ -60,8 +60,8 @@ can evaluate them efficiently:
       "_computed.is_stale": true
     },
     sort: {
-      "field": "_computed.age_days",
-      "order": "desc"
+      field: "_computed.age_days",
+      order: "desc"
     },
     fields: ["widget_name", "_computed.age_days"]
   }

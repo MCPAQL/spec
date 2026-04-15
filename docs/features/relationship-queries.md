@@ -28,7 +28,7 @@ The preferred operation name is `query_relationships`:
     direction: "outgoing",
     relationship: "uses",
     depth: 2,
-    fields: ["root", "relationships", "graph.nodes", "graph.edges"]
+    include: ["root", "relationships", "graph.nodes", "graph.edges"]
   }
 }
 ```
@@ -41,11 +41,31 @@ The preferred operation name is `query_relationships`:
 | `direction` | `incoming`, `outgoing`, or `both` |
 | `relationship` | Relationship type to match |
 | `depth` | Maximum traversal depth |
-| `fields` | Optional field selection for the graph response |
+| `include` | Optional response-section selector for `root`, `relationships`, `graph.nodes`, and `graph.edges` |
 | `first` / `after` | Optional pagination controls when traversals are large |
 
 Adapters MAY add domain-specific root identifiers or filter controls, but SHOULD
 keep the traversal vocabulary stable.
+
+When pagination is supported for large traversals, the request shape remains the
+same:
+
+```javascript
+{
+  operation: "query_relationships",
+  params: {
+    root: {
+      element_type: "agent",
+      element_name: "code_reviewer"
+    },
+    direction: "outgoing",
+    relationship: "uses",
+    depth: 2,
+    first: 25,
+    after: "cursor_rel_001"
+  }
+}
+```
 
 ## 3. Response Shape
 
@@ -93,6 +113,16 @@ keep the traversal vocabulary stable.
 }
 ```
 
+If `include` is omitted, adapters SHOULD return `root`, `relationships`, and
+`graph` together. If `include` is present, adapters SHOULD limit the response to
+the requested sections.
+
+`relationships` is the preferred flat traversal list for simple consumers that
+want to iterate edges in order. `graph.nodes` and `graph.edges` are the
+preferred graph-native shape for visualization, graph algorithms, and other
+clients that need explicit node/edge separation. The `relationships` list and
+`graph.edges` MAY describe the same connections in different shapes.
+
 ## 4. Standard Relationship Vocabulary
 
 The preferred portable relationship types are:
@@ -131,7 +161,7 @@ metadata:
 
 ## 7. Relationship to Other Docs
 
-- [Collection Querying](./collection-querying.md) defines how `fields` and
-  pagination compose with collection-style responses.
+- [Collection Querying](./collection-querying.md) defines how record-level
+  `fields` and pagination compose with collection-style responses.
 - [Operations](../operations.md) documents the common request and response
   conventions used by `query_relationships`.
