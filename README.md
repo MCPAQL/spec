@@ -140,7 +140,7 @@ This repository uses split licensing:
 
 For the authoritative path-based scope rules, see `spec/LICENSING.md`.
 
-Commercial licenses are available. See `COMMERCIAL-LICENSE.md` or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org).
+Commercial licenses are available for MCP-AQL software artifacts as an alternative to AGPL obligations. The specification text remains openly licensed under CC BY 4.0. See `COMMERCIAL-LICENSE.md` or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org).
 
 ## Acknowledgments
 
