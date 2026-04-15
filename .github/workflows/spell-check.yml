@@ -6,8 +6,10 @@ on:
       - main
       - develop
   pull_request:
+    # Include workflow edits so runtime/tooling fixes rerun this job on the PR that changed them.
     paths:
       - '**/*.md'
+      - '.github/workflows/spell-check.yml'
 
 jobs:
   spell-check:
@@ -20,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install cspell
         run: npm install -g cspell@latest

@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-16
+**Last Updated:** 2026-04-15
 
 > **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
@@ -203,19 +203,26 @@ For backward compatibility, adapters MAY accept camelCase variants as aliases an
 
 Adapters SHOULD use consistent patterns for common functionality:
 
-**Pagination (offset-based):**
+**Text Search:**
 ```javascript
 {
-  page: 1,           // Page number (1-indexed)
-  page_size: 25      // Items per page
+  query: "api reviewer"
 }
 ```
 
 **Pagination (cursor-based):**
 ```javascript
 {
-  cursor: "abc123",  // Opaque cursor from previous response
-  limit: 25          // Maximum items to return
+  first: 25,
+  after: "cursor_abc123"
+}
+```
+
+**Pagination (offset-based compatibility style):**
+```javascript
+{
+  limit: 25,
+  offset: 50
 }
 ```
 
@@ -242,7 +249,7 @@ Adapters SHOULD use consistent patterns for common functionality:
 **Field Selection:**
 ```javascript
 {
-  fields: ["id", "name", "email"]  // Only return these fields
+  fields: "minimal"  // Or ["id", "name", "email"]
 }
 ```
 
@@ -254,17 +261,18 @@ Each parameter MUST be documented as either required or optional. The operation 
 
 Cross-cutting parameters are parameters that apply across multiple operations. To ensure consistent discoverability, implementations SHOULD define these parameters once and reference them consistently.
 
+For the preferred collection-query contract that combines text search, filters, sorting, pagination, and field selection, see [Collection Querying](./features/collection-querying.md).
+
 #### 4.4.1 Standard Cross-Cutting Parameters
 
 | Parameter | Type | Operations | Description |
 |-----------|------|------------|-------------|
 | `fields` | `string \| string[]` | All READ operations returning data | Field selection: preset name or array of field paths |
-| `limit` | `number` | List/search operations | Maximum results to return |
-| `offset` | `number` | List/search operations | Number of results to skip |
-| `page` | `number` | List/search operations | Page number (1-indexed) |
-| `page_size` | `number` | List/search operations | Items per page |
-| `sort` | `string` | List/search operations | Sort field name |
-| `order` | `string` | List/search operations | Sort order: "asc" or "desc" |
+| `query` | `string \| object` | `search_*` and `query_*` collection operations | Free-text search input or documented structured query object |
+| `filter` | `object` | List/search/query operations | Structured filtering criteria |
+| `sort` | `object` | List/search/query operations | Sort object with `field` and `order` |
+| `first`, `after`, `last`, `before` | `number` / `string` | Cursor-paginated collection operations | Cursor-based pagination parameters |
+| `limit`, `offset`, `page`, `page_size` | `number` | Collection operations with adapter-specific pagination | Offset or page-based compatibility parameters when documented |
 | `dry_run` | `boolean` | All mutating operations | Preview without executing |
 
 #### 4.4.2 Shared Parameter Definitions
@@ -277,9 +285,40 @@ shared_parameters:
     name: "fields"
     type: "string | string[]"
     required: false
-    description: "Field selection: preset ('minimal', 'standard', 'full') or array of field names"
+    description: "Field selection: preset ('minimal', 'standard', 'full') or array of field paths"
 
-  pagination:
+  filter:
+    name: "filter"
+    type: "object"
+    required: false
+    description: "Structured filtering criteria"
+
+  sorting:
+    name: "sort"
+    type: "object"
+    required: false
+    description: "Sort object with 'field' and 'order'"
+
+  cursor_pagination:
+    - name: "first"
+      type: "number"
+      required: false
+      description: "Maximum results to return from the start"
+      default: 25
+    - name: "after"
+      type: "string"
+      required: false
+      description: "Opaque cursor to continue after"
+    - name: "last"
+      type: "number"
+      required: false
+      description: "Maximum results to return from the end"
+    - name: "before"
+      type: "string"
+      required: false
+      description: "Opaque cursor to continue before"
+
+  offset_pagination:
     - name: "limit"
       type: "number"
       required: false
@@ -291,18 +330,20 @@ shared_parameters:
       description: "Number of results to skip"
       default: 0
 
-  sorting:
-    - name: "sort"
-      type: "string"
+  page_pagination:
+    - name: "page"
+      type: "number"
       required: false
-      description: "Field to sort by"
-    - name: "order"
-      type: "string"
+      description: "Page number (1-indexed)"
+      default: 1
+    - name: "page_size"
+      type: "number"
       required: false
-      enum: ["asc", "desc"]
-      description: "Sort order"
-      default: "asc"
+      description: "Items per page"
+      default: 25
 ```
+
+These `shared_parameters` keys are illustrative rather than normative. Adapters that already expose `$ref` paths such as `#/shared_parameters/pagination` or legacy `sort`/`order` groups SHOULD preserve those existing references, or provide documented aliases, instead of renaming them silently.
 
 #### 4.4.3 Cross-Cutting Parameter Consistency (SHOULD)
 
@@ -323,17 +364,46 @@ operations:
   list_items:
     params:
       - $ref: "#/shared_parameters/fields"
-      - $ref: "#/shared_parameters/pagination"
-      - name: "category"
-        type: "string"
-        required: false
-        description: "Filter by category"
+      - $ref: "#/shared_parameters/filter"
+      - $ref: "#/shared_parameters/cursor_pagination"
 
   search_items:
     params:
       - $ref: "#/shared_parameters/fields"
-      - $ref: "#/shared_parameters/pagination"
+      - $ref: "#/shared_parameters/filter"
       - $ref: "#/shared_parameters/sorting"
+      - $ref: "#/shared_parameters/cursor_pagination"
+      - name: "query"
+        type: "string"
+        required: true
+        description: "Search query"
+```
+
+**Example - Inline expansion returned to clients:**
+```yaml
+operations:
+  search_items:
+    params:
+      - name: "fields"
+        type: "string | string[]"
+        required: false
+        description: "Field selection: preset ('minimal', 'standard', 'full') or array of field paths"
+      - name: "filter"
+        type: "object"
+        required: false
+        description: "Structured filtering criteria"
+      - name: "sort"
+        type: "object"
+        required: false
+        description: "Sort object with 'field' and 'order'"
+      - name: "first"
+        type: "number"
+        required: false
+        description: "Maximum results to return from the start"
+      - name: "after"
+        type: "string"
+        required: false
+        description: "Opaque cursor to continue after"
       - name: "query"
         type: "string"
         required: true

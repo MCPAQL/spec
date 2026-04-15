@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Collection querying guide for `list_*`, `search_*`, and `query_*` READ operations
+  - New `docs/features/collection-querying.md` document defining the preferred contract for combining `query`, `filter`, `sort`, `fields`, and pagination
+  - Added `schemas/collection-query.schema.json` as a non-normative helper schema for the preferred collection-query request shape
+  - Clarifies cursor pagination as the preferred shape while documenting offset/page styles as compatibility variants that MUST be disclosed via introspection
+  - Notes that existing shared-parameter `$ref` paths should remain stable or be aliased when adapters publish compatibility names
+  - Cross-links collection-query guidance from the normative draft, operations guide, field-selection guide, and top-level README files
 - Discovery-bundle contract and schema for MCP server interrogation pipelines (PR #220)
   - Added `docs/adapter/discovery-bundle.md` as informative support text for the GitHub golden-path capture workflow
   - Added `schemas/discovery-bundle.schema.json` as a non-normative intermediate artifact schema

@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-04-15
 
 ## Abstract
 
@@ -486,8 +486,10 @@ Combine sorting and pagination:
   element_type: "persona",
   params: {
     first: 10,
-    sort_by: "created_at",
-    sort_order: "desc"
+    sort: {
+      field: "created_at",
+      order: "desc"
+    }
   }
 }
 ```
