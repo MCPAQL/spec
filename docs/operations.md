@@ -345,7 +345,85 @@ shared_parameters:
 
 These `shared_parameters` keys are illustrative rather than normative. Adapters that already expose `$ref` paths such as `#/shared_parameters/pagination` or legacy `sort`/`order` groups SHOULD preserve those existing references, or provide documented aliases, instead of renaming them silently.
 
-#### 4.4.3 Cross-Cutting Parameter Consistency (SHOULD)
+#### 4.4.3 Pagination Response Structure
+
+Operations returning paginated collections SHOULD include explicit pagination metadata in the response so clients can continue the query without reverse-engineering adapter-specific fields.
+
+**Preferred cursor-based response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pageInfo": {
+      "hasNextPage": true,
+      "hasPreviousPage": false,
+      "startCursor": "cursor_001",
+      "endCursor": "cursor_002",
+      "totalCount": 142
+    }
+  }
+}
+```
+
+Cursor-paginated MCP-AQL-native operations SHOULD use the `pageInfo` connection-style metadata described in [Pagination](./features/pagination.md).
+
+**Page-based compatibility response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pagination": {
+      "page": 2,
+      "page_size": 25,
+      "total_items": 142,
+      "total_pages": 6,
+      "has_more": true
+    }
+  }
+}
+```
+
+**Offset-based compatibility response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pagination": {
+      "limit": 25,
+      "offset": 50,
+      "returned": 25,
+      "total_items": 142,
+      "has_more": true
+    }
+  }
+}
+```
+
+Recommended metadata by pagination style:
+
+| Style | Location | Recommended Fields |
+|-------|----------|--------------------|
+| Cursor | `data.pageInfo` | `hasNextPage`, `hasPreviousPage`, `startCursor`, `endCursor`, optional `totalCount` |
+| Page-based | `data.pagination` | `page`, `page_size`, optional `total_items`, optional `total_pages`, optional `has_more` |
+| Offset-based | `data.pagination` | `limit`, `offset`, optional `returned`, optional `total_items`, optional `has_more` |
+
+If computing totals is expensive, adapters MAY omit `total_items`, `total_pages`, or `totalCount` and rely on `has_more`, `hasNextPage`, or `hasPreviousPage` instead.
+
+Compatibility metadata examples use snake_case field names to align with MCP-AQL's public naming convention for adapter-facing request and response fields.
+
+#### 4.4.4 Cross-Cutting Parameter Consistency (SHOULD)
 
 When a parameter applies to multiple operations:
 
@@ -354,7 +432,7 @@ When a parameter applies to multiple operations:
 3. The parameter description SHOULD be semantically equivalent
 4. Default values SHOULD be consistent where applicable
 
-#### 4.4.4 Introspection Integration
+#### 4.4.5 Introspection Integration
 
 When introspection is queried, shared parameters SHOULD be expanded inline with their full definitions. This ensures LLMs see consistent documentation regardless of which operation they query.
 

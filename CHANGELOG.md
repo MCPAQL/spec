@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Pagination response structure guidance for collection operations (#164)
+  - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
+  - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination
+  - Added compatibility response examples to `docs/features/pagination.md` for adapters that expose page or offset controls
 - Collection querying guide for `list_*`, `search_*`, and `query_*` READ operations
   - New `docs/features/collection-querying.md` document defining the preferred contract for combining `query`, `filter`, `sort`, `fields`, and pagination
   - Added `schemas/collection-query.schema.json` as a non-normative helper schema for the preferred collection-query request shape
