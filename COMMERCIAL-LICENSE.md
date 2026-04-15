@@ -6,7 +6,7 @@ This document describes commercial licensing options for **MCP-AQL software arti
 
 The MCP-AQL specification text, narrative documentation, and other prose materials remain available under the repository's published documentation license, currently **CC BY 4.0**. See `LICENSE-DOCS` and `LICENSING.md`.
 
-Anyone may read, implement, adopt, and build compatible implementations of the specification itself. A commercial license is **not** required merely to implement the protocol or to build a clean-room implementation that does not use Licensor's code.
+Anyone may read, adopt, and implement the specification itself. A commercial license is **not** required merely to use the specification text under its published documentation license.
 
 ## What this commercial license applies to
 
@@ -73,7 +73,6 @@ Each generated adapter or related code artifact may also carry its own separate 
 ## Important limitations
 
 - This commercial licensing program applies to Licensor's code and other covered software artifacts, not to the underlying protocol idea.
-- It does not restrict independent clean-room implementations of the MCP-AQL specification.
 - It does not grant trademark rights. See `TRADEMARKS.md`.
 - It is intended as an alternative to AGPL obligations for covered software artifacts, not as a replacement for the repository's open documentation licensing.
 

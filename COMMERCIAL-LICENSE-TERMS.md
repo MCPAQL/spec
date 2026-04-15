@@ -24,7 +24,7 @@ This document summarizes baseline terms for commercial licensing of **MCP-AQL so
 
 "Specification Materials" means the MCP-AQL specification text, narrative documentation, and other prose materials that Licensor publishes under the repository's documentation license (currently CC BY 4.0 unless otherwise stated).
 
-For clarity, these commercial terms do **not** govern mere implementation of the MCP-AQL specification or other clean-room implementations that do not use Licensor's Licensed Software.
+For clarity, these commercial terms do **not** govern the MCP-AQL specification text itself.
 
 ### 2.3 Generated Artifacts
 
@@ -54,7 +54,6 @@ Subject to these terms, Licensor grants Licensee a non-exclusive, non-transferab
 These commercial terms do **not** restrict:
 
 - mere reading or implementation of the MCP-AQL specification,
-- clean-room implementations that do not use Licensor's Licensed Software or Confidential Information, or
 - use of Specification Materials under their published documentation license.
 
 Unless otherwise agreed in writing, this commercial license grant may not be resold or sublicensed as a standalone license to third parties.
