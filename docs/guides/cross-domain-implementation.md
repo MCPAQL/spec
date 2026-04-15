@@ -296,7 +296,8 @@ Use this as a pre-release checklist for a new domain adapter:
 ```json
 {
   "name": "list_tables",
-  "endpoint": "READ",
+  "semantic_category": "READ",
+  "endpoint": "read",
   "mcpTool": "mcp_aql_read",
   "description": "List tables within a database.",
   "permissions": {
