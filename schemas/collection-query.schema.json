@@ -63,6 +63,7 @@
     }
   },
   "type": "object",
+  "description": "Helper schema for the preferred cross-cutting collection-query controls. Real operation requests may include additional adapter-specific parameters alongside these fields.",
   "properties": {
     "query": {
       "$ref": "#/$defs/QueryValue",
@@ -124,7 +125,7 @@
       "description": "Compatibility page size for page-based adapters."
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "examples": [
     {
       "query": "api reviewer",
@@ -144,8 +145,7 @@
       "query": {
         "where": {
           "status": "active"
-        },
-        "select": ["id", "name"]
+        }
       },
       "sort": {
         "field": "created_at",
