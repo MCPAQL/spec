@@ -35,7 +35,7 @@ MCP-AQL supports grouped endpoint families or a single unified endpoint. The sta
 | **Delete** | Destructive | Operations that remove state |
 | **Execute** | Stateful | Runtime lifecycle operations (non-idempotent) |
 
-Adapters MAY also define alternate grouped endpoint families when the target API is better represented by domain-specific groupings such as `catalog`, `data`, or `jobs`. Operations still retain standardized semantic categories for CREATE, READ, UPDATE, DELETE, and EXECUTE.
+Adapters MAY also define alternate grouped endpoint families when the target API is better represented by domain-specific groupings such as `catalog` / `data` / `jobs`, database-oriented sets like `tables` / `queries` / `admin`, or hardware-oriented sets like `inventory` / `telemetry` / `control`. Operations still retain standardized semantic categories for CREATE, READ, UPDATE, DELETE, and EXECUTE.
 
 ## Token Efficiency
 

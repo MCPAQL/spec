@@ -268,6 +268,42 @@ Discover required parameters:
 { operation: "introspect", params: { query: "operations", name: "list_datasets" } }
 ```
 
+### 5.5 Example Alternative Family Sets
+
+The following examples are illustrative only. They show valid grouped endpoint-family shapes that are more domain-specific than the standard CRUDE profile.
+
+**Database-oriented adapter**
+
+```text
+mcp_aql_tables   - Table discovery, schema inspection, lightweight metadata updates
+mcp_aql_queries  - Querying, filtering, aggregations, exports
+mcp_aql_admin    - Migrations, maintenance tasks, index rebuilds, long-running jobs
+```
+
+This shape can make sense when the target system is already organized around schema exploration, query execution, and administrative workflows.
+
+**Hardware / device adapter**
+
+```text
+mcp_aql_inventory   - Device discovery, capabilities, configuration metadata
+mcp_aql_telemetry   - Sensor reads, health checks, status polling, event history
+mcp_aql_control     - Actuation, calibration, restart, firmware operations
+```
+
+This shape can make sense when the clearest semantic split is between discovering devices, observing live state, and issuing control actions.
+
+**Content / knowledge adapter**
+
+```text
+mcp_aql_library   - Collections, documents, taxonomy, metadata maintenance
+mcp_aql_search    - Search, retrieval, ranking, summaries
+mcp_aql_workflows - Imports, indexing jobs, publishing, review actions
+```
+
+This shape can make sense when the target API separates content management, retrieval, and asynchronous processing.
+
+In all of these cases, the adapter still documents each operation's standardized semantic category through introspection, even when the exposed endpoint families do not map one-to-one to CRUDE tools.
+
 ---
 
 ## 6. Single Mode
