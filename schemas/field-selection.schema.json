@@ -35,11 +35,12 @@
               "description": "A preset name for convenience"
             }
           ],
-          "description": "Fields to include in the response"
+          "description": "Preferred field-selection control. Accepts either an explicit array of field paths or a preset name such as 'minimal'."
         },
         "preset": {
           "$ref": "#/$defs/FieldSelectionPreset",
-          "description": "Base preset to use (fields parameter extends this)"
+          "description": "Compatibility alias for preset selection. New request shapes SHOULD prefer `fields: \"minimal\"` instead.",
+          "deprecated": true
         }
       },
       "additionalProperties": false
@@ -145,6 +146,11 @@
     {
       "input": {
         "fields": ["id", "name", "email"]
+      }
+    },
+    {
+      "input": {
+        "fields": "minimal"
       }
     },
     {

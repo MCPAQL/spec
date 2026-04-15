@@ -36,6 +36,8 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | Document | Description | Impl Status |
 |----------|-------------|-------------|
 | [Field Selection](features/field-selection.md) | GraphQL-style response filtering | Implemented |
+| [Collection Querying](features/collection-querying.md) | Preferred query contract for list/search/query operations | Draft |
+| [Pagination](features/pagination.md) | Cursor-based pagination semantics and response shape | Draft |
 
 ### Security
 

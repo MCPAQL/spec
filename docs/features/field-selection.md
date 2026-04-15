@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-04-15
 
 ## Abstract
 
@@ -49,7 +49,16 @@ Field selection is an **optional** feature. Adapters MAY implement it for Level 
 
 ### 2.1 Fields Parameter
 
-The `fields` parameter accepts an array of field names:
+The `fields` parameter is the preferred field-selection control. It accepts either a preset name or an array of field names:
+
+```javascript
+{
+  operation: "list_users",
+  params: {
+    fields: "minimal"
+  }
+}
+```
 
 ```javascript
 {
@@ -60,9 +69,9 @@ The `fields` parameter accepts an array of field names:
 }
 ```
 
-### 2.2 Preset Parameter
+### 2.2 Preset Compatibility Alias
 
-The `preset` parameter selects a predefined field set:
+Adapters MAY also accept a `preset` parameter as a compatibility alias. New request shapes SHOULD prefer `fields: "minimal"` rather than introducing a separate control:
 
 ```javascript
 {
@@ -75,7 +84,7 @@ The `preset` parameter selects a predefined field set:
 
 ### 2.3 Combined Usage
 
-When both are specified, `fields` extends the preset:
+When both are specified, the explicit field list extends the preset:
 
 ```javascript
 {
@@ -184,7 +193,7 @@ For collections, selection applies to each item:
 {
   operation: "list_users",
   params: {
-    preset: "minimal"
+    fields: "minimal"
   }
 }
 ```
@@ -220,7 +229,7 @@ If a requested field doesn't exist on an item:
 Adapters implementing field selection MUST:
 
 1. Support the `fields` parameter on READ operations
-2. Support the `preset` parameter
+2. Treat preset names (`minimal`, `standard`, `full`) supplied through `fields` as first-class field-selection values
 3. Handle nested field access via dot notation
 4. Preserve structure for nested fields
 
@@ -232,6 +241,9 @@ Adapters implementing field selection SHOULD:
 2. Document available fields per resource type
 3. Support field selection on search results
 4. Validate field names against known fields
+5. Accept `preset` as a compatibility alias only when needed for older clients
+
+> **Collection Querying Note:** Field selection is one part of the broader collection-query contract. See [Collection Querying](./collection-querying.md) for guidance on composing `fields` with `query`, `filter`, `sort`, and pagination.
 
 ### 5.3 Introspection
 
