@@ -57,7 +57,7 @@ MCP-AQL dramatically reduces token consumption for LLM interactions.
 |--------------|------------|------------|-----------|
 | Discrete Tools | ~30 tools | ~18,000 | Baseline |
 | Discrete Tools | ~50 tools | ~30,000 | Baseline |
-| **Semantic Endpoint Mode (CRUDE profile)** | 5 endpoints | ~4,000 | ~80-85% |
+| **Semantic Endpoint Mode (CRUDE profile)** | 5 endpoints | ~4,300 | ~80-85% |
 | **Single Mode** | 1 endpoint | ~1,000 | **~95%+** |
 
 The savings scale with adapter complexity - the more operations your adapter supports, the greater the benefit of consolidation.

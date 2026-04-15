@@ -372,6 +372,37 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
+For adapters using the standard CRUDE profile, the `endpoint` field SHOULD use
+the lowercase endpoint-family name rather than the MCP tool name:
+
+```json
+{
+  "success": true,
+  "data": {
+    "operations": [
+      {
+        "name": "create_entity",
+        "semantic_category": "CREATE",
+        "endpoint": "create",
+        "description": "Create a new entity"
+      },
+      {
+        "name": "list_entities",
+        "semantic_category": "READ",
+        "endpoint": "read",
+        "description": "List entities with filtering and pagination"
+      },
+      {
+        "name": "execute_workflow",
+        "semantic_category": "EXECUTE",
+        "endpoint": "execute",
+        "description": "Start execution of a workflow"
+      }
+    ]
+  }
+}
+```
+
 #### 4.1.1 Protocol Metadata
 
 The `_protocol` object in operations list responses provides version and capability information:
@@ -382,6 +413,11 @@ The `_protocol` object in operations list responses provides version and capabil
 | `conformance` | string | SHOULD | Conformance level ("level-1", "level-2") |
 | `mode` | string | SHOULD | Endpoint mode ("semantic", "single", "all") |
 | `capabilities` | object | MAY | Feature flags for optional capabilities |
+
+`"semantic"` is the preferred mode value for both the standard CRUDE profile
+and alternate semantic-endpoint profiles. Earlier drafts may have described the
+standard profile as `"crude"`, but current introspection metadata SHOULD report
+`"semantic"`.
 
 **Capabilities flags:**
 

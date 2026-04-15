@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Reframed `docs/endpoint-modes.md` around semantic endpoint mode versus single mode, with CRUDE as the standard profile inside semantic endpoint mode
   - Updated introspection docs and schema so operations disclose both `semantic_category` and `endpoint`
   - Clarified MCP integration, conformance, and top-level docs so CRUDE remains the standard profile rather than the only in-spec semantic-endpoint shape
+  - Breaking draft change: introspection examples and schema guidance now require `semantic_category`, treat `endpoint` as the exposed endpoint-family name, and use `_protocol.mode: "semantic"` for both CRUDE and alternate semantic-endpoint profiles
 - Pagination response structure guidance for collection operations (#164)
   - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
   - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination

@@ -178,7 +178,7 @@ The primary motivation for MCP-AQL is reducing the token cost of tool registrati
 | Configuration | Approximate Token Cost | Reduction |
 |--------------|------------------------|-----------|
 | Discrete Tools (50+) | ~30,000 tokens | baseline |
-| Semantic Endpoint Mode (CRUDE profile, 5 endpoints) | ~4,500 tokens | ~85% |
+| Semantic Endpoint Mode (CRUDE profile, 5 endpoints) | ~4,300 tokens | ~85% |
 | Single Mode (1 endpoint) | ~1,100 tokens | ~96% |
 
 ### Runtime Discovery

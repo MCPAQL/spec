@@ -394,6 +394,22 @@ Use introspection to discover available operations:
 { operation: "introspect", params: { query: "operations" } }
 ```
 
+### 5.5 Unknown Operations
+
+If a client submits an operation name that the adapter does not recognize, the
+adapter SHOULD return a structured error rather than attempting best-effort
+routing:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_UNKNOWN_OPERATION",
+    "message": "Unknown operation 'archive_table'. Use introspect to discover supported operations."
+  }
+}
+```
+
 ---
 
 ## 6. Security Considerations
@@ -538,7 +554,7 @@ Conforming implementations SHOULD:
 4. Provide helpful error messages that guide clients to correct usage
 5. Document operation-to-endpoint-family mapping via introspection
 
-### 9.3 MAY Requirements
+### 8.3 MAY Requirements
 
 Conforming implementations MAY:
 
