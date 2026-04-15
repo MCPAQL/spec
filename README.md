@@ -21,7 +21,7 @@ This draft is intended to:
 - Show how semantic endpoint consolidation reduces token bloat
 - Validate flexibility for modular integrations (security, execution, code/compute workflows)
 
-This draft is not yet a final certification baseline. Some conformance automation and ecosystem hardening work is still in progress.
+This draft is not yet a final certification baseline. The repository now includes a fixture-driven conformance runner and semantic evaluation baseline, but broader ecosystem hardening is still in progress.
 
 ## Endpoint Families
 
@@ -139,7 +139,7 @@ Implementations claiming MCP-AQL conformance MUST:
 
 Implementations SHOULD also pass the conformance test suite in [tests/](tests/).
 
-> **Status Note:** Schema/example validation is implemented in this repository. The full cross-implementation conformance runner described in `docs/conformance-testing.md` is still being finalized.
+> **Status Note:** This repository includes schema/example validation plus a fixture-driven conformance runner in `scripts/run-conformance-tests.mjs`. The future packaged runner described in `docs/conformance-testing.md` can still grow beyond this baseline into direct live-adapter execution.
 
 ## Contributing
 

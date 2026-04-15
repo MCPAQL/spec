@@ -1,0 +1,198 @@
+{
+  "implementation": "reference-semantic-warn",
+  "version": "1.0.0",
+  "spec_version": "1.0.0-draft",
+  "expected_level": 2,
+  "expected_exit_code": 2,
+  "endpoint_modes": ["crude", "single"],
+  "capabilities": {
+    "field_selection": true,
+    "batch_operations": true
+  },
+  "introspection": {
+    "operations_list": {
+      "success": true,
+      "data": {
+        "operations": [
+          {
+            "name": "introspect",
+            "semantic_category": "READ",
+            "endpoint": "read",
+            "description": "Discover operations and types."
+          },
+          {
+            "name": "search_widgets",
+            "semantic_category": "READ",
+            "endpoint": "read",
+            "description": "Search widgets."
+          }
+        ]
+      }
+    },
+    "types_list": {
+      "success": true,
+      "data": {
+        "types": []
+      }
+    },
+    "operation_details": [
+      {
+        "name": "introspect",
+        "semantic_category": "READ",
+        "endpoint": "read",
+        "mcpTool": "mcp_aql_read",
+        "description": "Discover operations and types.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "returns": {
+          "name": "IntrospectionData",
+          "kind": "union"
+        }
+      },
+      {
+        "name": "search_widgets",
+        "semantic_category": "READ",
+        "endpoint": "read",
+        "mcpTool": "mcp_aql_read",
+        "description": "Search widgets.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "fields",
+            "type": "array",
+            "required": false
+          }
+        ],
+        "returns": {
+          "name": "WidgetConnection",
+          "kind": "object"
+        }
+      }
+    ]
+  },
+  "accepted_parameters": {
+    "introspect": ["query"],
+    "search_widgets": ["fields"]
+  },
+  "parameter_tests": {
+    "missing_required": [
+      {
+        "operation": "introspect",
+        "parameter": "query",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'query'."
+          }
+        }
+      }
+    ],
+    "unknown_parameter": [
+      {
+        "operation": "search_widgets",
+        "parameter": "field_set",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_UNKNOWN_PARAM",
+            "message": "Unknown parameter 'field_set'. Valid parameters: fields."
+          }
+        }
+      }
+    ],
+    "optional_defaults": []
+  },
+  "error_tests": [
+    {
+      "name": "unknown-field-set",
+      "must_mention": ["field_set", "fields"],
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_UNKNOWN_PARAM",
+          "message": "Unknown parameter 'field_set'. Valid parameters: fields."
+        }
+      }
+    }
+  ],
+  "round_trip_tests": [
+    {
+      "name": "empty-round-trip",
+      "expected_fields": {
+        "data.items": []
+      },
+      "read_response": {
+        "success": true,
+        "data": {
+          "items": []
+        }
+      }
+    }
+  ],
+  "update_preservation_tests": [
+    {
+      "name": "noop-update",
+      "preserved_fields": {
+        "data.status": "active"
+      },
+      "read_response": {
+        "success": true,
+        "data": {
+          "status": "active"
+        }
+      }
+    }
+  ],
+  "batch_example": {
+    "success": true,
+    "data": {
+      "batch_id": "batch_warn"
+    },
+    "results": [],
+    "summary": {
+      "total": 0,
+      "succeeded": 0,
+      "failed": 0
+    }
+  },
+  "constraint_tests": [],
+  "semantic_tests": [
+    {
+      "name": "semantic-warning-demo",
+      "response_text": "You can choose a compact response by selecting just the fields you care about on search_widgets.",
+      "tool_calls": [
+        {
+          "operation": "introspect",
+          "params": {
+            "query": "operations",
+            "name": "search_widgets"
+          }
+        }
+      ],
+      "structural": {
+        "required_patterns": ["fields parameter"]
+      },
+      "semantic": {
+        "phrase_groups": [
+          ["compact response", "selecting just the fields"],
+          ["search_widgets", "search widgets"]
+        ],
+        "expected_operations": ["introspect"],
+        "expected_parameters": ["fields"]
+      }
+    }
+  ]
+}
