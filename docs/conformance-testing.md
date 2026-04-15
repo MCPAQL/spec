@@ -89,13 +89,14 @@ Level 2 conformance indicates a complete MCP-AQL implementation with all optiona
 | Requirement | Description |
 |-------------|-------------|
 | Level 1 | All Level 1 requirements |
-| Endpoint modes | Semantic endpoint mode and Single mode supported |
+| Endpoint modes | `crude` semantic endpoint mode and `single` mode supported |
 | Field selection | `fields` parameter on READ operations, with preset-name support documented where implemented |
 | Batch operations | Multi-operation batching with individual results |
 | Cross-cutting params | Consistent documentation for collection-query controls such as `query`, `filter`, pagination, field selection, and sorting |
 
 **Test Categories Required:**
 - All Level 1 test categories
+- Level 2 Features (SHOULD PASS)
 - Constraint Documentation (SHOULD PASS)
 - Semantic Evaluation (SHOULD PASS)
 
@@ -382,6 +383,7 @@ Implementations SHOULD generate conformance reports:
   "implementation": "example-adapter",
   "version": "1.0.0",
   "specVersion": "1.0.0-draft",
+  "requestedLevel": 1,
   "conformanceLevel": 1,
   "summary": {
     "total": 11,
@@ -466,7 +468,6 @@ node scripts/run-conformance-tests.mjs <command> [options]
 | `1` | Tests failed | One or more MUST PASS tests failed |
 | `2` | Tests warned | All MUST PASS passed, but SHOULD PASS tests warned |
 | `3` | Configuration error | Invalid fixture/report path, malformed JSON, unknown command, or invalid report input |
-| `5` | Internal error | Unexpected error in test runner |
 
 ### 7.5 Example Usage
 

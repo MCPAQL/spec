@@ -16,12 +16,14 @@
         "operations": [
           {
             "name": "introspect",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "read",
             "description": "Discover operations and types."
           },
           {
             "name": "search_widgets",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "read",
             "description": "Search widgets."
           }
         ]
@@ -36,7 +38,8 @@
     "operation_details": [
       {
         "name": "introspect",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "read",
         "mcpTool": "mcp_aql_read",
         "description": "Discover operations and types.",
         "permissions": {
@@ -57,7 +60,8 @@
       },
       {
         "name": "search_widgets",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "read",
         "mcpTool": "mcp_aql_read",
         "description": "Search widgets.",
         "permissions": {

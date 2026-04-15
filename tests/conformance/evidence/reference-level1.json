@@ -16,32 +16,38 @@
         "operations": [
           {
             "name": "introspect",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "read",
             "description": "Discover available operations and types."
           },
           {
             "name": "create_widget",
-            "endpoint": "CREATE",
+            "semantic_category": "CREATE",
+            "endpoint": "create",
             "description": "Create a widget."
           },
           {
             "name": "get_widget",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "read",
             "description": "Fetch a widget by ID."
           },
           {
             "name": "list_widgets",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "read",
             "description": "List widgets."
           },
           {
             "name": "update_widget",
-            "endpoint": "UPDATE",
+            "semantic_category": "UPDATE",
+            "endpoint": "update",
             "description": "Update a widget."
           },
           {
             "name": "delete_widget",
-            "endpoint": "DELETE",
+            "semantic_category": "DELETE",
+            "endpoint": "delete",
             "description": "Delete a widget."
           }
         ]
@@ -62,7 +68,8 @@
     "operation_details": [
       {
         "name": "introspect",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "read",
         "mcpTool": "mcp_aql_read",
         "description": "Discover operations and types.",
         "permissions": {
@@ -91,7 +98,8 @@
       },
       {
         "name": "create_widget",
-        "endpoint": "CREATE",
+        "semantic_category": "CREATE",
+        "endpoint": "create",
         "mcpTool": "mcp_aql_create",
         "description": "Create a widget.",
         "permissions": {
@@ -120,7 +128,8 @@
       },
       {
         "name": "get_widget",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "read",
         "mcpTool": "mcp_aql_read",
         "description": "Fetch a widget by ID.",
         "permissions": {
@@ -142,7 +151,8 @@
       },
       {
         "name": "list_widgets",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "read",
         "mcpTool": "mcp_aql_read",
         "description": "List widgets with a default page size.",
         "permissions": {
@@ -167,7 +177,8 @@
       },
       {
         "name": "update_widget",
-        "endpoint": "UPDATE",
+        "semantic_category": "UPDATE",
+        "endpoint": "update",
         "mcpTool": "mcp_aql_update",
         "description": "Update a widget by ID.",
         "permissions": {
@@ -195,7 +206,8 @@
       },
       {
         "name": "delete_widget",
-        "endpoint": "DELETE",
+        "semantic_category": "DELETE",
+        "endpoint": "delete",
         "mcpTool": "mcp_aql_delete",
         "description": "Delete a widget.",
         "permissions": {

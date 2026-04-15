@@ -797,6 +797,13 @@ function runTestCommand(fixturePath, options) {
 
   if (options.category) {
     report.categories = report.categories.filter((category) => category.name === options.category);
+    const mustFailures = report.categories
+      .filter((category) => category.required)
+      .some((category) => category.result === "FAIL");
+    const shouldWarnings = report.categories
+      .filter((category) => !category.required)
+      .some((category) => category.result === "WARN" || category.result === "FAIL");
+    report.exitCode = mustFailures ? 1 : shouldWarnings ? 2 : 0;
   }
 
   const rendered = renderReport(report, options.format);
