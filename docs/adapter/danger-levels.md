@@ -19,7 +19,8 @@ This document defines a standard classification system for dangerous operations 
 5. [Automatic Lockdown](#5-automatic-lockdown)
 6. [Standard Dangerous Patterns](#6-standard-dangerous-patterns)
 7. [Implementation Requirements](#7-implementation-requirements)
-8. [Future Extensions](#8-future-extensions)
+8. [Danger Zone Enforcement During Execution](#8-danger-zone-enforcement-during-execution)
+9. [Future Extensions](#9-future-extensions)
 
 ---
 
@@ -73,7 +74,7 @@ Danger levels work in conjunction with trust levels (see [Trust Levels](./trust-
 | Level | Value | Name | Behavior |
 |-------|-------|------|----------|
 | 0 | `safe` | Safe | No restrictions |
-| 1 | `moderate` | Moderate | Standard confirmation |
+| 1 | `reversible` | Reversible | Standard confirmation |
 | 2 | `destructive` | Destructive | Enhanced confirmation |
 | 3 | `dangerous` | Dangerous | Explicit unlock required |
 | 4 | `forbidden` | Forbidden | Blocked unless admin override |
@@ -96,9 +97,9 @@ Operations that cannot cause harm and are always permitted.
 - Search operations
 - Introspection queries
 
-#### 2.2.2 moderate (Level 1)
+#### 2.2.2 reversible (Level 1)
 
-Operations that modify state but are generally safe with standard confirmation.
+Operations that modify state but whose effects can typically be undone.
 
 **Characteristics:**
 - Creates new resources
@@ -193,7 +194,7 @@ interface DangerMetadata {
    * Danger level (0-4)
    * Default: inferred from CRUDE category
    */
-  level: 'safe' | 'moderate' | 'destructive' | 'dangerous' | 'forbidden';
+  level: 'safe' | 'reversible' | 'destructive' | 'dangerous' | 'forbidden';
 
   /**
    * Human-readable explanations of why this is dangerous
@@ -231,10 +232,10 @@ When `danger.level` is not specified, defaults are inferred:
 | CRUDE Category | Default Danger Level | Rationale |
 |----------------|---------------------|-----------|
 | Read | `safe` (0) | No state modification |
-| Create | `moderate` (1) | Adds data, reversible by delete |
-| Update | `moderate` (1) | Modifies data, often reversible |
+| Create | `reversible` (1) | Adds data, reversible by delete |
+| Update | `reversible` (1) | Modifies data, often reversible |
 | Delete | `destructive` (2) | Removes data |
-| Execute | `moderate` (1) | Depends on operation |
+| Execute | `reversible` (1) | Depends on operation |
 
 Adapter authors SHOULD override defaults when operations are more dangerous than the category default suggests.
 
@@ -280,7 +281,7 @@ The combination of adapter trust level and operation danger level determines beh
 | Danger Level | untested | generated | validated | community_reviewed | certified |
 |--------------|----------|-----------|-----------|-------------------|-----------|
 | safe (0) | introspect_only | allow | allow | allow | allow |
-| moderate (1) | deny | deny | allow | allow | allow |
+| reversible (1) | deny | deny | allow | allow | allow |
 | destructive (2) | deny | deny | confirm | allow | allow |
 | dangerous (3) | deny | deny | deny | confirm | allow |
 | forbidden (4) | deny | deny | deny | deny | confirm |
@@ -472,7 +473,7 @@ Operations matching these patterns are confirmed `safe`:
 
 Implementations supporting danger levels MUST:
 
-1. Default unlabeled operations to at least `moderate` (not `safe`)
+1. Default unlabeled operations to at least `reversible` (not `safe`)
 2. Enforce confirmation for `destructive` and higher operations
 3. Log all dangerous operation attempts (level 2+)
 4. Return appropriate error codes for denied operations
@@ -517,9 +518,64 @@ interface DangerAuditEntry {
 
 ---
 
-## 8. Future Extensions
+## 8. Danger Zone Enforcement During Execution
 
-### 8.1 Conditional Danger Levels
+When the [Execution Safety Loop](../security/execution-safety-loop.md) is active, danger levels integrate with the [Autonomy Evaluator](../versions/v1.0.0-draft.md#87-autonomy-evaluation) to provide continuous risk assessment during agent execution.
+
+### 8.1 Safety Tier Mapping
+
+The Autonomy Evaluator maps danger levels to safety tiers using a numeric risk score (0-100):
+
+| Danger Level | Risk Score Range | Safety Tier | Enforcement |
+|--------------|-----------------|-------------|-------------|
+| safe (0) | 0-15 | `advisory` | No intervention |
+| reversible (1) | 16-40 | `advisory` or `confirm` | Depends on risk tolerance |
+| destructive (2) | 41-60 | `confirm` | Requires approval |
+| dangerous (3) | 61-85 | `verify` | Mandatory pause + approval |
+| forbidden (4) | 86-100 | `danger_zone` | Hard stop + out-of-band verification |
+
+> **Note:** The exact risk score assigned depends on additional factors evaluated by the Autonomy Evaluator pipeline (step history, action patterns, risk tolerance configuration). The danger level provides the baseline, not the final score.
+
+### 8.2 Out-of-Band Verification by Danger Level
+
+Operations at danger level `dangerous` (level 3) and `forbidden` (level 4) both trigger out-of-band verification during execution, but with different enforcement severity:
+
+**Forbidden (level 4) — Hard block (`danger_zone` tier):**
+
+1. The Autonomy Evaluator assigns `danger_zone` safety tier
+2. The `AutonomyDirective` returns `stopped: true`
+3. A `danger_zone` notification is broadcast to all executing agents
+4. The agent is blocked at the agent level (not just the current execution)
+5. A verification challenge is generated with a code displayed through an AI-inaccessible channel
+6. Only successful out-of-band verification or admin override can unblock the agent
+7. The block persists across server restarts
+
+**Dangerous (level 3) — Pause (`verify` tier):**
+
+1. The Autonomy Evaluator assigns `verify` safety tier
+2. The `AutonomyDirective` returns `continue: false` (without `stopped: true`)
+3. An `autonomy_pause` notification is sent to the executing agent (not broadcast)
+4. A verification challenge is generated and displayed through an AI-inaccessible channel
+5. The agent is paused until verification succeeds or the challenge expires
+6. The pause does not persist across server restarts and does not prevent new executions
+
+See [Section 8.8 (Out-of-Band Verification)](../versions/v1.0.0-draft.md#88-out-of-band-verification) of the core specification for the full challenge-response protocol.
+
+### 8.3 Danger Escalation During Execution
+
+An operation's effective danger level MAY increase during execution based on context:
+
+- **Repetition escalation:** The same operation performed repeatedly within an execution session MAY escalate (e.g., a single `delete_record` is `destructive`, but 50 sequential deletions MAY escalate to `dangerous`)
+- **Pattern escalation:** The Autonomy Evaluator's pattern matching (Section 8.7.2, Stage 3) MAY assign a higher safety tier than the operation's declared danger level warrants
+- **Cumulative risk:** Adapters MAY track cumulative risk within an execution and escalate when a threshold is exceeded
+
+Danger level escalation during execution does not modify the operation's declared danger level — it affects only the safety tier assigned by the Autonomy Evaluator for that specific evaluation.
+
+---
+
+## 9. Future Extensions
+
+### 9.1 Conditional Danger Levels
 
 Danger level based on parameter values:
 
@@ -529,7 +585,7 @@ operations:
     - name: delete_records
       maps_to: "DELETE /records"
       danger:
-        default_level: moderate
+        default_level: reversible
         conditions:
           - when: "params.count > 100"
             level: dangerous
@@ -539,7 +595,7 @@ operations:
             reason: "Permanent deletion requested"
 ```
 
-### 8.2 Approval Workflows
+### 9.2 Approval Workflows
 
 Integration with external approval systems:
 
@@ -554,13 +610,13 @@ danger:
     timeout_hours: 24
 ```
 
-### 8.3 Danger Escalation
+### 9.3 Danger Escalation
 
 Operations that become more dangerous over time:
 
 ```yaml
 danger:
-  level: moderate
+  level: reversible
   escalation:
     - after_count: 10
       level: destructive
@@ -570,14 +626,14 @@ danger:
       message: "Unusual activity detected"
 ```
 
-### 8.4 Danger Score Aggregation
+### 9.4 Danger Score Aggregation
 
 Combining multiple risk factors into a composite score:
 
 ```yaml
 danger:
   score_factors:
-    - base_level: moderate
+    - base_level: reversible
     - production_env: +1
     - bulk_operation: +1
     - no_backup: +1
@@ -593,6 +649,7 @@ danger:
 - [Rate Limiting Specification](./rate-limiting.md)
 - [Confirmation Token Specification](../security/confirmation-tokens.md)
 - [Security Model: Gatekeeper](../security/gatekeeper.md)
+- [Execution Safety Loop Specification](../security/execution-safety-loop.md)
 - [Error Codes Specification](../error-codes.md)
 - Claude Code dangerous git operation handling
 - GitHub Issue: [#49](https://github.com/MCPAQL/spec/issues/49)

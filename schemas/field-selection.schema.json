@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/field-selection.schema.json",
+  "title": "MCP-AQL Field Selection",
+  "description": "Schema for MCP-AQL field selection parameters enabling clients to request specific fields in responses",
+
+  "$defs": {
+    "FieldSelectionPreset": {
+      "type": "string",
+      "enum": ["minimal", "standard", "full"],
+      "description": "Predefined field selection presets. 'minimal' returns essential identification fields only, 'standard' returns common fields for typical use, 'full' returns all available fields."
+    },
+
+    "FieldPath": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
+      "description": "A field path using dot notation for nested properties (e.g., 'settings.theme')"
+    },
+
+    "FieldSelectionInput": {
+      "type": "object",
+      "description": "Field selection parameters for operation requests",
+      "properties": {
+        "fields": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/FieldPath"
+              },
+              "description": "Array of specific field names/paths to include"
+            },
+            {
+              "$ref": "#/$defs/FieldSelectionPreset",
+              "description": "A preset name for convenience"
+            }
+          ],
+          "description": "Preferred field-selection control. Accepts either an explicit array of field paths or a preset name such as 'minimal'."
+        },
+        "preset": {
+          "$ref": "#/$defs/FieldSelectionPreset",
+          "description": "Compatibility alias for preset selection. New request shapes SHOULD prefer `fields: \"minimal\"` instead.",
+          "deprecated": true
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "FieldDefinition": {
+      "type": "object",
+      "description": "Definition of an available field for introspection",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Field name (snake_case)"
+        },
+        "type": {
+          "type": "string",
+          "description": "Field data type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable field description"
+        },
+        "nested": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldDefinition"
+          },
+          "description": "Nested field definitions for object types"
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    },
+
+    "PresetDefinition": {
+      "type": "object",
+      "description": "Definition of a field selection preset",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Preset name"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldPath"
+          },
+          "description": "Fields included in this preset"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable preset description"
+        }
+      },
+      "required": ["name", "fields"],
+      "additionalProperties": false
+    },
+
+    "FieldSelectionMetadata": {
+      "type": "object",
+      "description": "Introspection metadata for field selection capabilities",
+      "properties": {
+        "supported": {
+          "type": "boolean",
+          "description": "Whether field selection is supported for this operation/type"
+        },
+        "presets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PresetDefinition"
+          },
+          "description": "Available presets"
+        },
+        "available_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldDefinition"
+          },
+          "description": "All available fields that can be selected"
+        },
+        "default_preset": {
+          "$ref": "#/$defs/FieldSelectionPreset",
+          "description": "Default preset when no selection specified"
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    }
+  },
+
+  "type": "object",
+  "description": "Complete field selection schema combining input and metadata",
+  "properties": {
+    "input": {
+      "$ref": "#/$defs/FieldSelectionInput"
+    },
+    "metadata": {
+      "$ref": "#/$defs/FieldSelectionMetadata"
+    }
+  },
+  "additionalProperties": false,
+
+  "examples": [
+    {
+      "input": {
+        "fields": ["id", "name", "email"]
+      }
+    },
+    {
+      "input": {
+        "fields": "minimal"
+      }
+    },
+    {
+      "input": {
+        "preset": "minimal",
+        "fields": ["created_at"]
+      }
+    },
+    {
+      "input": {
+        "fields": ["id", "name", "settings.theme", "settings.language"]
+      }
+    },
+    {
+      "metadata": {
+        "supported": true,
+        "presets": [
+          { "name": "minimal", "fields": ["id", "name"], "description": "Essential identification fields" },
+          { "name": "standard", "fields": ["id", "name", "email", "created_at"], "description": "Common fields" },
+          { "name": "full", "fields": ["id", "name", "email", "created_at", "updated_at", "metadata"], "description": "All fields" }
+        ],
+        "available_fields": [
+          { "name": "id", "type": "string", "description": "Unique identifier" },
+          { "name": "name", "type": "string", "description": "Display name" },
+          { "name": "email", "type": "string", "description": "Email address" },
+          { "name": "settings", "type": "object", "description": "User settings", "nested": [
+            { "name": "theme", "type": "string", "description": "UI theme preference" },
+            { "name": "language", "type": "string", "description": "Language preference" }
+          ]}
+        ],
+        "default_preset": "standard"
+      }
+    }
+  ]
+}

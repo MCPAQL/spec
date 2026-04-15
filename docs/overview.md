@@ -4,6 +4,8 @@
 > consolidates discrete MCP tools into 5 CRUDE endpoints (Create, Read, Update,
 > Delete, Execute), providing significant token reduction while maintaining full
 > functionality.
+>
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
 ## Table of Contents
 
@@ -67,9 +69,9 @@ MCP-AQL extends traditional CRUD with an **EXECUTE** endpoint, creating the CRUD
 |----------|--------|-------------|-------------------|
 | **CREATE** | Non-destructive | Additive operations that create new state | `create_entity`, `import_resource` |
 | **READ** | Read-only | Safe operations that query state | `list_entities`, `get_entity`, `search`, `introspect` |
-| **UPDATE** | Modifying | Operations that modify existing state | `edit_entity`, `update_resource` |
+| **UPDATE** | Modifying | Operations that modify existing state | `update_entity`, `update_resource` |
 | **DELETE** | Destructive | Operations that remove state | `delete_entity`, `clear` |
-| **EXECUTE** | Runtime | Lifecycle operations for executable elements | `execute`, `get_execution_state`, `complete_execution` |
+| **EXECUTE** | Runtime | Lifecycle operations for executable elements | `execute_workflow`, `cancel_task`, `resume_workflow` |
 
 ### Permission Characteristics
 
@@ -114,11 +116,13 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
                      +-------------------+           +-------------------+
 ```
 
+> **Note:** This diagram shows a runtime lifecycle flow, not endpoint classification. Operations like `get_execution_state` that query execution state belong to the READ endpoint, not EXECUTE. See [CRUDE Pattern Classification](crude-pattern.md#61-classification-principle) for details.
+
 ---
 
 ## Endpoint Modes
 
-MCP-AQL supports two operational modes. Implementations SHOULD support at least one mode and MAY support both:
+MCP-AQL supports two operational modes. Implementations MUST support at least one mode and SHOULD support both:
 
 ### CRUDE Mode
 
@@ -311,4 +315,5 @@ An MCP-AQL implementation is conformant if it:
 
 - [Operations Reference](./operations.md) - Complete operation reference
 - [Introspection](./introspection.md) - Introspection system specification
+- [MCP Integration](./mcp-integration.md) - MCP protocol integration specification
 - [Response Format](./responses.md) - Response format specification

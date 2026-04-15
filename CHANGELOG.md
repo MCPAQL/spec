@@ -7,22 +7,308 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- Claude auto-review workflow not triggering on pull_request events (#95)
+- Pagination response structure guidance for collection operations (#164)
+  - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
+  - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination
+  - Added compatibility response examples to `docs/features/pagination.md` for adapters that expose page or offset controls
+- Collection querying guide for `list_*`, `search_*`, and `query_*` READ operations
+  - New `docs/features/collection-querying.md` document defining the preferred contract for combining `query`, `filter`, `sort`, `fields`, and pagination
+  - Added `schemas/collection-query.schema.json` as a non-normative helper schema for the preferred collection-query request shape
+  - Clarifies cursor pagination as the preferred shape while documenting offset/page styles as compatibility variants that MUST be disclosed via introspection
+  - Notes that existing shared-parameter `$ref` paths should remain stable or be aliased when adapters publish compatibility names
+  - Cross-links collection-query guidance from the normative draft, operations guide, field-selection guide, and top-level README files
+- Discovery-bundle contract and schema for MCP server interrogation pipelines (PR #220)
+  - Added `docs/adapter/discovery-bundle.md` as informative support text for the GitHub golden-path capture workflow
+  - Added `schemas/discovery-bundle.schema.json` as a non-normative intermediate artifact schema
+  - Documented raw capture vs normalized bundle responsibilities, provenance expectations, and current transport/auth scope notes
+- Execution safety loop as opt-in enforcement boundary for agent actions (#208)
+  - New normative Section 8.6 defining the execution safety loop pattern
+  - Opt-in activation via `execute_agent` or adapter configuration
+  - Mandatory action reporting (`nextActionHint`) when active
+  - Continuous enforcement via `AutonomyDirective` responses
+  - Scope includes ALL tool calls, not only MCP-AQL operations
+  - Support for disabling, monitoring-only, and logging-only modes
+- Safety dongle deployment model and execution safety loop specification (#205)
+  - New document `docs/security/execution-safety-loop.md`
+  - Defines the safety dongle as a standalone MCP-AQL server for safety enforcement
+  - Minimal operation surface: 7 operations across 3 endpoints
+  - Permission architecture: endpoint classification determines friction levels
+  - Gatekeeper integration with pattern-based policy evaluation
+  - Danger Zone integration with out-of-band verification
+  - Deployment examples: minimal dongle, multi-server, embedded safety
+- Autonomy Evaluator model for per-action risk assessment (#206)
+  - New normative Section 8.7 defining the `AutonomyDirective` response contract
+  - 5-stage evaluation pipeline: step limit, outcome check, pattern matching, safety tier, risk tolerance
+  - Agent notification system (`permission_pending`, `autonomy_pause`, `danger_zone`)
+  - Configurable elements: step limits, risk tolerance, approval/auto-approve patterns
+  - Minimum viable implementation requirements (step limit is the only MUST stage)
+- Out-of-band verification protocol for Danger Zone enforcement (#207)
+  - New normative Section 8.8 defining challenge-response protocol for highest-risk actions
+  - Trigger conditions: `danger_zone` safety tier or hard-block pattern match
+  - Challenge protocol: 128-bit entropy codes displayed through AI-inaccessible channels
+  - Blocking semantics: agent-level blocks that persist across server restarts
+  - Channel separation requirements ensuring AI cannot observe verification codes
+  - Rate limiting for failed verification attempts (brute-force prevention)
+  - Implementation flexibility: OS dialogs, hardware tokens, SMS, dashboards
+- Canonical operation verbs per CRUDE endpoint (#159)
+  - New Section 8.5 (Operation Naming Grammar) in v1.0.0-draft.md
+  - Canonical verbs: create, get/list, update, delete, execute/cancel
+  - `{verb}_{resource}` naming pattern with non-canonical verb guidance
+  - Reserved operation names (`introspect`)
+  - HTTP method mapping table for REST developers
+  - Updated operations.md Section 6.2 to mark canonical vs additional verbs
+  - Added Section 6.5 (Canonical Verbs) to crude-pattern.md
+- Session lifecycle definition (#160)
+  - New Section 2.3 (Session Lifecycle) in v1.0.0-draft.md
+  - Session defined as lifetime of a single MCP connection (initialize → shutdown/disconnect)
+  - Session-scoped vs cross-session persistent state distinguished
+  - Session identification guidance for adapters
+  - Updated confirmation-tokens.md with explicit session cross-references
+  - Updated introspection.md caching guidance with session definition
+  - Added session cross-references in gatekeeper.md and warnings.md
+- Unknown parameter rejection requirement (#157)
+  - New Section 4.6 in v1.0.0-draft.md defines normative requirement for unknown parameter handling
+  - `VALIDATION_UNKNOWN_PARAM` error code added to MVP error code registry
+  - Error response includes `unknown_params` and `valid_params` arrays for actionable feedback
+  - Prevents LLM hallucination of non-existent parameters and silent typo failures
+  - Optional `strict_mode` configuration allows development-time warnings instead of rejection
+- Data types and encoding requirements section (#156)
+  - New Section 4.7 in v1.0.0-draft.md defining interoperability requirements
+  - UTF-8 character encoding requirement with `VALIDATION_INVALID_ENCODING` error
+  - ISO 8601 date/time format requirement
+  - IEEE 754 number handling with guidance for high-precision values
+  - Base64 binary data encoding with metadata fields
+  - Payload size limits (request, response, string, array, nesting depth)
+  - `VALIDATION_PAYLOAD_TOO_LARGE` error code for limit violations
+  - Null handling semantics documentation
+- Batch confirmation behavior specification (#158)
+  - New Section 7.5 (Confirmation-Gated Batch Operations) in operations.md
+  - Defines batch halting behavior when CONFIRMATION_REQUIRED is encountered
+  - Includes continuation mechanism with confirmation token
+  - Documents alternative skip-and-continue mode with warnings about state consistency
+  - `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
+  - Updated batch-operation.schema.json with `halted_at`, `pending_operations`, and extended `summary`
+- Execution lifecycle state machine for EXECUTE operations (#155)
+  - Core states: pending, running, completed, failed, cancelled
+  - State transition diagram with valid transitions
+  - State response format with required and optional fields
+  - Progress reporting object specification
+  - Adapter extension rules for custom states
+  - LifecycleInfo schema in introspection-response.schema.json
+  - Cross-reference from crude-pattern.md Section 2.5
+- Automated schema example validation script and CI integration (#172)
+  - `scripts/validate-schema-examples.mjs` validates inline `examples` in all schema files
+  - Supports wrapped example format (danger-level) and standard format
+  - Added example and fixture validation steps to `schema-validate.yml` workflow
 
 ### Changed
 
+- Clarified preliminary public draft positioning and launch boundaries (PR #218)
+  - Added explicit preliminary-draft status language to README and v1.0.0-draft status section
+  - Removed hardcoded date from README conformance status note to avoid stale timestamp drift
+  - Clarified normative vs informative document authority in docs index
+  - Marked conformance framework status as informative with current implementation note
+  - Added coordinated preliminary launch checklist spanning spec and Dollhouse reference profile tracks
+  - Aligned `SPEC_VERSION` to `v1.0.0-draft`
+  - Documented draft-label convention in `docs/process/versioning.md` to explain why `v1.0.0-draft` is the active target after earlier `v1.0.0-alpha.1` snapshots
+  - Added `scripts/sync-doc-dates.mjs` plus npm scripts (`docs:dates`, `docs:dates:check`) to automate date metadata updates for changed docs
+  - Added PR-time CI enforcement in `docs-lint.yml` for stale metadata dates and hardcoded status-note calendar dates
+- Comprehensive rewrite of `docs/security/execution-safety-loop.md` Section 9 compliance checklist (#216)
+  - Every normative MUST/SHOULD/MAY in Sections 8.6–8.8 now mapped to a compliance bullet
+  - Section 9.1 expanded from 11 to 23 MUST requirements (organized by topic area)
+  - Section 9.2 expanded from 7 to 20 SHOULD requirements (covering rate limiting, verify tier, configuration)
+  - Section 9.3 expanded from 4 to 5 MAY requirements (with normative section references)
+  - New Section 9.4 cross-reference table mapping normative sections to compliance bullets
+- Clarified `params` vs `parameters` terminology across spec documents (#163)
+  - `params` is the request-time object carrying runtime values
+  - `parameters` is the introspection-time array of `ParameterInfo` definitions
+  - Added terminology notes to normative spec (Section 4.3), introspection.md, and operations.md
+- Upgraded snake_case naming from SHOULD to MUST for operation names and parameters (#162)
+  - Aligns operation name prose with schema enforcement (`^[a-z][a-z0-9_]*$` pattern); establishes normative prose requirement for parameter names
+  - Separates snake_case format requirement (MUST) from verb_resource convention (SHOULD)
+- Aligned example operation names with canonical verbs from Section 8.5 (#159)
+  - `run` → `execute` as canonical verb for EXECUTE endpoint in informative docs
+  - `run_job` → `execute_job` in v1.0.0-draft.md and crude-pattern.md
+  - `edit_entity` → `update_entity` in overview.md endpoint table
+  - `get_execution_state` → `resume_workflow` in overview.md EXECUTE examples (READ op was misplaced)
+  - Restored `execute_workflow` as canonical example in introspection.md and protocol-comparison.md
+- Minor documentation improvements from Sprint 4 review feedback (#129)
+  - Clarified "history" → "historical context" in CONTRIBUTING.md cross-reference guidelines
+  - Added "(strictest mode)" clarification for tolerance=0 in confirmation-tokens.md
+  - Added cross-reference to Section 6.1 (Replay Attack Prevention) in confirmation-tokens.md
+  - Noted numeric severity mapping aligns with syslog conventions in warnings.md
+- Added clock skew tolerance validation code example to confirmation tokens (#111)
+  - Shows how to apply tolerance by adding to expiry time
+  - Updated validateToken example to reference clock skew handling
+- Added deployment environment table for clock skew tolerance (#112)
+  - Recommended values for typical, air-gapped, IoT, high-security, and zero-trust environments
+- Added reference links to MVP error codes for consistency with Phase 1 codes (#86)
+  - MVP codes reference this specification as primary source
+  - HTTP-mapped codes include RFC 9110 section links
+- Enhanced RATE_LIMIT_QUOTA_WARNING note to better distinguish it from error codes (#87)
+  - Added warning emoji and IMPORTANT label for visual prominence
+  - Cross-reference to Warnings Specification
+- Added explanatory notes for CONFIRMATION_REQUIRED error code category placement (#85)
+  - Explains why it's under "Permission" category (part of permission gating flow)
+  - Documents conditional denial with recovery path pattern
 - Added bidirectional navigation links between spec documents for improved discoverability (#69)
   - error-codes.md, trust-levels.md, rate-limiting.md, danger-levels.md, element-type.md, plugin-contracts.md
+
+### Fixed
+
+- `get_execution_status` misclassified as EXECUTE instead of READ (#161)
+  - Moved to READ examples in crude-pattern.md Section 2.2
+  - Added Section 6.1 clarifying classification is by effect, not subject
+  - Renumbered subsequent classification guideline sections (6.2→6.3, 6.3→6.4, 6.4→6.5)
+- TypeDetails `allOf`+`oneOf` ambiguity allowing cross-variant field pollution (#154)
+  - Flattened into pure `oneOf` with `additionalProperties: false` on each variant
+  - Each variant (enum, object, union, scalar) now self-contained with all properties
+- `OperationDetails.examples` schema defined as `string[]` but prose showed `object[]` (#152)
+  - Changed to structured `object[]` with `{ description?, request }` format
+  - Updated schema inline examples and introspection.md to match
+- Operation detail response wrapping mismatch between schema and prose (#151)
+  - operations.md Section 9.5 now uses `data.operation.{...}` matching schema
+  - Added required `mcpTool`, `permissions`, and `returns` fields to example
+- MUST/SHOULD contradictions across spec documents (#136)
+  - Routing enforcement: operations.md now uses MUST (aligns with v1.0.0-draft.md)
+  - Endpoint mode support: overview.md now uses MUST (aligns with v1.0.0-draft.md)
+  - Added informative banners to supporting documents (overview, operations, endpoint-modes, introspection, crude-pattern)
+  - Added normative status declaration to v1.0.0-draft.md establishing document hierarchy
+- Error examples in operations.md now use structured format (#133)
+  - Updated TypeScript interface to use `ErrorDetail` instead of `error: string`
+  - All error response examples now include `code`, `message`, and optional `details`
+  - Error category table aligned with error-codes.md taxonomy
+  - Added cross-references to Structured Error Codes Specification
+- Danger level enum inconsistency across schemas (#99)
+  - Aligned all schemas and docs with canonical `danger-levels.md` spec
+  - Renamed `moderate` → `reversible` for clearer semantic meaning
+  - Canonical enum: `["safe", "reversible", "destructive", "dangerous", "forbidden"]`
+- Claude auto-review workflow not triggering on pull_request events (#95)
+
+### Removed
+
+- Internal working documents from spec repository (#139)
+  - docs/handoff/ - Implementation handoff notes
+  - docs/session-notes/ - Session logs
+  - docs/agent/ - Agent development logs
+  - docs/ISSUE_MAPPING.md - Issue tracker mapping
+  - docs/process/session-notes-2026-01-26-prioritization.md - Prioritization session
+
 - Updated cross-references in trust-levels.md from GitHub issues to file paths (#78)
 - Deduplicated trust-to-danger gating matrix (#81)
   - danger-levels.md is now the canonical source for the gating matrix
   - trust-levels.md references danger-levels.md instead of duplicating the matrix
   - Consistent terminology: `introspect_only` instead of `introspect`
 
-### Added
-
+  - `package.json` with ajv/ajv-formats for local and CI validation
+- TypeDetails cross-variant rejection test fixtures (#173)
+  - `tests/schema/typedetails-fixtures.json` with 7 positive and 13 negative test cases
+  - Validates that `additionalProperties: false` on each `oneOf` variant correctly rejects
+    cross-variant field pollution (e.g., enum with fields, object with values)
+  - Fixture runner integrated into `validate-schema-examples.mjs` via `--fixtures` flag
+- UPDATE Input Pattern (Section 4.5) in normative spec (#153)
+  - Nested `input` object structure separating identifiers from updateable fields
+  - Deep-merge semantics: top-level replace, nested objects merge, arrays replace, null removes
+  - Validation rules for `input` object
+  - Specification Impact section added to ADR-002
+  - Cross-reference from operations.md
+- Proposals directory with template for specification changes (#140)
+  - proposals/README.md with process overview
+  - proposals/TEMPLATE.md with standard proposal format
+  - Reference from docs/process/rfc-process.md
+- Protocol version metadata in introspection response (#138)
+  - `_protocol` object in operations list response
+  - Version, conformance level, mode, and capabilities fields
+  - ProtocolMetadata and ProtocolCapabilities in introspection-response.schema.json
+  - Documentation in introspection.md Section 4.1.1
+- Extension fields in operation-result schema for documented features (#134)
+  - Success: `_meta` (response metadata), `results`/`summary` (batch operations)
+  - Failure: `confirmation` (gating flow), deprecation fields
+  - Schema documentation in schemas/README.md with field reference table
+- Request concurrency model documentation (#137)
+  - Section 9.3 in v1.0.0-draft.md with concurrency categories
+  - Serialized, read-concurrent, fully-concurrent, resource-locked modes
+  - Optimistic concurrency control with ETag/version guidance
+  - Protocol metadata extension for concurrency discovery
+  - Cross-reference from CONFLICT_VERSION_MISMATCH in error-codes.md
+- Constraint metadata fields in ParameterInfo schema (#135)
+  - enum, minimum, maximum, minLength, maxLength, pattern, format, items, sensitive
+  - Updated introspection-response.schema.json with full constraint support
+  - Updated introspection.md Section 3.4 with constraint field documentation
+  - Added examples showing constraint usage in operation details
+- MCP Integration specification for protocol bridging (#132)
+  - Tool description templates with normative `introspect` operation reference
+  - Input schema composition rules for CRUDE and Single mode
+  - Error mapping between MCP-AQL and MCP protocols
+  - Progress notification mapping for EXECUTE operations
+  - Multi-adapter deployment patterns with tool prefix support
+- SCHEMA_ error code category for generator validation errors (#128)
+  - Added to Category Prefixes table in error-codes.md
+  - Explanatory note distinguishing generator-time from runtime errors
+  - Cross-reference to adapter generator specification Section 2.2
+- Warning deduplication guidance in warnings specification (#92)
+  - Server-side deduplication strategies with optional occurrence_count field
+  - Client-side deduplication patterns (session, time-based, code filtering)
+  - Recommendations table for different contexts
+- Optional severity field for warnings to enable client prioritization (#93)
+  - Levels: low, medium (default), high
+  - Implementation guidelines and client handling examples
+- Severity recommendations for standard warning codes (#117)
+  - RATE_LIMIT_QUOTA_WARNING: high (>90%), medium (at threshold)
+  - DEPRECATION_WARNING: high (<30 days), medium (>30 days), low (no date)
+  - VALIDATION_TRUNCATED_WARNING: medium (>50%), low (≤50%)
+  - PERFORMANCE_SLOW_QUERY_WARNING: high (>10x), medium (2-10x), low (<2x)
+- Numeric severity mapping convention (#118)
+  - high=0, medium=1, low=2 for consistent sorting and comparison
+  - Enables database storage and threshold filtering
+- Clock skew tolerance configurability documentation for confirmation tokens (#94)
+  - Default 30s accommodates typical NTP-synchronized systems
+  - Guidance for air-gapped, high-security, and IoT deployments
+- Adapter generator specification (#21)
+  - Schema input format with AdapterSchema interface
+  - Generated output structure and directory layout
+  - Licensing artifacts (AGPL-3.0, NOTICE.md, COMMERCIAL-LICENSE.md)
+  - Provenance information with MCPAQL-PROVENANCE.json
+  - Language template guidance (TypeScript, JavaScript required)
+  - Generator and adapter conformance requirements
+- Generator CLI interface specification (#113)
+  - Required arguments (--schema, --target)
+  - Optional arguments (--output, --config, --verbose, etc.)
+  - Exit codes for different failure modes
+  - JSON output format for programmatic consumption
+- Schema version evolution strategy documentation (#114)
+  - Version format rationale (major.minor vs semver)
+  - Evolution strategy with change type examples
+  - Backward compatibility requirements
+  - Version handling code example with deprecation support
+- Validation error code examples for adapter generator (#115)
+  - Error codes for each validation requirement (SCHEMA_MISSING_FIELD, etc.)
+  - Example validation error response format
+- Conformance Testing specification with Level 1/Level 2 definitions (#10, #55, #56)
+  - Level 1 Basic: introspect, endpoint routing, response format, error handling
+  - Level 2 Full: field selection, batch operations, cross-cutting params
+  - Five test categories: Introspection Fidelity, Parameter Handling, Error Quality, Round-Trip Integrity, Constraint Documentation
+  - Two-tier evaluation methodology (structural + semantic) for LLM discoverability testing
+- mcpaql-conformance CLI interface specification (#116)
+  - Commands: test, report, version
+  - Options: --level, --output, --format, --verbose, --tier, --category, --timeout
+  - Exit codes for different test outcomes (0-5)
+  - Integration guidance with adapter generator
+- JSON Schema definitions for batch operations, field selection, and adapter schemas (#9)
+  - `batch-operation.schema.json`: Batch request/response validation
+  - `field-selection.schema.json`: Field selection parameters and presets
+  - `adapter-schema.schema.json`: Adapter definition file validation
+- RFC 2119 conformance requirements from DollhouseMCP learnings (#54, #57)
+  - Introspection accuracy MUST requirements (parameter names, types, required status)
+  - Parameter completeness MUST requirements (all handler params in introspection)
+  - Error message quality MUST requirements (no implementation leakage)
+  - Unknown parameter handling, element-type constraints SHOULD requirements
+- Cross-cutting parameter standard in operations.md (#58)
+  - Standard params: fields, limit, offset, page, page_size, sort, order, dry_run
+  - Shared parameter definition pattern with $ref mechanism
+  - Consistency requirements for multi-operation parameters
 - Warnings Array specification for non-fatal conditions in successful responses (#80)
   - Optional `warnings` array extension to discriminated response format
   - Warning object schema matching error object structure
@@ -43,7 +329,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Trust-to-operation permission gating matrix
   - Integration with danger levels for combined security gating
 - Dangerous Operation Classification specification for operation risk management (#49)
-  - Danger level enum: safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4)
+  - Danger level enum: safe (0), reversible (1), destructive (2), dangerous (3), forbidden (4)
   - Operation danger metadata schema with reasons and confirmation messages
   - Trust-to-danger gating matrix for combined security decisions
   - Automatic lockdown behavior with pattern-based classification

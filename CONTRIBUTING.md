@@ -143,6 +143,13 @@ Follow RFC 2119 for normative language:
 - Number sections for cross-referencing in longer documents
 - Provide code examples in fenced code blocks with language identifiers
 
+### Document Date Metadata
+
+- Use ISO date format (`YYYY-MM-DD`) for document metadata fields (`**Last Updated:**` and front matter `updated:`).
+- Avoid narrative calendar dates in body text for mutable status notes (for example, `Status Note (current status)`).
+- For docs changed in a branch, run `npm run docs:dates` before opening or updating a pull request.
+- CI enforces this policy on pull requests with `scripts/sync-doc-dates.mjs --check`.
+
 ### Code Examples
 
 - Use JavaScript/JSON syntax for protocol examples
@@ -155,6 +162,49 @@ Follow RFC 2119 for normative language:
 - Use Markdown tables for structured data
 - Include header rows
 - Align columns for readability in source
+
+### Cross-References
+
+Use the following conventions for referencing other content:
+
+**Inline cross-references** (within document text):
+- Use relative file paths for references to other specification documents
+- Paths are relative to the current document's location
+- Example (from `docs/adapter/generator.md`):
+  - `[Trust Levels](./trust-levels.md)` → links to `docs/adapter/trust-levels.md`
+  - `[Error Codes](../error-codes.md)` → links to `docs/error-codes.md`
+  - `[Gatekeeper](../security/gatekeeper.md)` → links to `docs/security/gatekeeper.md`
+
+**Inline GitHub issue references** (within document text):
+- Use shorthand `#123` format when discussing rationale or historical context inline
+- GitHub auto-links `#123` to the issue, so explicit URLs are not required
+- Example: "This feature was introduced to address #88"
+- Example: "See #42 for the original design discussion"
+- Reserve full URLs for external repositories: `[org/repo#123](<URL>)`
+  - Example: `[MCPAQL/spec#49](https://github.com/MCPAQL/spec/issues/49)`
+
+**References sections** (at the end of documents):
+- Include relative file paths for related specification documents
+- Include GitHub issue links for historical attribution (the issue that proposed the feature)
+- External references (RFCs, standards) use full URLs
+
+**Example References section** (from a document in `docs/adapter/`):
+```markdown
+## References
+
+- [Trust Levels](./trust-levels.md)
+- [Danger Levels](./danger-levels.md)
+- [Gatekeeper Security Model](../security/gatekeeper.md)
+- [RFC 9110 Section 15](https://www.rfc-editor.org/rfc/rfc9110#section-15)
+- GitHub Issue: [#49](https://github.com/MCPAQL/spec/issues/49)
+```
+
+**Rationale:**
+- File paths enable navigation in any Markdown viewer
+- GitHub issue links preserve historical context and attribution
+- Inline `#123` references work naturally in prose when discussing rationale
+- Footer references provide formal attribution without cluttering narrative text
+- Separating inline (navigational) from footer (attribution) references improves readability
 
 ## Code of Conduct
 
@@ -189,7 +239,7 @@ For authoritative path-based scope rules, see `spec/LICENSING.md`.
 
 ### Commercial Licensing
 
-Organizations requiring a license without AGPL obligations may obtain commercial licensing. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
+Organizations requiring a license without AGPL obligations for MCP-AQL software artifacts may obtain commercial licensing. This does not alter the repository's documentation/specification licensing. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
 
 ### Contributor License Agreement
 

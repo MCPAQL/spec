@@ -15,9 +15,11 @@ This document specifies the warnings array extension to MCP-AQL's discriminated 
 1. [Overview](#1-overview)
 2. [Response Format Extension](#2-response-format-extension)
 3. [Warning Object Schema](#3-warning-object-schema)
+   - [3.2 Severity Levels](#32-severity-levels)
 4. [Standard Warning Codes](#4-standard-warning-codes)
 5. [Client Requirements](#5-client-requirements)
 6. [Implementation Requirements](#6-implementation-requirements)
+   - [6.5 Warning Deduplication](#65-warning-deduplication)
 
 ---
 
@@ -182,10 +184,73 @@ interface Warning {
    * Content varies by warning code
    */
   details?: Record<string, unknown>;
+
+  /**
+   * Optional severity level for client prioritization
+   * Helps clients decide display ordering and filtering
+   */
+  severity?: 'low' | 'medium' | 'high';
 }
 ```
 
-### 3.2 Code Format
+### 3.2 Severity Levels
+
+The optional `severity` field helps clients prioritize warnings when multiple are present:
+
+| Level | Description | Example Use Cases |
+|-------|-------------|-------------------|
+| `high` | Requires immediate attention; may affect operations soon | Quota nearly exhausted, imminent deprecation removal |
+| `medium` | Should be addressed but not urgent | Approaching limits, scheduled deprecation |
+| `low` | Informational; can be safely deferred or filtered | Performance hints, soft deprecation notices |
+
+**Numeric severity mapping:**
+
+For sorting, filtering, and programmatic comparison, implementations SHOULD use this numeric mapping:
+
+| Severity | Numeric Value | Sort Order |
+|----------|--------------|------------|
+| `high` | 0 | First (most urgent) |
+| `medium` | 1 | Second |
+| `low` | 2 | Third (least urgent) |
+
+This mapping ensures:
+- Lower numeric values indicate higher urgency (consistent with syslog and common logging frameworks)
+- Implementations can store severity in databases as integers
+- Threshold-based filtering is consistent (e.g., "show severity ≤ 1" means high and medium)
+- Cross-implementation interoperability when comparing severity levels
+
+**Severity guidelines for implementations:**
+
+- Implementations MAY omit `severity` (clients should assume `medium` as default)
+- Implementations SHOULD use `high` sparingly to avoid alert fatigue
+- Implementations SHOULD NOT change a warning's severity between requests for the same condition
+
+**Client handling:**
+
+```typescript
+function sortWarningsBySeverity(warnings: Warning[]): Warning[] {
+  const order = { high: 0, medium: 1, low: 2 };
+  return [...warnings].sort((a, b) => {
+    const severityA = a.severity ?? 'medium';
+    const severityB = b.severity ?? 'medium';
+    return order[severityA] - order[severityB];
+  });
+}
+
+function filterByMinimumSeverity(
+  warnings: Warning[],
+  minimum: 'low' | 'medium' | 'high'
+): Warning[] {
+  const threshold = { low: 2, medium: 1, high: 0 };
+  const minLevel = threshold[minimum];
+  return warnings.filter(w => {
+    const level = threshold[w.severity ?? 'medium'];
+    return level <= minLevel;
+  });
+}
+```
+
+### 3.3 Code Format
 
 Warning codes follow the same naming convention as error codes:
 
@@ -199,7 +264,7 @@ CATEGORY_SPECIFIC_WARNING
 - Specific suffix describes the condition
 - Codes may overlap with error codes when the condition can be either (e.g., rate limits)
 
-### 3.3 Warning Categories
+### 3.4 Warning Categories
 
 | Category | Description | Example |
 |----------|-------------|---------|
@@ -219,6 +284,13 @@ CATEGORY_SPECIFIC_WARNING
 **When used:** Usage is approaching a configured quota threshold.
 
 **Message format:** `Approaching quota limit`
+
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| >90% of quota consumed | `high` | Imminent limit, requires immediate attention |
+| At warn_threshold (default 80%) | `medium` | Standard warning, action advisable |
 
 **Details:**
 ```typescript
@@ -259,6 +331,14 @@ CATEGORY_SPECIFIC_WARNING
 
 **Message format:** `{feature} is deprecated`
 
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| Within 30 days of removal_date | `high` | Urgent migration required |
+| More than 30 days from removal_date | `medium` | Migration advisable |
+| No removal_date set (soft deprecation) | `low` | Informational, no urgency |
+
 **Details:**
 ```typescript
 {
@@ -297,6 +377,13 @@ CATEGORY_SPECIFIC_WARNING
 
 **Message format:** `Response truncated to {limit} items`
 
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| Significant data loss (>50% truncated) | `medium` | User may miss important data |
+| Minor truncation (≤50% truncated) | `low` | Informational, pagination available |
+
 **Details:**
 ```typescript
 {
@@ -332,6 +419,14 @@ CATEGORY_SPECIFIC_WARNING
 **When used:** An operation took longer than expected to complete.
 
 **Message format:** `Operation took {duration}ms (threshold: {threshold}ms)`
+
+**Severity recommendations:**
+
+| Condition | Severity | Rationale |
+|-----------|----------|-----------|
+| >10x threshold exceeded | `high` | Severe degradation, may indicate systemic issue |
+| 2-10x threshold exceeded | `medium` | Notable slowdown, optimization recommended |
+| Just above threshold (<2x) | `low` | Minor performance concern |
 
 **Details:**
 ```typescript
@@ -461,6 +556,69 @@ To prevent response bloat:
 - Implementations SHOULD limit warnings to 10 per response
 - If more warnings apply, implementations SHOULD include the most important
 - Implementations MAY include a meta-warning about suppressed warnings
+
+### 6.5 Warning Deduplication
+
+Duplicate warnings (same `code` and semantically equivalent `details`) can occur when multiple subsystems generate the same warning or when batch operations trigger repeated conditions.
+
+#### Server-Side Deduplication
+
+Implementations SHOULD deduplicate warnings before including them in responses:
+
+1. **Exact duplicates** - Warnings with identical `code` and `details` SHOULD be collapsed to a single instance
+2. **Semantic duplicates** - Warnings with the same `code` but minor variations in `details` (e.g., same metric at same threshold) MAY be collapsed
+3. **Counting** - When deduplicating, implementations MAY add an `occurrence_count` field to indicate how many times the warning occurred
+
+**Example with occurrence count:**
+```json
+{
+  "code": "VALIDATION_TRUNCATED_WARNING",
+  "message": "Response truncated to 100 items",
+  "details": {
+    "field": "results",
+    "truncated_count": 100,
+    "occurrence_count": 3
+  }
+}
+```
+
+#### Client-Side Deduplication
+
+Clients MAY implement additional deduplication when:
+
+1. **Session-level deduplication** - Suppress warnings already shown in the current session (a session is the lifetime of a single MCP connection; see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle))
+2. **Time-based deduplication** - Suppress warnings seen within a configurable window (e.g., 5 minutes)
+3. **Code-based filtering** - Allow users to dismiss specific warning codes
+
+**Client deduplication example:**
+```typescript
+class WarningDeduplicator {
+  private seen = new Map<string, number>(); // code -> timestamp
+  private deduplicationWindowMs = 5 * 60 * 1000; // 5 minutes
+
+  shouldShow(warning: Warning): boolean {
+    const key = `${warning.code}:${JSON.stringify(warning.details)}`;
+    const lastSeen = this.seen.get(key);
+    const now = Date.now();
+
+    if (lastSeen && now - lastSeen < this.deduplicationWindowMs) {
+      return false; // Suppress duplicate
+    }
+
+    this.seen.set(key, now);
+    return true;
+  }
+}
+```
+
+#### Deduplication Recommendations
+
+| Context | Recommendation |
+|---------|----------------|
+| Single request | Server SHOULD deduplicate identical warnings |
+| Batch operations | Server SHOULD collapse per-item warnings into summary |
+| Client session | Client MAY deduplicate across requests |
+| Long-running clients | Client SHOULD use time-based expiration |
 
 ---
 

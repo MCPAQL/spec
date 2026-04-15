@@ -30,5 +30,4 @@ Artifacts intended to be consumed by tooling/implementations:
 
 ## Commercial licensing
 
-Commercial licenses are available: see `COMMERCIAL-LICENSE.md` or contact `licensing@mcpaql.org`.
-
+Commercial licenses are available for MCP-AQL **software artifacts** as an alternative to AGPL obligations. They do not change the open documentation/specification license. See `COMMERCIAL-LICENSE.md` or contact `licensing@mcpaql.org`.

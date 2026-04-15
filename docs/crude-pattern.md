@@ -2,7 +2,9 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-14
+**Last Updated:** 2026-02-18
+
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
 ## Abstract
 
@@ -34,7 +36,7 @@ The CRUDE pattern provides semantic grouping of operations by their effect on sy
 
 Traditional CRUD patterns assume operations are primarily concerned with data persistence. However, many services provide executable functionality (jobs, workflows, tasks, processes) that require:
 
-- **Non-idempotent operations** - Calling `run_job` twice creates two separate executions
+- **Non-idempotent operations** - Calling `execute_job` twice creates two separate executions
 - **Lifecycle management** - Start, monitor, update progress, complete
 - **Runtime state** - Distinct from stored data
 
@@ -91,7 +93,10 @@ Operations that query state without modification.
 | `search` | Search across resources |
 | `introspect` | Discover available operations |
 | `get_status` | Get current system status |
+| `get_execution_status` | Query execution progress |
 | `export_data` | Export data to portable format |
+
+> **Note:** Operations that query execution state are READ operations, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
 
 ### 2.3 UPDATE Endpoint
 
@@ -149,11 +154,14 @@ Operations that manage the runtime execution lifecycle.
 **Example Operations:**
 | Operation | Description |
 |-----------|-------------|
-| `run_job` | Start a background job |
+| `execute_job` | Start a background job |
 | `cancel_task` | Cancel a running task |
-| `get_execution_status` | Query execution progress |
 | `resume_workflow` | Resume a paused workflow |
 | `trigger_build` | Trigger a build process |
+
+> **Note:** Operations that only query execution state (like `get_execution_status`) belong to READ, not EXECUTE. See [Section 6.1](#61-classification-principle) for classification guidelines.
+
+For operations that manage long-running processes, see [Execution Lifecycle](versions/v1.0.0-draft.md#84-execution-lifecycle) in the normative specification.
 
 ---
 
@@ -294,7 +302,20 @@ The adapter is authoritative for operation routing. Clients cannot bypass routin
 
 ## 6. Classification Guidelines
 
-### 6.1 How to Classify Operations
+### 6.1 Classification Principle
+
+Operations are classified by their **effect on state**, not by their **subject matter**.
+
+An operation that queries the status of an EXECUTE operation (like `get_execution_status`) is still a READ operation because it only reads data.
+
+**Examples:**
+- `get_execution_status` → READ (queries state, no side effects)
+- `get_task_log` → READ (retrieves execution output, no side effects)
+- `execute_job` → EXECUTE (creates new execution, non-idempotent)
+- `cancel_task` → EXECUTE (modifies execution state)
+- `pause_execution` → EXECUTE (modifies execution state)
+
+### 6.2 How to Classify Operations
 
 When building an adapter, classify each operation by asking:
 
@@ -304,7 +325,7 @@ When building an adapter, classify each operation by asking:
 4. **Does it remove data permanently?** → DELETE
 5. **Does it manage runtime execution?** → EXECUTE
 
-### 6.2 Decision Tree
+### 6.3 Decision Tree
 
 ```
                     Does it modify state?
@@ -326,7 +347,10 @@ When building an adapter, classify each operation by asking:
                                        EXECUTE   UPDATE
 ```
 
-### 6.3 Edge Cases
+> **Important:** Classification is by **effect**, not subject. See [Section 6.1](#61-classification-principle) for the guiding principle.
+
+
+### 6.4 Edge Cases
 
 **Upsert Operations:**
 - If creates when not exists, updates when exists: Prefer CREATE
@@ -345,7 +369,21 @@ When building an adapter, classify each operation by asking:
 - If imports without overwriting: CREATE
 - If may overwrite existing: Discuss in operation description
 
-### 6.4 Documentation Requirement
+### 6.5 Canonical Verbs
+
+Each endpoint has canonical verbs that adapters SHOULD use for standard operations:
+
+| Endpoint | Canonical Verb | Example Operation |
+|----------|----------------|-------------------|
+| CREATE | `create` | `create_user` |
+| READ | `get` (single), `list` (multiple) | `get_document`, `list_users` |
+| UPDATE | `update` | `update_profile` |
+| DELETE | `delete` | `delete_account` |
+| EXECUTE | `execute` (initiate), `cancel` (terminate) | `execute_workflow`, `cancel_task` |
+
+Non-canonical verbs (e.g., `upload`, `search`, `remove`) MAY be used when domain semantics require it. See [Section 8.5](versions/v1.0.0-draft.md#85-operation-naming-grammar) of the normative specification for the full naming grammar.
+
+### 6.6 Documentation Requirement
 
 Adapters MUST document their operation classification via introspection. Each operation's endpoint MUST be discoverable.
 

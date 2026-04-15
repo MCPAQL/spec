@@ -17,5 +17,24 @@
     }
   },
   "required": ["operation"],
-  "additionalProperties": true
+  "additionalProperties": true,
+  "examples": [
+    {
+      "operation": "list_entities"
+    },
+    {
+      "operation": "create_entity",
+      "params": {
+        "entity_name": "MyEntity",
+        "entity_type": "resource"
+      }
+    },
+    {
+      "operation": "introspect",
+      "params": {
+        "query": "operations",
+        "name": "create_entity"
+      }
+    }
+  ]
 }

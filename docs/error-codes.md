@@ -46,10 +46,11 @@ Structured error codes address several challenges with string-based error messag
 This specification covers the Minimum Viable Product error codes:
 
 **Included:**
-- 6 essential error codes (MVP)
+- 8 essential error codes (MVP)
 - 7 Phase 1 robustness error codes
 - Basic error response structure
 - HTTP status code mapping
+- Generator error code category reference
 
 **Deferred to future specifications:**
 - Full error code taxonomy
@@ -169,7 +170,10 @@ CATEGORY_SPECIFIC_CONDITION
 | `CONFLICT_` | Resource conflicts | 409 |
 | `RATE_LIMIT_` | Rate limiting | 429 |
 | `TOKEN_` | Confirmation token errors | 400, 403 |
+| `SCHEMA_` | Schema validation errors (generators) | N/A |
 | `INTERNAL_` | Server errors | 500+ |
+
+> **Note on `SCHEMA_` category:** Unlike other error categories which occur at runtime, `SCHEMA_` errors are produced by adapter generators during schema validation. These errors do not map to HTTP status codes because they occur during code generation, not API requests. See [Adapter Generator Specification](./adapter/generator.md) Section 2.2 for the complete list of schema validation error codes.
 
 ---
 
@@ -177,12 +181,15 @@ CATEGORY_SPECIFIC_CONDITION
 
 ### 4.1 Error Code Registry
 
-The MVP includes 6 essential error codes:
+The MVP includes 8 essential error codes:
 
 | Code | Category | Description |
 |------|----------|-------------|
 | `VALIDATION_MISSING_PARAM` | Validation | Required parameter not provided |
 | `VALIDATION_INVALID_TYPE` | Validation | Parameter has wrong type |
+| `VALIDATION_UNKNOWN_PARAM` | Validation | Request contains parameter not defined in operation schema |
+| `VALIDATION_INVALID_ENCODING` | Validation | Request contains invalid character encoding |
+| `VALIDATION_PAYLOAD_TOO_LARGE` | Validation | Request or response exceeds size limits |
 | `NOT_FOUND_OPERATION` | Not Found | Requested operation does not exist |
 | `NOT_FOUND_RESOURCE` | Not Found | Target resource not found (HTTP 404) |
 | `PERMISSION_DENIED` | Permission | Access denied (HTTP 401/403) |
@@ -228,6 +235,8 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
+**Reference:** This specification (MVP error code)
+
 ### 4.4 VALIDATION_INVALID_TYPE
 
 **When used:** A parameter was provided with an incorrect type.
@@ -265,7 +274,143 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
-### 4.5 NOT_FOUND_OPERATION
+**Reference:** This specification (MVP error code)
+
+### 4.5 VALIDATION_UNKNOWN_PARAM
+
+**When used:** A request contains one or more parameters not defined in the operation schema at the `params` level.
+
+> **Note:** This code applies to unknown parameters in the `params` object. For unknown fields within the nested `input` object (used in UPDATE operations per Section 4.5 of the normative spec), use `VALIDATION_UNKNOWN_FIELD` instead. The distinction enables precise error handling: `VALIDATION_UNKNOWN_PARAM` indicates a top-level parameter error, while `VALIDATION_UNKNOWN_FIELD` indicates an error within the update payload.
+
+**Message format:** `Unknown parameter(s) for operation '{operation}': {param_list}`
+
+When multiple unknown parameters are detected, adapters SHOULD either:
+- List all unknown parameters in a comma-separated format: `Unknown parameter(s) for operation 'create_user': force_create, admin_override`
+- Report the first unknown parameter with a count: `Unknown parameter 'force_create' for operation 'create_user' (and 1 other)`
+
+**Details:**
+```typescript
+{
+  /** The operation being called */
+  operation: string;
+  /** List of unknown parameter names */
+  unknown_params: string[];
+  /** List of valid parameter names for this operation */
+  valid_params: string[];
+}
+```
+
+**Example (multiple unknown parameters):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_UNKNOWN_PARAM",
+    "message": "Unknown parameter(s) for operation 'create_user': force_create, admin_override",
+    "details": {
+      "operation": "create_user",
+      "unknown_params": ["force_create", "admin_override"],
+      "valid_params": ["user_name", "password", "email"]
+    }
+  }
+}
+```
+
+**Example (single unknown parameter):**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_UNKNOWN_PARAM",
+    "message": "Unknown parameter(s) for operation 'create_user': force_create",
+    "details": {
+      "operation": "create_user",
+      "unknown_params": ["force_create"],
+      "valid_params": ["user_name", "password", "email"]
+    }
+  }
+}
+```
+
+> **Note:** The `parameter(s)` format and array structure work for both singular and plural cases. Implementers do not need special-case logic based on the count.
+
+**HTTP Status Mapping:** This error SHOULD map to HTTP 400 (Bad Request) or 422 (Unprocessable Entity).
+
+**Reference:** [MCP-AQL Specification Section 4.6](./versions/v1.0.0-draft.md#46-unknown-parameter-handling)
+
+### 4.6 VALIDATION_INVALID_ENCODING
+
+**When used:** A request contains invalid character encoding (non-UTF-8 sequences).
+
+**Message format:** `Invalid character encoding in request`
+
+**Details:**
+```typescript
+{
+  /** Location where invalid encoding was detected */
+  location?: string;
+  /** Byte offset of the invalid sequence (if available) */
+  byte_offset?: number;
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_INVALID_ENCODING",
+    "message": "Invalid character encoding in request",
+    "details": {
+      "location": "params.description",
+      "byte_offset": 42
+    }
+  }
+}
+```
+
+**Reference:** [MCP-AQL Specification Section 4.7.1](./versions/v1.0.0-draft.md#471-character-encoding)
+
+### 4.7 VALIDATION_PAYLOAD_TOO_LARGE
+
+**When used:** A request or response exceeds configured size limits.
+
+**Message format:** `Payload exceeds {limit_type} limit of {limit_value}`
+
+**Details:**
+```typescript
+{
+  /** Type of limit exceeded */
+  limit_type: 'request_size' | 'response_size' | 'string_length' | 'array_elements' | 'nesting_depth';
+  /** The configured limit */
+  limit_value: number;
+  /** The actual size/count */
+  actual_value: number;
+  /** Unit of measurement */
+  unit: 'bytes' | 'elements' | 'levels';
+}
+```
+
+**Example:**
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_PAYLOAD_TOO_LARGE",
+    "message": "Payload exceeds request_size limit of 1048576",
+    "details": {
+      "limit_type": "request_size",
+      "limit_value": 1048576,
+      "actual_value": 2500000,
+      "unit": "bytes"
+    }
+  }
+}
+```
+
+**Reference:** [MCP-AQL Specification Section 4.7.5](./versions/v1.0.0-draft.md#475-payload-size-limits)
+
+### 4.8 NOT_FOUND_OPERATION
 
 **When used:** The requested operation does not exist in the adapter schema.
 
@@ -297,7 +442,9 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
-### 4.6 NOT_FOUND_RESOURCE
+**Reference:** This specification (MVP error code)
+
+### 4.9 NOT_FOUND_RESOURCE
 
 **When used:** The target API returned HTTP 404 - the requested resource does not exist.
 
@@ -331,7 +478,9 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
-### 4.7 PERMISSION_DENIED
+**Reference:** This specification (MVP error code); [RFC 9110 Section 15.5.5](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.5) (HTTP 404)
+
+### 4.10 PERMISSION_DENIED
 
 **When used:** The target API returned HTTP 401 (unauthorized) or 403 (forbidden).
 
@@ -364,7 +513,9 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
-### 4.8 INTERNAL_ERROR
+**Reference:** This specification (MVP error code); [RFC 9110 Section 15.5.2](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.2) (HTTP 401), [Section 15.5.4](https://www.rfc-editor.org/rfc/rfc9110#section-15.5.4) (HTTP 403)
+
+### 4.11 INTERNAL_ERROR
 
 **When used:** Server error from target API (HTTP 500+) or unexpected error in the runtime.
 
@@ -395,6 +546,8 @@ All error codes define a **message format** template that implementations SHOULD
 }
 ```
 
+**Reference:** This specification (MVP error code); [RFC 9110 Section 15.6](https://www.rfc-editor.org/rfc/rfc9110#section-15.6) (HTTP 5xx)
+
 ---
 
 ## 5. Phase 1: Robustness Error Codes
@@ -416,6 +569,8 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 | `TOKEN_EXPIRED` | Token | Confirmation token has expired |
 | `TOKEN_ALREADY_USED` | Token | Confirmation token has already been redeemed |
 | `TOKEN_SCOPE_MISMATCH` | Token | Token issued for different operation or parameters |
+
+> **Note on `CONFIRMATION_REQUIRED` categorization:** This code is categorized under "Permission" rather than having its own category because it functions as part of the permission gating flow. The operation is denied pending user confirmation—conceptually similar to other permission denials, but with a recovery path (providing a confirmation token). Clients can treat it as a permission error that includes instructions for resolution.
 
 ### 5.2 PERMISSION_TRUST_LEVEL_INSUFFICIENT
 
@@ -468,7 +623,7 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
   /** The operation that was attempted */
   operation: string;
   /** The danger level of the operation */
-  danger_level: 'safe' | 'moderate' | 'destructive' | 'dangerous' | 'forbidden';
+  danger_level: 'safe' | 'reversible' | 'destructive' | 'dangerous' | 'forbidden';
   /** Adapter's current trust level */
   adapter_trust: string;
   /** Minimum trust level required */
@@ -504,6 +659,8 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 ### 5.4 CONFIRMATION_REQUIRED
 
 **When used:** A dangerous operation requires explicit user confirmation before execution.
+
+> **Design note:** This code is categorized under "Permission" in the registry table because it functions as a conditional permission denial—the operation is blocked until the user provides explicit confirmation. Unlike a hard permission denial (`PERMISSION_DENIED`), this error includes a `confirmation_token` that enables the client to retry the operation once user consent is obtained. This pattern aligns with the gatekeeper security model where dangerous operations require explicit user approval.
 
 **Message format:** `This operation requires confirmation`
 
@@ -679,7 +836,11 @@ Phase 1 of MCP-AQL adds robustness features including trust levels, dangerous op
 
 **When used:** Included in the `warnings` array of successful responses when approaching a quota limit.
 
-> **Note:** This is a warning code, not an error code. It appears in the `warnings` array of successful responses, not in the `error` object.
+> **⚠️ IMPORTANT: This is a WARNING code, not an error code.**
+>
+> Unlike all other codes in this section, `RATE_LIMIT_QUOTA_WARNING` appears in the `warnings` array of **successful** responses (`success: true`), not in the `error` object. The operation completes normally; this code signals an informational warning about approaching limits.
+>
+> See [Warnings Specification](./features/warnings.md) for details on warning handling.
 
 **Message format:** `Approaching quota limit`
 
@@ -864,7 +1025,9 @@ The runtime maps HTTP status codes to MCP-AQL error codes:
 
 | HTTP Status | Error Code | Description |
 |-------------|------------|-------------|
-| 400 | `VALIDATION_INVALID_TYPE` | Bad request |
+| 400 | `VALIDATION_INVALID_TYPE` | Bad request (default for validation errors) |
+| 400 | `VALIDATION_MISSING_PARAM` | Bad request (missing required parameter) |
+| 400 | `VALIDATION_UNKNOWN_PARAM` | Bad request (unknown parameter) |
 | 401 | `PERMISSION_DENIED` | Authentication required |
 | 403 | `PERMISSION_DENIED` | Forbidden |
 | 404 | `NOT_FOUND_RESOURCE` | Not found |
@@ -960,7 +1123,7 @@ Future specifications may add:
 
 **Conflict Handling:**
 - `CONFLICT_ALREADY_EXISTS` - Resource already exists
-- `CONFLICT_VERSION_MISMATCH` - Optimistic locking failure
+- `CONFLICT_VERSION_MISMATCH` - Optimistic locking failure (see [Request Concurrency](./versions/v1.0.0-draft.md#93-request-concurrency))
 
 **Enhanced Validation:**
 - `VALIDATION_INVALID_ENUM` - Value not in allowed enum

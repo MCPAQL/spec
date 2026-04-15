@@ -1,6 +1,11 @@
 # MCP-AQL Specification Documentation
 
-This directory contains the **normative protocol specification** for MCP-AQL (Model Context Protocol - Advanced Agent API Adapter Query Language).
+This directory contains the MCP-AQL specification set:
+
+- **Normative source:** [versions/v1.0.0-draft.md](versions/v1.0.0-draft.md)
+- **Informative support documents:** all other files under `docs/`
+
+In case of conflict, the versioned normative document takes precedence.
 
 Implementation architecture documentation is maintained in the [mcpaql-adapter](https://github.com/MCPAQL/mcpaql-adapter) repository. Example adapters are in the [examples](https://github.com/MCPAQL/examples) repository.
 
@@ -16,6 +21,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 | [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
+| [Conformance Testing](conformance-testing.md) | Test requirements and evaluation methodology | Draft |
 
 ### Plugin & Adapter Contracts
 
@@ -23,12 +29,15 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 |----------|-------------|--------|
 | [Plugin Interface Contracts](plugin-contracts.md) | What each plugin type MUST provide | Draft (MVP) |
 | [Element Type Specification](adapter/element-type.md) | Declarative adapter schema format | Draft (MVP) |
+| [MCP Server Discovery Bundle](adapter/discovery-bundle.md) | Raw capture + normalized bundle contract for generator pipelines | Draft |
 
 ### Features
 
 | Document | Description | Impl Status |
 |----------|-------------|-------------|
 | [Field Selection](features/field-selection.md) | GraphQL-style response filtering | Implemented |
+| [Collection Querying](features/collection-querying.md) | Preferred query contract for list/search/query operations | Draft |
+| [Pagination](features/pagination.md) | Cursor-based pagination semantics and response shape | Draft |
 
 ### Security
 
@@ -43,6 +52,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | [RFC Process](process/rfc-process.md) | How to propose specification changes |
 | [Breaking Changes](process/breaking-changes.md) | Policy for handling breaking changes |
 | [Versioning](process/versioning.md) | Version numbering and release process |
+| [Preliminary Launch Checklist](process/preliminary-public-launch-checklist.md) | Coordinated draft-launch criteria |
 
 ### Guides
 
@@ -80,6 +90,7 @@ For newcomers to MCP-AQL:
 2. **[CRUDE Pattern](crude-pattern.md)** - Understand the endpoint semantics
 3. **[Operations](operations.md)** - Learn operation design patterns
 4. **[Introspection](introspection.md)** - Learn the discovery system
+5. **[Conformance Testing](conformance-testing.md)** - Understand conformance requirements
 
 For adapter developers:
 
@@ -102,9 +113,9 @@ MCP-AQL follows a four-level protocol model:
 
 Example adapters: [examples](https://github.com/MCPAQL/examples)
 
-## Reference Implementation
+## Reference Profile
 
-[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) serves as the reference implementation for MCP-AQL, demonstrating all implemented features in a production environment.
+[DollhouseMCP](https://github.com/DollhouseMCP/mcp-server) is treated as a practical reference profile for MCP-AQL. It validates feasibility at scale, but protocol authority remains with the normative specification in this repository.
 
 ## Contributing
 

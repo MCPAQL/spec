@@ -268,9 +268,10 @@ function validateToken(token, operation, params) {
     return { valid: false, code: 'TOKEN_SCOPE_MISMATCH' };
   }
 
-  // Check expiry
-  if (new Date(stored.expires_at) < new Date()) {
-    return { valid: false, code: 'TOKEN_EXPIRED' };
+  // Check expiry (with optional clock skew tolerance, see Section 5.1)
+  const expiryResult = checkTokenExpiry(stored, config);
+  if (!expiryResult.valid) {
+    return expiryResult;
   }
 
   // Check consumption
@@ -296,12 +297,72 @@ Token expiration MUST be enforced:
 | Dangerous operation (forbidden - level 4) | 2 minutes | 5 minutes |
 | Quota continuation | 5 minutes | 10 minutes |
 
-Danger level values reference the danger level enum from [Dangerous Operation Classification](../adapter/danger-levels.md): safe (0), moderate (1), destructive (2), dangerous (3), forbidden (4).
+Danger level values reference the danger level enum from [Dangerous Operation Classification](../adapter/danger-levels.md): safe (0), reversible (1), destructive (2), dangerous (3), forbidden (4).
 
 **Expiration is a MUST requirement:**
 - Tokens without expiration MUST be rejected
 - Expired tokens MUST NOT be accepted under any circumstances
-- Clock skew tolerance: implementations MAY allow up to 30 seconds grace
+- Clock skew tolerance: implementations MAY allow up to 30 seconds grace (see below)
+
+**Clock skew tolerance configurability:**
+
+Implementations SHOULD allow operators to configure the clock skew tolerance value:
+
+| Setting | Default | Range | Notes |
+|---------|---------|-------|-------|
+| `clock_skew_tolerance_seconds` | 30 | 0-300 | 0 disables tolerance (strictest mode) |
+
+**Configuration guidance:**
+- The default of 30 seconds accommodates typical NTP-synchronized systems
+- Environments with known clock synchronization issues (e.g., air-gapped systems, certain IoT deployments) MAY need higher values
+- Security-sensitive deployments MAY reduce this to 0-5 seconds
+- Values above 60 seconds SHOULD trigger a warning in logs, as they significantly increase the window for replay attacks (see [Section 6.1](#61-replay-attack-prevention))
+
+**Deployment environment recommendations:**
+
+| Environment | Recommended Value | Rationale |
+|-------------|-------------------|-----------|
+| Typical (NTP-synced) | 30s (default) | Accommodates normal clock drift |
+| Air-gapped systems | 60-120s | May have significant clock sync drift |
+| IoT / embedded | 60-120s | Often lack reliable NTP access |
+| High-security | 0-5s | Minimize replay attack window |
+| Zero-trust | 0s | Strict timing, requires synchronized clocks |
+
+**Example configuration:**
+```javascript
+const tokenConfig = {
+  // Default: 30 seconds
+  clock_skew_tolerance_seconds: 30,
+
+  // Strict mode for high-security environments
+  // clock_skew_tolerance_seconds: 5,
+
+  // Relaxed mode for environments with clock sync issues
+  // clock_skew_tolerance_seconds: 120,
+};
+```
+
+**Applying tolerance in validation:**
+
+The tolerance is added to the expiry time, accepting tokens that expired within the tolerance window:
+
+```javascript
+function checkTokenExpiry(stored, config) {
+  const now = new Date();
+  const expiresAt = new Date(stored.expires_at);
+
+  // Add tolerance to expiry time (not subtract from current time)
+  // This accepts tokens expired within the tolerance window
+  const toleranceMs = (config.clock_skew_tolerance_seconds || 30) * 1000;
+  const expiryWithTolerance = new Date(expiresAt.getTime() + toleranceMs);
+
+  if (now > expiryWithTolerance) {
+    return { valid: false, code: 'TOKEN_EXPIRED' };
+  }
+
+  return { valid: true };
+}
+```
 
 ### 5.2 Single-Use Enforcement
 
@@ -332,7 +393,7 @@ function redeemToken(tokenId) {
 Tokens MAY be revoked before expiration:
 
 **Automatic revocation triggers:**
-- Session termination
+- Session termination (MCP connection ends; see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification)
 - User logout
 - Adapter configuration change
 - Security event detection
@@ -366,7 +427,7 @@ interface SessionScopedToken extends TokenPayload {
 ```
 
 Session tokens:
-- Are invalidated when the session ends
+- Are invalidated when the MCP connection terminates (see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification)
 - MAY be reused within the session for identical operations
 - MUST still respect expiration time
 

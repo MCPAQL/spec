@@ -2,11 +2,11 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-04-15
 
 ## Abstract
 
-This document defines cursor-based pagination semantics for MCP-AQL operations that return collections. Cursor pagination enables efficient iteration through large datasets while minimizing token usage in LLM context windows.
+This document defines the preferred cursor-based pagination semantics for MCP-AQL operations that return collections. Cursor pagination enables efficient iteration through large datasets while minimizing token usage in LLM context windows.
 
 ---
 
@@ -174,7 +174,7 @@ The following combinations MUST return a validation error:
 
 ### 3.1 PageInfo Schema
 
-All paginated responses MUST include a `pageInfo` object:
+All cursor-paginated responses MUST include a `pageInfo` object:
 
 ```typescript
 interface PageInfo {
@@ -264,7 +264,7 @@ interface PageInfo {
 
 ### 4.1 Response Structure
 
-Paginated operations SHOULD return a connection-style response:
+Cursor-paginated operations SHOULD return a connection-style response:
 
 ```typescript
 interface Connection<T> {
@@ -363,6 +363,54 @@ When per-item cursors are needed (e.g., for deletion during iteration):
 | LLM context (minimize tokens) | `items` array |
 | Resume from specific item | `edges` with cursors |
 
+### 4.5 Compatibility Response Metadata
+
+Adapters using page- or offset-based compatibility parameters MAY return pagination metadata in a `pagination` object instead of `pageInfo`.
+
+These compatibility metadata examples use snake_case field names to align with MCP-AQL's public naming convention for adapter-facing request and response fields.
+
+**Page-based compatibility response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pagination": {
+      "page": 2,
+      "page_size": 25,
+      "total_items": 142,
+      "total_pages": 6,
+      "has_more": true
+    }
+  }
+}
+```
+
+**Offset-based compatibility response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pagination": {
+      "limit": 25,
+      "offset": 50,
+      "returned": 25,
+      "total_items": 142,
+      "has_more": true
+    }
+  }
+}
+```
+
+For MCP-AQL-native cursor pagination, `pageInfo` remains the preferred response shape. For general guidance across cursor, page, and offset styles, see [Operations](../operations.md#443-pagination-response-structure).
+
 ---
 
 ## 5. Applicable Operations
@@ -423,7 +471,7 @@ Operations indicate pagination support in introspection:
 Implementations supporting pagination MUST:
 
 1. Accept `first`, `after`, `last`, `before` parameters
-2. Return `pageInfo` with `hasNextPage` and `hasPreviousPage`
+2. Return `pageInfo` with `hasNextPage` and `hasPreviousPage` for cursor-paginated responses
 3. Return `startCursor` and `endCursor` when items are present
 4. Reject invalid parameter combinations with error code
 5. Maintain stable ordering within a pagination session
@@ -446,6 +494,7 @@ Implementations supporting pagination MAY:
 2. Support cursor expiration/TTL
 3. Implement cursor resumption across sessions
 4. Support sorting parameters alongside pagination
+5. Include compatibility metadata such as `returned` for offset-based responses when that helps clients understand the applied page window
 
 ### 6.4 Cursor Format
 
@@ -486,8 +535,10 @@ Combine sorting and pagination:
   element_type: "persona",
   params: {
     first: 10,
-    sort_by: "created_at",
-    sort_order: "desc"
+    sort: {
+      field: "created_at",
+      order: "desc"
+    }
   }
 }
 ```

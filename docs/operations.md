@@ -2,7 +2,9 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-16
+**Last Updated:** 2026-04-15
+
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
 ## Abstract
 
@@ -61,6 +63,8 @@ All operations MUST follow a consistent input structure:
 
 The `operation` field MUST be a non-empty string matching a defined operation name.
 
+> **Terminology Note:** The request field `params` (an object) carries runtime parameter values. The introspection field `parameters` (an array of `ParameterInfo`) describes the accepted parameter definitions. The keys of `params` correspond to the `name` field of each `ParameterInfo` entry. See [Introspection — OperationDetails](introspection.md#33-operationdetails-detail-response).
+
 ### 2.3 Parameter Resolution
 
 Adapters MAY support parameter resolution from multiple locations. The RECOMMENDED resolution order is:
@@ -87,7 +91,7 @@ When the same parameter appears at multiple levels, the value in `params` takes 
 
 ### 2.4 Case Sensitivity
 
-Operation names MUST be case-sensitive. Adapters SHOULD use lowercase operation names with underscores (snake_case).
+Operation names MUST be case-sensitive. Operation names MUST use snake_case (a lowercase letter followed by lowercase letters, digits, and underscores), matching the schema pattern `^[a-z][a-z0-9_]*$`.
 
 ---
 
@@ -108,10 +112,18 @@ interface OperationSuccess {
 
 interface OperationFailure {
   success: false;
-  error: string;   // Human-readable error message
-  data?: never;    // MUST NOT be present
+  error: ErrorDetail;  // Structured error information
+  data?: never;        // MUST NOT be present
+}
+
+interface ErrorDetail {
+  code: string;     // Machine-readable error code (e.g., "NOT_FOUND_RESOURCE")
+  message: string;  // Human-readable error message
+  details?: Record<string, unknown>;  // Optional contextual information
 }
 ```
+
+> **Note:** See [Structured Error Codes Specification](./error-codes.md) for the complete error code taxonomy.
 
 ### 3.2 Success Response
 
@@ -136,12 +148,19 @@ A successful operation MUST return:
 A failed operation MUST return:
 
 - `success`: The boolean value `false`
-- `error`: A human-readable error message
+- `error`: A structured error object with `code` and `message`
 
 ```json
 {
   "success": false,
-  "error": "Item with ID 'item_999' not found"
+  "error": {
+    "code": "NOT_FOUND_RESOURCE",
+    "message": "Item with ID 'item_999' not found",
+    "details": {
+      "resource_type": "item",
+      "resource_id": "item_999"
+    }
+  }
 }
 ```
 
@@ -168,35 +187,42 @@ Metadata fields MUST be prefixed with underscore (`_`) to distinguish them from 
 
 ### 4.1 Naming Convention
 
-MCP-AQL RECOMMENDS **snake_case** for all parameter names:
+All public-facing parameter names MUST use **snake_case** (matching the pattern `^[a-z][a-z0-9_]*$`):
 
 ```javascript
-// RECOMMENDED
+// Correct
 { item_id: "123", created_after: "2024-01-01" }
 
-// NOT RECOMMENDED
+// Non-conforming
 { itemId: "123", createdAfter: "2024-01-01" }
 ```
 
-For backward compatibility, adapters MAY support both snake_case and camelCase variants of parameters, with snake_case taking precedence.
+For backward compatibility, adapters MAY accept camelCase variants as aliases and normalize them to snake_case internally, but the canonical parameter names MUST be snake_case.
 
 ### 4.2 Common Parameter Patterns
 
 Adapters SHOULD use consistent patterns for common functionality:
 
-**Pagination (offset-based):**
+**Text Search:**
 ```javascript
 {
-  page: 1,           // Page number (1-indexed)
-  page_size: 25      // Items per page
+  query: "api reviewer"
 }
 ```
 
 **Pagination (cursor-based):**
 ```javascript
 {
-  cursor: "abc123",  // Opaque cursor from previous response
-  limit: 25          // Maximum items to return
+  first: 25,
+  after: "cursor_abc123"
+}
+```
+
+**Pagination (offset-based compatibility style):**
+```javascript
+{
+  limit: 25,
+  offset: 50
 }
 ```
 
@@ -223,13 +249,248 @@ Adapters SHOULD use consistent patterns for common functionality:
 **Field Selection:**
 ```javascript
 {
-  fields: ["id", "name", "email"]  // Only return these fields
+  fields: "minimal"  // Or ["id", "name", "email"]
 }
 ```
 
 ### 4.3 Required vs Optional Parameters
 
 Each parameter MUST be documented as either required or optional. The operation schema (Section 5) specifies this via the `required` attribute.
+
+### 4.4 Cross-Cutting Parameters
+
+Cross-cutting parameters are parameters that apply across multiple operations. To ensure consistent discoverability, implementations SHOULD define these parameters once and reference them consistently.
+
+For the preferred collection-query contract that combines text search, filters, sorting, pagination, and field selection, see [Collection Querying](./features/collection-querying.md).
+
+#### 4.4.1 Standard Cross-Cutting Parameters
+
+| Parameter | Type | Operations | Description |
+|-----------|------|------------|-------------|
+| `fields` | `string \| string[]` | All READ operations returning data | Field selection: preset name or array of field paths |
+| `query` | `string \| object` | `search_*` and `query_*` collection operations | Free-text search input or documented structured query object |
+| `filter` | `object` | List/search/query operations | Structured filtering criteria |
+| `sort` | `object` | List/search/query operations | Sort object with `field` and `order` |
+| `first`, `after`, `last`, `before` | `number` / `string` | Cursor-paginated collection operations | Cursor-based pagination parameters |
+| `limit`, `offset`, `page`, `page_size` | `number` | Collection operations with adapter-specific pagination | Offset or page-based compatibility parameters when documented |
+| `dry_run` | `boolean` | All mutating operations | Preview without executing |
+
+#### 4.4.2 Shared Parameter Definitions
+
+Implementations SHOULD use a shared definition mechanism to ensure consistency:
+
+```yaml
+shared_parameters:
+  fields:
+    name: "fields"
+    type: "string | string[]"
+    required: false
+    description: "Field selection: preset ('minimal', 'standard', 'full') or array of field paths"
+
+  filter:
+    name: "filter"
+    type: "object"
+    required: false
+    description: "Structured filtering criteria"
+
+  sorting:
+    name: "sort"
+    type: "object"
+    required: false
+    description: "Sort object with 'field' and 'order'"
+
+  cursor_pagination:
+    - name: "first"
+      type: "number"
+      required: false
+      description: "Maximum results to return from the start"
+      default: 25
+    - name: "after"
+      type: "string"
+      required: false
+      description: "Opaque cursor to continue after"
+    - name: "last"
+      type: "number"
+      required: false
+      description: "Maximum results to return from the end"
+    - name: "before"
+      type: "string"
+      required: false
+      description: "Opaque cursor to continue before"
+
+  offset_pagination:
+    - name: "limit"
+      type: "number"
+      required: false
+      description: "Maximum results to return"
+      default: 25
+    - name: "offset"
+      type: "number"
+      required: false
+      description: "Number of results to skip"
+      default: 0
+
+  page_pagination:
+    - name: "page"
+      type: "number"
+      required: false
+      description: "Page number (1-indexed)"
+      default: 1
+    - name: "page_size"
+      type: "number"
+      required: false
+      description: "Items per page"
+      default: 25
+```
+
+These `shared_parameters` keys are illustrative rather than normative. Adapters that already expose `$ref` paths such as `#/shared_parameters/pagination` or legacy `sort`/`order` groups SHOULD preserve those existing references, or provide documented aliases, instead of renaming them silently.
+
+#### 4.4.3 Pagination Response Structure
+
+Operations returning paginated collections SHOULD include explicit pagination metadata in the response so clients can continue the query without reverse-engineering adapter-specific fields.
+
+**Preferred cursor-based response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pageInfo": {
+      "hasNextPage": true,
+      "hasPreviousPage": false,
+      "startCursor": "cursor_001",
+      "endCursor": "cursor_002",
+      "totalCount": 142
+    }
+  }
+}
+```
+
+Cursor-paginated MCP-AQL-native operations SHOULD use the `pageInfo` connection-style metadata described in [Pagination](./features/pagination.md).
+
+**Page-based compatibility response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pagination": {
+      "page": 2,
+      "page_size": 25,
+      "total_items": 142,
+      "total_pages": 6,
+      "has_more": true
+    }
+  }
+}
+```
+
+**Offset-based compatibility response:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [
+      { "name": "alice", "status": "active" },
+      { "name": "bob", "status": "active" }
+    ],
+    "pagination": {
+      "limit": 25,
+      "offset": 50,
+      "returned": 25,
+      "total_items": 142,
+      "has_more": true
+    }
+  }
+}
+```
+
+Recommended metadata by pagination style:
+
+| Style | Location | Recommended Fields |
+|-------|----------|--------------------|
+| Cursor | `data.pageInfo` | `hasNextPage`, `hasPreviousPage`, `startCursor`, `endCursor`, optional `totalCount` |
+| Page-based | `data.pagination` | `page`, `page_size`, optional `total_items`, optional `total_pages`, optional `has_more` |
+| Offset-based | `data.pagination` | `limit`, `offset`, optional `returned`, optional `total_items`, optional `has_more` |
+
+If computing totals is expensive, adapters MAY omit `total_items`, `total_pages`, or `totalCount` and rely on `has_more`, `hasNextPage`, or `hasPreviousPage` instead.
+
+Compatibility metadata examples use snake_case field names to align with MCP-AQL's public naming convention for adapter-facing request and response fields.
+
+#### 4.4.4 Cross-Cutting Parameter Consistency (SHOULD)
+
+When a parameter applies to multiple operations:
+
+1. The parameter name SHOULD be identical across operations
+2. The parameter type SHOULD be identical across operations
+3. The parameter description SHOULD be semantically equivalent
+4. Default values SHOULD be consistent where applicable
+
+#### 4.4.5 Introspection Integration
+
+When introspection is queried, shared parameters SHOULD be expanded inline with their full definitions. This ensures LLMs see consistent documentation regardless of which operation they query.
+
+**Example - Operations referencing shared parameters:**
+```yaml
+operations:
+  list_items:
+    params:
+      - $ref: "#/shared_parameters/fields"
+      - $ref: "#/shared_parameters/filter"
+      - $ref: "#/shared_parameters/cursor_pagination"
+
+  search_items:
+    params:
+      - $ref: "#/shared_parameters/fields"
+      - $ref: "#/shared_parameters/filter"
+      - $ref: "#/shared_parameters/sorting"
+      - $ref: "#/shared_parameters/cursor_pagination"
+      - name: "query"
+        type: "string"
+        required: true
+        description: "Search query"
+```
+
+**Example - Inline expansion returned to clients:**
+```yaml
+operations:
+  search_items:
+    params:
+      - name: "fields"
+        type: "string | string[]"
+        required: false
+        description: "Field selection: preset ('minimal', 'standard', 'full') or array of field paths"
+      - name: "filter"
+        type: "object"
+        required: false
+        description: "Structured filtering criteria"
+      - name: "sort"
+        type: "object"
+        required: false
+        description: "Sort object with 'field' and 'order'"
+      - name: "first"
+        type: "number"
+        required: false
+        description: "Maximum results to return from the start"
+      - name: "after"
+        type: "string"
+        required: false
+        description: "Opaque cursor to continue after"
+      - name: "query"
+        type: "string"
+        required: true
+        description: "Search query"
+```
+
+### 4.5 UPDATE Input Pattern
+
+UPDATE operations SHOULD use a nested `input` object to separate identifier parameters from updateable fields. See [MCP-AQL Specification Section 4.5](./versions/v1.0.0-draft.md#45-update-input-pattern) for normative requirements including deep-merge semantics and field removal. See [ADR-002](./adr/ADR-002-graphql-style-input.md) for design rationale.
 
 ---
 
@@ -313,8 +574,11 @@ Before executing an operation, adapters MUST:
 
 1. Verify all required parameters are present
 2. Validate parameter types match the schema
-3. Apply any constraints (enum, minimum, maximum, pattern)
-4. Apply default values for missing optional parameters
+3. Reject unknown parameters not defined in the operation schema (see [MCP-AQL Specification Section 4.6](./versions/v1.0.0-draft.md#46-unknown-parameter-handling))
+4. Apply any constraints (enum, minimum, maximum, pattern)
+5. Apply default values for missing optional parameters
+
+> **Note:** Unknown parameter rejection (step 3) occurs before applying defaults (step 5) to ensure that typos or hallucinated parameters are caught early, before any processing occurs.
 
 Validation failures MUST return an error response (not throw exceptions).
 
@@ -336,24 +600,36 @@ Operations MUST be assigned to endpoints based on their semantics:
 
 ### 6.2 Common Verbs by Endpoint
 
-| Endpoint | Common Verbs |
-|----------|--------------|
-| CREATE | create, add, upload, register, import, insert |
-| READ | get, list, search, find, export, count, introspect |
-| UPDATE | update, edit, set, rename, move, patch, merge |
-| DELETE | delete, remove, purge, unregister, clear, drop |
-| EXECUTE | run, start, stop, cancel, resume, trigger, invoke |
+Each endpoint has canonical verbs (shown in bold) that SHOULD be used for standard operations, plus additional verbs for domain-specific semantics. See [Section 8.5](versions/v1.0.0-draft.md#85-operation-naming-grammar) of the normative specification for naming requirements.
+
+| Endpoint | Canonical | Additional Verbs |
+|----------|-----------|------------------|
+| CREATE | **create** | add, upload, register, import, insert |
+| READ | **get**, **list** | search, find, export, count |
+| UPDATE | **update** | edit, set, rename, move, patch, merge |
+| DELETE | **delete** | remove, purge, unregister, clear, drop |
+| EXECUTE | **execute**, **cancel** | run, start, stop, resume, trigger, invoke |
+
+> **Note:** The `introspect` operation is a reserved protocol operation and is not listed as a common verb. See [Section 8.5.4](versions/v1.0.0-draft.md#854-reserved-operations) of the normative specification.
 
 ### 6.3 Endpoint Routing Enforcement
 
-Adapters SHOULD validate that operations are invoked via their designated endpoint. An operation assigned to CREATE SHOULD NOT execute when called via the DELETE endpoint.
+Adapters MUST validate that operations are invoked via their designated endpoint. An operation assigned to CREATE MUST NOT execute when called via the DELETE endpoint.
 
 When an operation is routed to the wrong endpoint, adapters SHOULD return an error:
 
 ```json
 {
   "success": false,
-  "error": "Operation 'create_item' must use CREATE endpoint, not DELETE"
+  "error": {
+    "code": "VALIDATION_ENDPOINT_MISMATCH",
+    "message": "Operation 'create_item' must use CREATE endpoint, not DELETE",
+    "details": {
+      "operation": "create_item",
+      "expected_endpoint": "CREATE",
+      "actual_endpoint": "DELETE"
+    }
+  }
 }
 ```
 
@@ -396,10 +672,11 @@ Batch responses MUST include individual results for each operation:
 ```json
 {
   "success": true,
+  "data": null,
   "results": [
-    { "index": 0, "operation": "create_item", "result": { "success": true, "data": { ... } } },
-    { "index": 1, "operation": "create_item", "result": { "success": true, "data": { ... } } },
-    { "index": 2, "operation": "create_item", "result": { "success": false, "error": "Duplicate name" } }
+    { "index": 0, "operation": "create_item", "result": { "success": true, "data": { "id": "item_1" } } },
+    { "index": 1, "operation": "create_item", "result": { "success": true, "data": { "id": "item_2" } } },
+    { "index": 2, "operation": "create_item", "result": { "success": false, "error": { "code": "CONFLICT_ALREADY_EXISTS", "message": "Item with name 'Item C' already exists" } } }
   ],
   "summary": {
     "total": 3,
@@ -428,64 +705,191 @@ When using CRUDE mode (separate endpoints), batch operations SHOULD be constrain
 
 Mixing operations across endpoints in a single batch is NOT RECOMMENDED. Implementations MAY reject mixed batches or MAY process them with explicit endpoint routing per operation.
 
+### 7.5 Confirmation-Gated Batch Operations
+
+When a batch operation encounters a `CONFIRMATION_REQUIRED` response, special handling is needed to maintain state consistency.
+
+#### 7.5.1 The Problem
+
+Consider a batch where operations depend on each other:
+
+```json
+{
+  "operations": [
+    { "operation": "delete_user", "params": { "user_id": "alice" } },
+    { "operation": "send_notification", "params": { "user_id": "alice", "message": "Account deleted" } }
+  ]
+}
+```
+
+If `delete_user` requires confirmation, executing `send_notification` anyway would create inconsistent state (notification sent, but user not deleted).
+
+#### 7.5.2 Batch Halting (RECOMMENDED)
+
+When an operation returns `CONFIRMATION_REQUIRED`, the batch SHOULD halt:
+
+1. Operations before the gated operation execute normally
+2. The gated operation returns `CONFIRMATION_REQUIRED` with a confirmation token
+3. Subsequent operations do NOT execute
+4. Response includes partial results and continuation information
+
+```json
+{
+  "success": true,
+  "data": null,
+  "results": [
+    { "index": 0, "operation": "update_user", "result": { "success": true, "data": { "id": "alice" } } }
+  ],
+  "halted_at": {
+    "index": 1,
+    "operation": "delete_user",
+    "result": {
+      "success": false,
+      "error": {
+        "code": "CONFIRMATION_REQUIRED",
+        "message": "This operation requires confirmation",
+        "details": {
+          "operation": "delete_user",
+          "danger_level": "destructive",
+          "reasons": ["Permanently deletes user account and associated data"],
+          "confirmation_token": "conf_abc123",
+          "expires_at": "2026-02-04T12:05:00Z"
+        }
+      }
+    }
+  },
+  "pending_operations": [
+    { "index": 2, "operation": "send_notification", "params": { "user_id": "alice", "message": "Account deleted" } }
+  ],
+  "summary": {
+    "total": 3,
+    "succeeded": 1,
+    "failed": 0,
+    "halted": 1,
+    "pending": 1
+  }
+}
+```
+
+#### 7.5.3 Continuation After Confirmation
+
+To continue after the user confirms, submit a new batch starting from the halted operation with the confirmation token:
+
+```json
+{
+  "operations": [
+    {
+      "operation": "delete_user",
+      "params": {
+        "user_id": "alice",
+        "confirmation_token": "conf_abc123"
+      }
+    },
+    {
+      "operation": "send_notification",
+      "params": { "user_id": "alice", "message": "Account deleted" }
+    }
+  ]
+}
+```
+
+Clients MAY use the `pending_operations` array from the halted response to construct the continuation batch.
+
+#### 7.5.4 Alternative: Skip and Continue (MAY)
+
+Adapters MAY implement skip-and-continue behavior, where the gated operation is skipped and subsequent operations execute.
+
+> **Mode Selection:** Whether an adapter uses halt-and-wait (recommended) or skip-and-continue is an adapter configuration decision, not a per-request option. Clients can detect which mode is in use by examining the response:
+> - **Halt mode:** Response includes `halted_at` and `pending_operations`
+> - **Skip mode:** Response includes results for all operations, with `status: "pending_confirmation"` on gated operations
+
+```json
+{
+  "success": true,
+  "data": null,
+  "results": [
+    { "index": 0, "operation": "update_user", "result": { "success": true, "data": { "id": "alice" } } },
+    { "index": 1, "operation": "delete_user", "result": { "success": false, "error": { "code": "CONFIRMATION_REQUIRED", ... } }, "status": "pending_confirmation" },
+    { "index": 2, "operation": "send_notification", "result": { "success": true, "data": {} } }
+  ],
+  "summary": { "total": 3, "succeeded": 2, "failed": 0, "pending_confirmation": 1 }
+}
+```
+
+> **Warning:** Skip-and-continue risks inconsistent state when operations depend on each other. This approach is NOT RECOMMENDED unless operations are known to be independent.
+
+#### 7.5.5 Semantics
+
+For batch processing purposes:
+
+- `CONFIRMATION_REQUIRED` is NOT a failure — it is a halting condition
+- The batch overall `success` is `true` (batch processing succeeded; an operation requires confirmation)
+- Halted batches include `halted_at` and `pending_operations` for continuation
+- The `summary.halted` count indicates operations that triggered halting
+- The `summary.pending` count indicates operations that did not execute
+
+See [Confirmation Token Specification](./security/confirmation-tokens.md) for token lifecycle details and [CONFIRMATION_REQUIRED Error Code](./error-codes.md#54-confirmation_required) for the complete response format.
+
 ---
 
 ## 8. Error Handling
 
 ### 8.1 Error Categories
 
-Adapters SHOULD categorize errors consistently:
+Adapters MUST categorize errors using structured error codes. The table below shows error categories and their corresponding codes:
 
-| Category | Description | Example Message |
-|----------|-------------|-----------------|
-| Missing Parameter | Required parameter not provided | "Missing required parameter 'name'" |
-| Invalid Type | Parameter has wrong type | "Parameter 'price' must be a number" |
-| Validation Error | Parameter fails constraints | "Parameter 'category' must be one of: product, service" |
-| Not Found | Referenced resource doesn't exist | "Item 'item_999' not found" |
-| Already Exists | Resource with identifier exists | "Item with name 'Widget' already exists" |
-| Endpoint Mismatch | Operation sent to wrong endpoint | "Operation 'create_item' must use CREATE endpoint" |
-| Unknown Operation | Operation name not recognized | "Unknown operation 'create_widget'" |
-| Unauthorized | Permission denied | "Operation 'delete_item' not permitted for this user" |
+| Category | Error Code | Example Message |
+|----------|------------|-----------------|
+| Missing Parameter | `VALIDATION_MISSING_PARAM` | "Missing required parameter 'name'" |
+| Invalid Type | `VALIDATION_INVALID_TYPE` | "Parameter 'price' expected 'number', got 'string'" |
+| Resource Not Found | `NOT_FOUND_RESOURCE` | "Item 'item_999' not found" |
+| Unknown Operation | `NOT_FOUND_OPERATION` | "Unknown operation: 'create_widget'" |
+| Permission Denied | `PERMISSION_DENIED` | "Permission denied: requires 'admin' scope" |
+| Rate Limited | `RATE_LIMIT_EXCEEDED` | "API rate limit exceeded" |
+| Internal Error | `INTERNAL_ERROR` | "Internal error: database connection failed" |
+
+See [Structured Error Codes Specification](./error-codes.md) for detailed error code definitions and usage.
 
 ### 8.2 Error Response Structure
 
-**Basic format (REQUIRED):**
-```json
-{
-  "success": false,
-  "error": "Human-readable error message"
-}
-```
+All error responses MUST use structured error objects:
 
-**Extended format (OPTIONAL):**
 ```json
 {
   "success": false,
-  "error": "Human-readable error message",
-  "errorCode": "NOT_FOUND",
-  "details": {
-    "resource": "item",
-    "id": "item_999"
+  "error": {
+    "code": "NOT_FOUND_RESOURCE",
+    "message": "Item 'item_999' not found",
+    "details": {
+      "resource_type": "item",
+      "resource_id": "item_999"
+    }
   }
 }
 ```
 
+The `error` object:
+- MUST include `code` - A machine-readable error code from the [error code taxonomy](./error-codes.md)
+- MUST include `message` - A human-readable error message
+- MAY include `details` - Additional contextual information for debugging
+
+See [Structured Error Codes Specification](./error-codes.md) for the complete error code registry and usage guidelines.
+
 ### 8.3 Standard Error Codes
 
-Adapters MAY use standardized error codes for programmatic handling:
+Adapters MUST use standardized error codes for programmatic handling. Common codes include:
 
 | Code | Description |
 |------|-------------|
-| `MISSING_PARAMETER` | Required parameter not provided |
-| `INVALID_TYPE` | Parameter type mismatch |
-| `INVALID_VALUE` | Parameter value fails validation |
-| `NOT_FOUND` | Resource not found |
-| `ALREADY_EXISTS` | Resource with identifier exists |
-| `ENDPOINT_MISMATCH` | Operation routed to wrong endpoint |
-| `UNKNOWN_OPERATION` | Operation name not recognized |
-| `UNAUTHORIZED` | Operation not permitted |
-| `RATE_LIMITED` | Too many requests |
+| `VALIDATION_MISSING_PARAM` | Required parameter not provided |
+| `VALIDATION_INVALID_TYPE` | Parameter type mismatch |
+| `NOT_FOUND_OPERATION` | Operation name not recognized |
+| `NOT_FOUND_RESOURCE` | Resource not found |
+| `PERMISSION_DENIED` | Operation not permitted |
+| `RATE_LIMIT_EXCEEDED` | Too many requests |
 | `INTERNAL_ERROR` | Server error |
+
+See [Structured Error Codes Specification](./error-codes.md) for the complete error code registry including Phase 1 robustness codes.
 
 ### 8.4 Error Message Guidelines
 
@@ -596,43 +1000,55 @@ When `query` is "operations" with a `name`:
 {
   "success": true,
   "data": {
-    "name": "create_item",
-    "endpoint": "CREATE",
-    "description": "Create a new item",
-    "parameters": [
-      {
-        "name": "name",
-        "type": "string",
-        "required": true,
-        "description": "Item name"
+    "operation": {
+      "name": "create_item",
+      "endpoint": "CREATE",
+      "mcpTool": "mcp_aql_create",
+      "description": "Create a new item",
+      "permissions": {
+        "readOnly": false,
+        "destructive": false
       },
-      {
-        "name": "category",
-        "type": "string",
-        "required": true,
-        "description": "Item category",
-        "enum": ["product", "service", "subscription"]
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Item name"
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": true,
+          "description": "Item category",
+          "enum": ["product", "service", "subscription"]
+        },
+        {
+          "name": "price",
+          "type": "number",
+          "required": false,
+          "minimum": 0,
+          "description": "Item price in cents"
+        }
+      ],
+      "returns": {
+        "name": "Item",
+        "kind": "object",
+        "description": "Newly created item"
       },
-      {
-        "name": "price",
-        "type": "number",
-        "required": false,
-        "minimum": 0,
-        "description": "Item price in cents"
-      }
-    ],
-    "examples": [
-      {
-        "description": "Create a basic item",
-        "request": {
-          "operation": "create_item",
-          "params": {
-            "name": "Widget",
-            "category": "product"
+      "examples": [
+        {
+          "description": "Create a basic item",
+          "request": {
+            "operation": "create_item",
+            "params": {
+              "name": "Widget",
+              "category": "product"
+            }
           }
         }
-      }
-    ]
+      ]
+    }
   }
 }
 ```

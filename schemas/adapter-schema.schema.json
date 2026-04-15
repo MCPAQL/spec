@@ -1,0 +1,421 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/adapter-schema.schema.json",
+  "title": "MCP-AQL Adapter Schema",
+  "description": "Schema for validating MCP-AQL adapter definition files",
+
+  "$defs": {
+    "TransportType": {
+      "type": "string",
+      "enum": ["http", "websocket", "serial", "native"],
+      "description": "Transport protocol for API communication"
+    },
+
+    "ProtocolType": {
+      "type": "string",
+      "enum": ["rest", "graphql", "grpc", "custom"],
+      "description": "API protocol type"
+    },
+
+    "SerializationType": {
+      "type": "string",
+      "enum": ["json", "xml", "protobuf", "msgpack", "form"],
+      "description": "Data serialization format"
+    },
+
+    "DangerLevel": {
+      "type": "string",
+      "enum": ["safe", "reversible", "destructive", "dangerous", "forbidden"],
+      "description": "Operation danger classification for safety controls (see docs/adapter/danger-levels.md)"
+    },
+
+    "TargetConfig": {
+      "type": "object",
+      "description": "API connection configuration",
+      "properties": {
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Base URL for API requests"
+        },
+        "transport": {
+          "$ref": "#/$defs/TransportType"
+        },
+        "protocol": {
+          "$ref": "#/$defs/ProtocolType"
+        },
+        "serialization": {
+          "$ref": "#/$defs/SerializationType"
+        }
+      },
+      "required": ["base_url", "transport", "protocol", "serialization"],
+      "additionalProperties": false
+    },
+
+    "ParameterDefinition": {
+      "type": "object",
+      "description": "Definition of an operation parameter",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Parameter data type"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the parameter is required"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable parameter description"
+        },
+        "default": {
+          "description": "Default value if parameter not provided"
+        },
+        "enum": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed values for string parameters"
+        },
+        "minimum": {
+          "type": "number",
+          "description": "Minimum value for numeric parameters"
+        },
+        "maximum": {
+          "type": "number",
+          "description": "Maximum value for numeric parameters"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Regex pattern for string validation"
+        },
+        "format": {
+          "type": "string",
+          "description": "Semantic format hint for strings (e.g. date-time, email, uri, uuid)"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+
+    "ResponseDefinition": {
+      "type": "object",
+      "description": "Definition of operation response",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Response data type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable response description"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "PaginationConfig": {
+      "type": "object",
+      "description": "Pagination configuration for list operations",
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": ["offset", "cursor", "page"],
+          "description": "Pagination style"
+        },
+        "default_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Default number of items per page"
+        },
+        "max_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum allowed items per page"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "OperationDefinition": {
+      "type": "object",
+      "description": "Definition of a single operation",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Operation identifier (snake_case)"
+        },
+        "maps_to": {
+          "type": "string",
+          "description": "Target API endpoint mapping (e.g., 'GET /resources/{id}')"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable operation description"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ParameterDefinition"
+          },
+          "description": "Operation parameters"
+        },
+        "response": {
+          "$ref": "#/$defs/ResponseDefinition"
+        },
+        "pagination": {
+          "$ref": "#/$defs/PaginationConfig"
+        },
+        "supports_fields": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether operation supports field selection"
+        },
+        "danger_level": {
+          "$ref": "#/$defs/DangerLevel",
+          "default": "reversible"
+        },
+        "requires_confirmation": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether operation requires user confirmation"
+        },
+        "non_idempotent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether operation is non-idempotent (EXECUTE operations)"
+        }
+      },
+      "required": ["name", "maps_to"],
+      "additionalProperties": false
+    },
+
+    "AuthConfig": {
+      "type": "object",
+      "description": "Authentication configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "api_key", "bearer", "basic", "oauth2"],
+          "description": "Authentication type"
+        },
+        "header": {
+          "type": "string",
+          "description": "Header name for API key/bearer auth"
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Value prefix (e.g., 'Bearer ')"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": true
+    },
+
+    "TrustConfig": {
+      "type": "object",
+      "description": "Trust level metadata for the adapter",
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["untrusted", "low", "medium", "high", "verified"],
+          "description": "Trust level classification"
+        },
+        "verified_by": {
+          "type": "string",
+          "description": "Entity that verified the adapter"
+        },
+        "verification_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of verification"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "RateLimitConfig": {
+      "type": "object",
+      "description": "Rate limiting configuration",
+      "properties": {
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum requests per minute"
+        },
+        "requests_per_hour": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum requests per hour"
+        },
+        "requests_per_day": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum requests per day"
+        },
+        "burst_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum burst request count"
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "OperationsBlock": {
+      "type": "object",
+      "description": "CRUDE operation mappings",
+      "properties": {
+        "create": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OperationDefinition" },
+          "description": "CREATE operations (additive, non-destructive)"
+        },
+        "read": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OperationDefinition" },
+          "description": "READ operations (safe, read-only)"
+        },
+        "update": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OperationDefinition" },
+          "description": "UPDATE operations (modifying)"
+        },
+        "delete": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OperationDefinition" },
+          "description": "DELETE operations (destructive)"
+        },
+        "execute": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OperationDefinition" },
+          "description": "EXECUTE operations (lifecycle, non-idempotent)"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Adapter identifier, must match filename prefix"
+    },
+    "type": {
+      "const": "adapter",
+      "description": "Element type discriminator"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-z0-9.]+)?$",
+      "description": "Semantic version of the adapter"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable adapter purpose"
+    },
+    "target": {
+      "$ref": "#/$defs/TargetConfig"
+    },
+    "operations": {
+      "$ref": "#/$defs/OperationsBlock"
+    },
+    "auth": {
+      "$ref": "#/$defs/AuthConfig"
+    },
+    "trust": {
+      "$ref": "#/$defs/TrustConfig"
+    },
+    "rate_limits": {
+      "$ref": "#/$defs/RateLimitConfig"
+    }
+  },
+  "required": ["name", "type", "version", "description", "target", "operations"],
+  "additionalProperties": false,
+
+  "examples": [
+    {
+      "name": "example-api",
+      "type": "adapter",
+      "version": "1.0.0",
+      "description": "Example API adapter demonstrating MCP-AQL patterns",
+      "target": {
+        "base_url": "https://api.example.com/v1",
+        "transport": "http",
+        "protocol": "rest",
+        "serialization": "json"
+      },
+      "operations": {
+        "create": [
+          {
+            "name": "create_item",
+            "maps_to": "POST /items",
+            "description": "Create a new item",
+            "params": {
+              "name": { "type": "string", "required": true, "description": "Item name" },
+              "category": { "type": "string", "required": true, "description": "Item category" }
+            },
+            "danger_level": "reversible"
+          }
+        ],
+        "read": [
+          {
+            "name": "get_item",
+            "maps_to": "GET /items/{id}",
+            "description": "Retrieve an item by ID",
+            "params": {
+              "id": { "type": "string", "required": true, "description": "Item ID" }
+            },
+            "supports_fields": true
+          },
+          {
+            "name": "list_items",
+            "maps_to": "GET /items",
+            "description": "List all items",
+            "pagination": { "style": "offset", "default_limit": 25, "max_limit": 100 },
+            "supports_fields": true
+          }
+        ],
+        "update": [
+          {
+            "name": "update_item",
+            "maps_to": "PATCH /items/{id}",
+            "description": "Update item properties",
+            "params": {
+              "id": { "type": "string", "required": true, "description": "Item ID" },
+              "name": { "type": "string", "required": false, "description": "New name" }
+            },
+            "danger_level": "reversible"
+          }
+        ],
+        "delete": [
+          {
+            "name": "delete_item",
+            "maps_to": "DELETE /items/{id}",
+            "description": "Delete an item",
+            "params": {
+              "id": { "type": "string", "required": true, "description": "Item ID" }
+            },
+            "danger_level": "destructive",
+            "requires_confirmation": true
+          }
+        ]
+      },
+      "auth": {
+        "type": "bearer",
+        "header": "Authorization",
+        "prefix": "Bearer "
+      },
+      "trust": {
+        "level": "medium"
+      },
+      "rate_limits": {
+        "requests_per_minute": 60,
+        "requests_per_hour": 1000
+      }
+    }
+  ]
+}

@@ -2,7 +2,9 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-01-16
+**Last Updated:** 2026-04-15
+
+> **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
 ## Abstract
 
@@ -172,28 +174,98 @@ interface OperationDetails {
   mcpTool: string;                 // MCP tool name (e.g., "mcp_aql_create")
   description: string;             // Detailed description
   permissions: EndpointPermissions;
-  parameters: ParameterInfo[];     // Parameter definitions
+  parameters: ParameterInfo[];     // Parameter definitions (see note below)
   returns: TypeInfo;               // Return type information
-  examples: string[];              // Example invocations
+  examples: OperationExample[];    // Example invocations
 }
 
 interface EndpointPermissions {
   readOnly: boolean;    // Whether operation modifies state
   destructive: boolean; // Whether operation removes state
 }
+
+interface OperationExample {
+  description?: string; // Human-readable description of the example
+  request: object;      // Example request object
+}
 ```
+
+> **Terminology Note:** The `parameters` array here describes the definitions of accepted parameters. At request time, callers provide parameter values via the `params` object (see [Section 4.1 of the normative spec](versions/v1.0.0-draft.md#41-standard-request-structure)). The keys of `params` correspond to the `name` field of each `ParameterInfo` entry.
 
 ### 3.4 ParameterInfo
 
-Parameter definition:
+Parameter definition with optional constraint metadata:
 
 ```typescript
 interface ParameterInfo {
+  // Core fields (required)
   name: string;        // Parameter name (snake_case recommended)
-  type: string;        // Type name (e.g., "string", "number", adapter-defined types)
+  type: string;        // Type name (e.g., "string", "number", "boolean", "array", "object")
   required: boolean;   // Whether parameter is required
-  description: string; // Parameter description
-  default?: unknown;   // Default value if any
+
+  // Documentation (optional)
+  description?: string; // Parameter description
+  default?: unknown;    // Default value if any
+
+  // Constraint fields (optional) - enable client-side validation and LLM guidance
+  enum?: unknown[];     // Allowed values for this parameter
+  minimum?: number;     // Minimum value for numeric parameters (inclusive)
+  maximum?: number;     // Maximum value for numeric parameters (inclusive)
+  minLength?: number;   // Minimum length for string parameters
+  maxLength?: number;   // Maximum length for string parameters
+  pattern?: string;     // Regex pattern for string validation
+  format?: string;      // Semantic format hint (e.g., "date-time", "email", "uri", "uuid")
+  items?: object;       // Schema for array element types (nested ParameterInfo)
+
+  // Security (optional)
+  sensitive?: boolean;  // Whether parameter contains sensitive data (passwords, API keys)
+}
+```
+
+#### 3.4.1 Constraint Field Usage
+
+Constraint fields are **the highest-value properties in the introspection system** - they prevent LLM hallucination by telling agents exactly what values are valid.
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `enum` | array | Lists all valid values; LLM can select from these |
+| `minimum`/`maximum` | number | Numeric bounds; LLM can generate values in range |
+| `minLength`/`maxLength` | integer | String length limits |
+| `pattern` | string | Regex pattern for validation |
+| `format` | string | Semantic format hint (date-time, email, uri, uuid) |
+| `items` | object | Element schema for array parameters |
+| `sensitive` | boolean | Flag for passwords/API keys; clients SHOULD mask input |
+
+**Example with constraints:**
+```json
+{
+  "name": "page_size",
+  "type": "integer",
+  "required": false,
+  "description": "Number of items per page",
+  "default": 25,
+  "minimum": 1,
+  "maximum": 100
+}
+```
+
+```json
+{
+  "name": "status",
+  "type": "string",
+  "required": true,
+  "description": "Filter by status",
+  "enum": ["pending", "active", "completed", "cancelled"]
+}
+```
+
+```json
+{
+  "name": "api_key",
+  "type": "string",
+  "required": true,
+  "description": "API key for authentication",
+  "sensitive": true
 }
 ```
 
@@ -240,6 +312,16 @@ interface TypeDetails extends TypeInfo {
 {
   "success": true,
   "data": {
+    "_protocol": {
+      "version": "1.0.0-alpha.1",
+      "conformance": "level-1",
+      "mode": "crude",
+      "capabilities": {
+        "batch": false,
+        "field_selection": true,
+        "warnings": true
+      }
+    },
     "operations": [
       {
         "name": "create_entity",
@@ -281,6 +363,33 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
+#### 4.1.1 Protocol Metadata
+
+The `_protocol` object in operations list responses provides version and capability information:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `version` | string | MUST | MCP-AQL spec version (semver format) |
+| `conformance` | string | SHOULD | Conformance level ("level-1", "level-2") |
+| `mode` | string | SHOULD | Endpoint mode ("crude", "single", "all") |
+| `capabilities` | object | MAY | Feature flags for optional capabilities |
+
+**Capabilities flags:**
+
+| Capability | Description |
+|------------|-------------|
+| `batch` | Supports batch operations |
+| `field_selection` | Supports field selection in responses |
+| `pagination` | Supports cursor-based pagination |
+| `warnings` | Includes warnings array in responses |
+| `confirmation` | Supports confirmation token flow |
+| `dangerous_operations` | Has danger level classification |
+
+Clients can use protocol metadata to:
+- Adapt behavior to protocol version
+- Detect available features before use
+- Enable graceful degradation for older adapters
+
 ### 4.2 Getting Operation Details
 
 **Request:**
@@ -310,25 +419,33 @@ interface TypeDetails extends TypeInfo {
           "name": "entity_name",
           "type": "string",
           "required": true,
-          "description": "Entity name"
+          "description": "Entity name",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
         },
         {
           "name": "entity_type",
-          "type": "EntityType",
+          "type": "string",
           "required": true,
-          "description": "Type of entity to create"
+          "description": "Type of entity to create",
+          "enum": ["resource", "item", "config", "workflow"]
         },
         {
           "name": "description",
           "type": "string",
           "required": true,
-          "description": "Entity description"
+          "description": "Entity description",
+          "maxLength": 500
         },
         {
-          "name": "content",
-          "type": "string",
+          "name": "priority",
+          "type": "integer",
           "required": false,
-          "description": "Entity content"
+          "description": "Priority level",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 10
         },
         {
           "name": "metadata",
@@ -343,7 +460,17 @@ interface TypeDetails extends TypeInfo {
         "description": "Newly created entity"
       },
       "examples": [
-        "{ operation: \"create_entity\", element_type: \"resource\", params: { entity_name: \"MyResource\", description: \"A sample resource\" } }"
+        {
+          "description": "Create a resource entity",
+          "request": {
+            "operation": "create_entity",
+            "element_type": "resource",
+            "params": {
+              "entity_name": "MyResource",
+              "description": "A sample resource"
+            }
+          }
+        }
       ]
     }
   }
@@ -646,10 +773,13 @@ Step 3: Execute operation
 
 ### 7.3 Caching Recommendations
 
+A **session** is the lifetime of a single MCP connection (see [Section 2.3](versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification).
+
 Implementations SHOULD:
-- Cache introspection responses during a session
+- Cache introspection responses for the duration of the MCP connection (session)
 - Return consistent results for the same query within a session
-- Invalidate cache only when server configuration changes
+- Invalidate all cached introspection data when the session ends
+- Invalidate cache mid-session only when server configuration changes
 
 ---
 
@@ -669,6 +799,44 @@ Conforming implementations MUST:
 8. Use consistent type names across all responses
 9. Return `null` for the item (not an error) when querying a non-existent operation or type
 10. Follow the discriminated response format (`{ success, data }` or `{ success, error }`)
+11. Include `_protocol` object in operations list responses with at least the `version` field
+
+#### 8.1.1 Introspection Accuracy (MUST)
+
+Introspection responses MUST accurately reflect the actual parameter names, types, and behaviors accepted by the implementation:
+
+1. Parameter names in introspection MUST match the names expected by the operation handler
+2. Parameter types in introspection MUST match the types accepted by the operation handler
+3. Required/optional status in introspection MUST match the actual handler behavior
+
+#### 8.1.2 Parameter Completeness (MUST)
+
+For every operation, implementations MUST ensure introspection completeness:
+
+1. Every parameter accepted by the handler implementation MUST appear in introspection metadata
+2. Required parameters MUST appear with `required: true`
+3. Optional parameters MUST appear with `required: false`
+4. Feature parameters (e.g., `fields`, `limit`, `offset`) MUST appear with full type information
+
+**Conformance Test:**
+```
+FOR EACH operation in introspection:
+  1. Get documented parameters from introspection
+  2. Attempt operation with each documented parameter
+  3. Attempt operation with known cross-cutting parameters (fields, limit, offset)
+  4. Compare accepted vs documented parameters
+
+FAIL IF: Operation accepts parameters not in introspection
+WARN IF: Introspection documents parameters not accepted
+```
+
+#### 8.1.3 Error Message Quality (MUST)
+
+Error responses MUST NOT expose internal implementation details:
+
+1. Error messages MUST NOT include programming language error messages
+2. Error messages MUST NOT include stack traces
+3. Error messages MUST NOT include internal class/object names or file paths
 
 ### 8.2 SHOULD Requirements
 
@@ -682,6 +850,46 @@ Conforming implementations SHOULD:
 6. Implement caching for introspection responses
 7. Include the `introspect` operation in the operations list
 8. Derive introspection data from a single source of truth (operation schema)
+
+#### 8.2.1 Unknown Parameter Handling (SHOULD)
+
+Implementations SHOULD handle unrecognized parameters explicitly:
+
+1. Accept parameters at documented locations, OR
+2. Return a warning or error when unrecognized parameters are provided
+3. Implementations SHOULD NOT silently ignore parameters
+
+#### 8.2.2 Element-Type Constraints (SHOULD)
+
+Introspection responses SHOULD document element-type-specific constraints:
+
+1. Read-only or append-only fields SHOULD be documented
+2. Required nesting (e.g., "tags must be in metadata.tags") SHOULD be documented
+3. Operations that don't apply to certain element types SHOULD be noted
+
+#### 8.2.3 Error Message Guidance (SHOULD)
+
+Error responses SHOULD include actionable information:
+
+1. A clear description of what went wrong
+2. The correct action the user should take
+3. Reference to the appropriate operation if applicable
+
+**Recommended Error Message Format:**
+```
+Missing required parameter '{paramName}'. Expected: {type} ({description})
+```
+
+**Examples:**
+```
+Missing required parameter 'name'. Expected: string (the name of the memory to operate on)
+Missing required parameter 'source'. Expected: string (URL or file path to import from)
+```
+
+#### 8.2.4 Deprecated Parameters (SHOULD)
+
+1. Deprecated parameters SHOULD appear in introspection with a deprecation notice
+2. Deprecated parameters SHOULD include migration guidance in the description
 
 ### 8.3 MAY Requirements
 

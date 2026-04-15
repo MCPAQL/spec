@@ -42,6 +42,10 @@ The Gatekeeper is an **optional** feature. Adapters MAY implement it based on th
 
 Security is enforced server-side by the adapter, not by client behavior. Clients cannot bypass security through endpoint selection or parameter manipulation.
 
+### 1.4 Relationship to the Execution Safety Loop
+
+The Gatekeeper can operate as a standalone security layer for individual operations, or as part of the [Execution Safety Loop](execution-safety-loop.md) — a continuous monitoring pattern where the LLM reports every intended action for safety evaluation. When deployed as a safety dongle (see [Section 2 of the Execution Safety Loop specification](execution-safety-loop.md#2-the-safety-dongle-deployment-model)), the Gatekeeper evaluates `nextActionHint` strings against configured policies, providing go/no-go directives for actions across all connected MCP servers.
+
 ---
 
 ## 2. Security Layers
@@ -189,10 +193,10 @@ Client confirms by including the token:
 
 ### 4.3 Session-Scoped Confirmations
 
-Confirmations MAY be cached per session:
+Confirmations MAY be cached per session (see [Section 2.3](../versions/v1.0.0-draft.md#23-session-lifecycle) of the core specification):
 - Confirmations expire after configurable timeout
 - Confirmations are scoped to specific operation
-- Session end clears all confirmations
+- Session end (MCP connection termination) clears all confirmations
 
 ---
 
@@ -252,9 +256,34 @@ Adapters implementing security MAY:
 
 ---
 
+## 7. Autonomy Evaluator Integration
+
+When the Gatekeeper operates within the [Execution Safety Loop](execution-safety-loop.md), it integrates with the Autonomy Evaluator (Section 8.7 of the core spec) to provide continuous per-action safety evaluation:
+
+### 7.1 Gatekeeper Blocks as Notifications
+
+When the Gatekeeper denies an operation during execution, the block is recorded and surfaced as a `permission_pending` notification in the next `AutonomyDirective` response. This allows bridge agents and remote interfaces to relay approval requests to human operators through their communication channel.
+
+### 7.2 Policy Evaluation for `nextActionHint`
+
+In safety dongle deployments, the Gatekeeper's Layer 3 (Operation Policy) evaluates `nextActionHint` strings against configured patterns rather than operation names. The same deny/confirm/allow semantics apply, but the input is the LLM's stated intent rather than a formal operation identifier.
+
+### 7.3 Confirmation Flow During Execution
+
+When the Gatekeeper returns `CONFIRMATION_REQUIRED` during an execution safety loop:
+
+1. The `AutonomyDirective` returns `continue: false` with a `permission_pending` notification
+2. The agent (or its bridge) presents the confirmation request to a human operator
+3. The human approves via `confirm_operation`
+4. The next `record_execution_step` call clears the notification and evaluation continues
+
+---
+
 ## References
 
 - [MCP-AQL Specification](../versions/v1.0.0-draft.md)
 - [CRUDE Pattern Specification](../crude-pattern.md)
 - [Confirmation Token Specification](./confirmation-tokens.md)
+- [Execution Safety Loop Specification](./execution-safety-loop.md)
+- [Danger Levels Specification](../adapter/danger-levels.md)
 - [Operations Guide](../operations.md)

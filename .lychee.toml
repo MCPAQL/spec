@@ -26,6 +26,9 @@ exclude = [
     "^https?://mcpaql\\.org",
     "^https?://spec\\.modelcontextprotocol\\.io",
 
+    # ISO website (blocks automated requests with 403)
+    "^https?://www\\.iso\\.org",
+
     # MCPAQL GitHub repos (private, return 404 from CI)
     "^https?://github\\.com/MCPAQL/",
 

@@ -14,6 +14,97 @@
         },
         "data": {
           "description": "Operation result data (adapter-specific)"
+        },
+        "warnings": {
+          "type": "array",
+          "description": "Optional array of non-fatal warning conditions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Machine-readable warning code",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable warning message"
+              },
+              "details": {
+                "type": "object",
+                "description": "Optional contextual information",
+                "additionalProperties": true
+              },
+              "severity": {
+                "type": "string",
+                "description": "Optional severity level for client prioritization",
+                "enum": ["low", "medium", "high"]
+              }
+            },
+            "required": ["code", "message"],
+            "additionalProperties": false
+          }
+        },
+        "_meta": {
+          "type": "object",
+          "description": "Response metadata (request ID, timing, etc.)",
+          "properties": {
+            "request_id": {
+              "type": "string",
+              "description": "Unique identifier for the request"
+            },
+            "duration_ms": {
+              "type": "number",
+              "description": "Request processing time in milliseconds",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": true
+        },
+        "results": {
+          "type": "array",
+          "description": "Individual results for batch operations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "index": {
+                "type": "integer",
+                "description": "Position in the original batch request",
+                "minimum": 0
+              },
+              "operation": {
+                "type": "string",
+                "description": "Operation name that was executed"
+              },
+              "result": {
+                "description": "Individual operation result",
+                "$ref": "#"
+              }
+            },
+            "required": ["index", "operation", "result"]
+          }
+        },
+        "summary": {
+          "type": "object",
+          "description": "Aggregate summary for batch operations",
+          "properties": {
+            "total": {
+              "type": "integer",
+              "description": "Total number of operations in batch",
+              "minimum": 0
+            },
+            "succeeded": {
+              "type": "integer",
+              "description": "Number of successful operations",
+              "minimum": 0
+            },
+            "failed": {
+              "type": "integer",
+              "description": "Number of failed operations",
+              "minimum": 0
+            }
+          },
+          "required": ["total", "succeeded", "failed"]
         }
       },
       "required": ["success", "data"],
@@ -49,10 +140,103 @@
           },
           "required": ["code", "message"],
           "additionalProperties": false
+        },
+        "confirmation": {
+          "type": "object",
+          "description": "Confirmation flow details for gated operations (CONFIRMATION_REQUIRED errors)",
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Confirmation token to include in retry request"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the confirmation token expires"
+            },
+            "message": {
+              "type": "string",
+              "description": "Human-readable confirmation prompt to display to user"
+            },
+            "reasons": {
+              "type": "array",
+              "description": "Reasons why confirmation is required",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["token", "expires_at"]
+        },
+        "deprecated": {
+          "type": "boolean",
+          "description": "Whether this operation or response format is deprecated"
+        },
+        "deprecationMessage": {
+          "type": "string",
+          "description": "Human-readable deprecation notice"
+        },
+        "deprecatedSince": {
+          "type": "string",
+          "description": "Version when this was deprecated"
+        },
+        "removalVersion": {
+          "type": "string",
+          "description": "Version when this will be removed"
         }
       },
       "required": ["success", "error"],
       "additionalProperties": false
+    }
+  ],
+  "examples": [
+    {
+      "success": true,
+      "data": {
+        "id": "entity-123",
+        "name": "MyEntity",
+        "created_at": "2025-01-15T10:30:00Z"
+      }
+    },
+    {
+      "success": false,
+      "error": {
+        "code": "VALIDATION_MISSING_PARAM",
+        "message": "Required parameter 'entity_name' is missing"
+      }
+    },
+    {
+      "success": true,
+      "data": {
+        "id": "entity-456",
+        "name": "UpdatedEntity"
+      },
+      "warnings": [
+        {
+          "code": "DEPRECATED_FIELD",
+          "message": "Field 'legacy_id' is deprecated and will be removed in v2.0"
+        }
+      ],
+      "_meta": {
+        "request_id": "req-abc-123",
+        "duration_ms": 42
+      }
+    },
+    {
+      "success": false,
+      "error": {
+        "code": "CONFIRMATION_REQUIRED",
+        "message": "This operation requires confirmation before execution"
+      },
+      "confirmation": {
+        "token": "confirm-token-xyz",
+        "expires_at": "2025-01-15T10:35:00Z",
+        "message": "This will permanently delete 47 records. Are you sure?",
+        "reasons": [
+          "Operation is destructive",
+          "Affects 47 records"
+        ]
+      }
     }
   ]
 }
