@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/computed-fields.schema.json",
+  "title": "MCP-AQL Computed Fields",
+  "description": "Informative helper schema for the preferred MCP-AQL computed-field request and introspection shapes.",
+  "$defs": {
+    "ComputedFieldPath": {
+      "type": "string",
+      "pattern": "^_computed\\.[a-z][a-z0-9_]*$"
+    },
+    "ComputedFieldInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "filterable": {
+          "type": "boolean"
+        },
+        "sortable": {
+          "type": "boolean"
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "fields": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ComputedFieldPath"
+      }
+    },
+    "computed_fields": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ComputedFieldInfo"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "fields": ["_computed.age_days", "_computed.child_count"]
+    },
+    {
+      "computed_fields": [
+        {
+          "name": "age_days",
+          "type": "number",
+          "description": "Days since creation",
+          "filterable": true,
+          "sortable": true
+        },
+        {
+          "name": "child_count",
+          "type": "number",
+          "description": "Count of child widgets",
+          "filterable": false,
+          "sortable": true
+        }
+      ]
+    }
+  ]
+}

@@ -37,7 +37,10 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 |----------|-------------|-------------|
 | [Field Selection](features/field-selection.md) | GraphQL-style response filtering | Implemented |
 | [Collection Querying](features/collection-querying.md) | Preferred query contract for list/search/query operations | Draft |
+| [Aggregations](features/aggregations.md) | Server-side summaries for collection queries | Draft |
+| [Computed Fields](features/computed-fields.md) | Adapter-declared derived values and `_computed.` paths | Draft |
 | [Pagination](features/pagination.md) | Cursor-based pagination semantics and response shape | Draft |
+| [Relationship Queries](features/relationship-queries.md) | Graph traversal and relationship query conventions | Draft |
 
 ### Security
 
@@ -77,9 +80,7 @@ Future features are tracked as GitHub issues. Key upcoming features:
 - Cursor-based pagination (#37)
 
 **Phase 2+ - Advanced:**
-- Computed fields (#42)
 - Streaming responses (#43)
-- Relationship queries (#44)
 - Schema versioning (#48)
 
 ## Reading Order

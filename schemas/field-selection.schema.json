@@ -16,6 +16,21 @@
       "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
       "description": "A field path using dot notation for nested properties (e.g., 'settings.theme')"
     },
+    "ComputedFieldPath": {
+      "type": "string",
+      "pattern": "^_computed\\.[a-z][a-z0-9_]*$",
+      "description": "A computed field path using the `_computed.` prefix (e.g., '_computed.age_days')"
+    },
+    "SelectableFieldPath": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FieldPath"
+        },
+        {
+          "$ref": "#/$defs/ComputedFieldPath"
+        }
+      ]
+    },
 
     "FieldSelectionInput": {
       "type": "object",
@@ -26,7 +41,7 @@
             {
               "type": "array",
               "items": {
-                "$ref": "#/$defs/FieldPath"
+                "$ref": "#/$defs/SelectableFieldPath"
               },
               "description": "Array of specific field names/paths to include"
             },
@@ -73,6 +88,35 @@
       "required": ["name", "type"],
       "additionalProperties": false
     },
+    "ComputedFieldDefinition": {
+      "type": "object",
+      "description": "Definition of a computed field exposed by the adapter",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Computed field name without the `_computed.` prefix"
+        },
+        "type": {
+          "type": "string",
+          "description": "Computed field data type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable computed field description"
+        },
+        "filterable": {
+          "type": "boolean",
+          "description": "Whether the computed field can be used in filter clauses"
+        },
+        "sortable": {
+          "type": "boolean",
+          "description": "Whether the computed field can be used in sort clauses"
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    },
 
     "PresetDefinition": {
       "type": "object",
@@ -85,7 +129,7 @@
         "fields": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/FieldPath"
+            "$ref": "#/$defs/SelectableFieldPath"
           },
           "description": "Fields included in this preset"
         },
@@ -119,6 +163,13 @@
             "$ref": "#/$defs/FieldDefinition"
           },
           "description": "All available fields that can be selected"
+        },
+        "computed_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ComputedFieldDefinition"
+          },
+          "description": "Adapter-declared computed fields available through `_computed.` paths"
         },
         "default_preset": {
           "$ref": "#/$defs/FieldSelectionPreset",
@@ -161,7 +212,7 @@
     },
     {
       "input": {
-        "fields": ["id", "name", "settings.theme", "settings.language"]
+        "fields": ["id", "name", "settings.theme", "settings.language", "_computed.age_days"]
       }
     },
     {
@@ -171,6 +222,9 @@
           { "name": "minimal", "fields": ["id", "name"], "description": "Essential identification fields" },
           { "name": "standard", "fields": ["id", "name", "email", "created_at"], "description": "Common fields" },
           { "name": "full", "fields": ["id", "name", "email", "created_at", "updated_at", "metadata"], "description": "All fields" }
+        ],
+        "computed_fields": [
+          { "name": "age_days", "type": "number", "description": "Days since creation", "filterable": true, "sortable": true }
         ],
         "available_fields": [
           { "name": "id", "type": "string", "description": "Unique identifier" },

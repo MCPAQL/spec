@@ -109,6 +109,23 @@ Dot notation accesses nested properties:
 }
 ```
 
+### 2.5 Computed Fields
+
+When adapters expose derived values, the preferred field path convention is the
+`_computed.` prefix:
+
+```javascript
+{
+  operation: "get_user",
+  params: {
+    fields: ["id", "name", "_computed.age_days"]
+  }
+}
+```
+
+This convention keeps derived values explicit while still composing with normal
+field selection.
+
 ---
 
 ## 3. Presets
@@ -220,6 +237,23 @@ If a requested field doesn't exist on an item:
 - **No error** - Silently skip
 - **Consistent behavior** - Same across all items
 
+### 4.4 Computed Field Responses
+
+Requested computed fields SHOULD appear under the `_computed` object:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "123",
+    "name": "Alice",
+    "_computed": {
+      "age_days": 47
+    }
+  }
+}
+```
+
 ---
 
 ## 5. Implementation Requirements
@@ -242,6 +276,7 @@ Adapters implementing field selection SHOULD:
 3. Support field selection on search results
 4. Validate field names against known fields
 5. Accept `preset` as a compatibility alias only when needed for older clients
+6. Document any `_computed.` field paths that can be requested
 
 > **Collection Querying Note:** Field selection is one part of the broader collection-query contract. See [Collection Querying](./collection-querying.md) for guidance on composing `fields` with `query`, `filter`, `sort`, and pagination.
 
@@ -265,7 +300,8 @@ Field selection options SHOULD be discoverable:
       description: "Field selection configuration",
       fields: [
         { name: "presets", type: "array", description: "Available presets" },
-        { name: "fields", type: "object", description: "Available fields by type" }
+        { name: "fields", type: "object", description: "Available fields by type" },
+        { name: "computed_fields", type: "array", description: "Available derived field definitions" }
       ]
     }
   }

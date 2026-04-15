@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/aggregation-query.schema.json",
+  "title": "MCP-AQL Aggregation Query",
+  "description": "Informative helper schema for the preferred MCP-AQL aggregation request and response shapes.",
+  "$defs": {
+    "AggregateExpression": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "boolean"
+        },
+        "group_by": {
+          "type": "string"
+        },
+        "sum": {
+          "type": "string"
+        },
+        "avg": {
+          "type": "string"
+        },
+        "min": {
+          "type": "string"
+        },
+        "max": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AggregationRequest": {
+      "type": "object",
+      "properties": {
+        "aggregate": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/AggregateExpression"
+          }
+        },
+        "include_items": {
+          "type": "boolean"
+        }
+      },
+      "required": ["aggregate"],
+      "additionalProperties": true
+    },
+    "AggregationSupport": {
+      "type": "object",
+      "properties": {
+        "supported": {
+          "type": "boolean"
+        },
+        "default_mode": {
+          "type": "string",
+          "enum": ["summary_only", "include_items"]
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["count", "group_by", "sum", "avg", "min", "max"]
+          }
+        },
+        "groupable_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "numeric_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "request": {
+      "$ref": "#/$defs/AggregationRequest"
+    },
+    "introspection": {
+      "$ref": "#/$defs/AggregationSupport"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "request": {
+        "aggregate": {
+          "total": {
+            "count": true
+          },
+          "by_status": {
+            "group_by": "status",
+            "count": true
+          }
+        }
+      }
+    },
+    {
+      "introspection": {
+        "supported": true,
+        "default_mode": "summary_only",
+        "functions": ["count", "group_by", "sum", "avg", "min", "max"],
+        "groupable_fields": ["status", "category"],
+        "numeric_fields": ["size_bytes", "usage_count"]
+      }
+    }
+  ]
+}

@@ -253,6 +253,17 @@ Adapters SHOULD use consistent patterns for common functionality:
 }
 ```
 
+**Aggregations:**
+```javascript
+{
+  aggregate: {
+    total: { count: true },
+    by_status: { group_by: "status", count: true }
+  },
+  include_items: false
+}
+```
+
 ### 4.3 Required vs Optional Parameters
 
 Each parameter MUST be documented as either required or optional. The operation schema (Section 5) specifies this via the `required` attribute.
@@ -262,6 +273,9 @@ Each parameter MUST be documented as either required or optional. The operation 
 Cross-cutting parameters are parameters that apply across multiple operations. To ensure consistent discoverability, implementations SHOULD define these parameters once and reference them consistently.
 
 For the preferred collection-query contract that combines text search, filters, sorting, pagination, and field selection, see [Collection Querying](./features/collection-querying.md).
+For summary-oriented server-side aggregation, see [Aggregations](./features/aggregations.md).
+For adapter-declared derived values, see [Computed Fields](./features/computed-fields.md).
+For graph traversal and relationship exploration, see [Relationship Queries](./features/relationship-queries.md).
 
 #### 4.4.1 Standard Cross-Cutting Parameters
 

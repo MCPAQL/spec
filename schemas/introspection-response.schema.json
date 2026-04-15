@@ -189,6 +189,106 @@
       "required": ["states"],
       "additionalProperties": false
     },
+    "ComputedFieldInfo": {
+      "type": "object",
+      "description": "Metadata describing an adapter-declared computed field",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Computed field name without the `_computed.` prefix"
+        },
+        "type": {
+          "type": "string",
+          "description": "Computed field type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable computed field description"
+        },
+        "filterable": {
+          "type": "boolean",
+          "description": "Whether the computed field can be used in filters"
+        },
+        "sortable": {
+          "type": "boolean",
+          "description": "Whether the computed field can be used in sorting"
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    },
+    "AggregationSupport": {
+      "type": "object",
+      "description": "Metadata describing server-side aggregation support for an operation",
+      "properties": {
+        "supported": {
+          "type": "boolean",
+          "description": "Whether aggregation is supported"
+        },
+        "default_mode": {
+          "type": "string",
+          "enum": ["summary_only", "include_items"],
+          "description": "Default response mode when `aggregate` is present"
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["count", "group_by", "sum", "avg", "min", "max"]
+          },
+          "description": "Supported aggregation functions"
+        },
+        "groupable_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Fields that can be used with `group_by`"
+        },
+        "numeric_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Fields that can be used with numeric aggregations"
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    },
+    "RelationshipCapabilities": {
+      "type": "object",
+      "description": "Metadata describing relationship-query support for an operation",
+      "properties": {
+        "supported": {
+          "type": "boolean",
+          "description": "Whether relationship traversal is supported"
+        },
+        "directions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["incoming", "outgoing", "both"]
+          },
+          "description": "Supported traversal directions"
+        },
+        "relationship_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Supported relationship types"
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum supported traversal depth"
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    },
 
     "OperationDetails": {
       "type": "object",
@@ -247,6 +347,21 @@
             "additionalProperties": false
           },
           "description": "Example invocations of the operation"
+        },
+        "computed_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ComputedFieldInfo"
+          },
+          "description": "Computed fields that may be requested through `_computed.` field paths"
+        },
+        "aggregation_support": {
+          "$ref": "#/$defs/AggregationSupport",
+          "description": "Aggregation capabilities for this operation"
+        },
+        "relationship_capabilities": {
+          "$ref": "#/$defs/RelationshipCapabilities",
+          "description": "Relationship traversal capabilities for this operation"
         },
         "lifecycle": {
           "$ref": "#/$defs/LifecycleInfo",
@@ -370,9 +485,21 @@
           "type": "boolean",
           "description": "Supports field selection in responses"
         },
+        "aggregations": {
+          "type": "boolean",
+          "description": "Supports server-side aggregations on collection operations"
+        },
+        "computed_fields": {
+          "type": "boolean",
+          "description": "Exposes adapter-declared computed fields"
+        },
         "pagination": {
           "type": "boolean",
           "description": "Supports cursor-based pagination"
+        },
+        "relationship_queries": {
+          "type": "boolean",
+          "description": "Supports graph and relationship traversal queries"
         },
         "warnings": {
           "type": "boolean",
@@ -579,7 +706,10 @@
           "capabilities": {
             "batch": false,
             "field_selection": true,
+            "aggregations": true,
+            "computed_fields": true,
             "pagination": true,
+            "relationship_queries": true,
             "warnings": true,
             "confirmation": true,
             "dangerous_operations": true
@@ -658,6 +788,22 @@
             "name": "Entity",
             "kind": "object",
             "description": "Newly created entity"
+          },
+          "computed_fields": [
+            {
+              "name": "age_days",
+              "type": "number",
+              "description": "Days since creation",
+              "filterable": true,
+              "sortable": true
+            }
+          ],
+          "aggregation_support": {
+            "supported": true,
+            "default_mode": "summary_only",
+            "functions": ["count", "group_by"],
+            "groupable_fields": ["entity_type"],
+            "numeric_fields": ["priority"]
           },
           "examples": [
             {
