@@ -692,8 +692,7 @@ mcp_aql_execute - EXECUTE operations (execute workflows, update state)
   operation: "list_resources",
   params: {
     resource_type: "user",
-    page: 1,
-    pageSize: 10
+    first: 10
   }
 }
 ```
@@ -764,7 +763,7 @@ This table maps concepts across all compared protocols.
 | **Response** | `{ data, errors }` | Document | JSON body | Result set | `{ success, data/error }` |
 | **Error** | `errors` array | Exception | HTTP status | SQLSTATE | `{ success: false, error }` |
 | **Batch** | N/A (single) | `insertMany` | Bulk endpoint | Transaction | `operations` array |
-| **Pagination** | `first/after` | `skip/limit` | Query params | OFFSET/LIMIT | `page/pageSize` |
+| **Pagination** | `first/after` | `skip/limit` | Query params | OFFSET/LIMIT | `first/after` (preferred) or adapter-documented compatibility params |
 
 ---
 

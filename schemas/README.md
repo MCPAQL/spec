@@ -131,7 +131,7 @@ Request and response formats for batch operations:
 
 Field selection parameters for controlling response payloads:
 - `fields` - Array of field paths or preset name
-- `preset` - Predefined field sets (minimal, standard, full)
+- `preset` - Optional compatibility alias for predefined field sets (minimal, standard, full)
 - Metadata for introspection of available fields
 
 ### Adapter Schema

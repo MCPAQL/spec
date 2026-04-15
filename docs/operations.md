@@ -309,6 +309,14 @@ shared_parameters:
       type: "string"
       required: false
       description: "Opaque cursor to continue after"
+    - name: "last"
+      type: "number"
+      required: false
+      description: "Maximum results to return from the end"
+    - name: "before"
+      type: "string"
+      required: false
+      description: "Opaque cursor to continue before"
 
   offset_pagination:
     - name: "limit"
@@ -321,6 +329,18 @@ shared_parameters:
       required: false
       description: "Number of results to skip"
       default: 0
+
+  page_pagination:
+    - name: "page"
+      type: "number"
+      required: false
+      description: "Page number (1-indexed)"
+      default: 1
+    - name: "page_size"
+      type: "number"
+      required: false
+      description: "Items per page"
+      default: 25
 ```
 
 #### 4.4.3 Cross-Cutting Parameter Consistency (SHOULD)

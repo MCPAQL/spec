@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-03-06
+**Last Updated:** 2026-04-15
 > **Document Status:** This document is an **informative conformance framework specification** aligned to the normative protocol requirements in `docs/versions/v1.0.0-draft.md`.
 >
 > **Implementation Status:** The full `mcpaql-conformance` runner defined here is not yet published in this repository. Current implemented checks are schema/example validation in `scripts/validate-schema-examples.mjs`.
@@ -83,9 +83,9 @@ Level 2 conformance indicates a complete MCP-AQL implementation with all optiona
 |-------------|-------------|
 | Level 1 | All Level 1 requirements |
 | Endpoint modes | Both CRUDE mode and Single-endpoint mode supported |
-| Field selection | `fields` and `preset` parameters on READ operations |
+| Field selection | `fields` parameter on READ operations, with preset-name support documented where implemented |
 | Batch operations | Multi-operation batching with individual results |
-| Cross-cutting params | Consistent `limit`, `offset`, `sort`, `order` support |
+| Cross-cutting params | Consistent documentation for collection-query controls such as `query`, `filter`, pagination, field selection, and sorting |
 
 **Test Categories Required:**
 - All Level 1 test categories
