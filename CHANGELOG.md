@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Synced stale documentation date metadata after the `develop` to `main` release merge
+  - Updated `Last Updated` / `updated` fields for docs changed by the release merge so the documentation date policy passes on `main`
+
 ### Added
 
 - Pagination response structure guidance for collection operations (#164)
