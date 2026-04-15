@@ -786,6 +786,12 @@ function parseArgs(argv) {
 }
 
 function runTestCommand(fixturePath, options) {
+  if (!fixturePath) {
+    process.stderr.write(
+      "No fixture path provided.\nUsage: node scripts/run-conformance-tests.mjs test <path> [options]\n"
+    );
+    process.exit(3);
+  }
   const fixture = loadJson(resolve(fixturePath));
   const report = evaluateFixture(fixture, options.level, options.tier);
 
@@ -833,6 +839,12 @@ function runVerifyFixtures(options) {
 }
 
 function runReportCommand(resultPath, options) {
+  if (!resultPath) {
+    process.stderr.write(
+      "No report path provided.\nUsage: node scripts/run-conformance-tests.mjs report <path> [options]\n"
+    );
+    process.exit(3);
+  }
   const report = loadJson(resolve(resultPath));
   if (!report || typeof report !== "object" || !report.summary || !Array.isArray(report.categories)) {
     process.stderr.write(

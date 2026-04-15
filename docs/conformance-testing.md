@@ -293,6 +293,7 @@ The following test categories SHOULD pass for Level 2 conformance:
 | Category | Tests | Rationale |
 |----------|-------|-----------|
 | Constraint Documentation | 2 | Discoverable constraints |
+| Level 2 Features | 3 | Endpoint modes, field selection, and batch operations |
 | Semantic Evaluation | Per implementation | LLM discoverability |
 
 **Failure in SHOULD PASS tests:** Produces WARN, does not block conformance
@@ -360,14 +361,12 @@ TEST: API Discoverability
 ```mermaid
 graph TD
     A[Run Test] --> B{Tier 1 Pass?}
-    B -->|Yes| C{Tier 2 Required?}
+    B -->|Yes| C{Tier 2 Pass?}
     B -->|No| D{Tier 2 Pass?}
-    C -->|No| E[PASS]
-    C -->|Yes| F{Tier 2 Pass?}
+    C -->|Yes| E[PASS]
+    C -->|No| F[FAIL]
     D -->|Yes| G[WARN: Update patterns]
-    D -->|No| H[FAIL]
-    F -->|Yes| E
-    F -->|No| H
+    D -->|No| F
 ```
 
 ---
