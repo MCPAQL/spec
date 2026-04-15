@@ -1,9 +1,11 @@
 # MCP-AQL Protocol Overview
 
 > **MCP-AQL** (Model Context Protocol - Agent Query Language) is a protocol that
-> consolidates discrete MCP tools into 5 CRUDE endpoints (Create, Read, Update,
-> Delete, Execute), providing significant token reduction while maintaining full
-> functionality.
+> consolidates discrete MCP tools into a small number of semantic endpoint
+> families, providing significant token reduction while maintaining full
+> functionality. The standard semantic-endpoint profile is CRUDE (Create, Read,
+> Update, Delete, Execute), but adapters MAY define alternate semantic endpoint
+> families.
 >
 > **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
@@ -23,10 +25,10 @@
 
 MCP-AQL defines a schema-driven operation dispatch protocol that:
 
-1. **Consolidates Operations** - Many discrete tools into 5 semantic endpoints
+1. **Consolidates Operations** - Many discrete tools into a small number of semantic endpoint families
 2. **Enables Discovery** - GraphQL-style introspection for runtime operation discovery
 3. **Enforces Safety** - Endpoint classification validates operation/endpoint matching
-4. **Supports Flexibility** - Implementations MAY offer CRUDE mode (5 endpoints) or Single mode (1 endpoint)
+4. **Supports Flexibility** - Implementations MAY offer semantic endpoint mode with the standard CRUDE profile or alternate semantic endpoint families, or Single mode
 
 ```
 +-------------------+
@@ -116,7 +118,7 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
                      +-------------------+           +-------------------+
 ```
 
-> **Note:** This diagram shows a runtime lifecycle flow, not endpoint classification. Operations like `get_execution_state` that query execution state belong to the READ endpoint, not EXECUTE. See [CRUDE Pattern Classification](crude-pattern.md#61-classification-principle) for details.
+> **Note:** This diagram shows a runtime lifecycle flow, not endpoint classification. Operations like `get_execution_state` that query execution state belong to the READ semantic category, not EXECUTE. In the standard CRUDE profile they are exposed on the READ endpoint. See [CRUDE Pattern Classification](crude-pattern.md#61-classification-principle) for details.
 
 ---
 
@@ -124,9 +126,9 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
 
 MCP-AQL supports two operational modes. Implementations MUST support at least one mode and SHOULD support both:
 
-### CRUDE Mode
+### Semantic Endpoint Mode
 
-Exposes 5 separate endpoints, each with semantic meaning:
+The standard CRUDE profile exposes 5 separate endpoints, each with semantic meaning:
 
 ```
 mcp_aql_create  - CREATE operations
@@ -134,6 +136,15 @@ mcp_aql_read    - READ operations
 mcp_aql_update  - UPDATE operations
 mcp_aql_delete  - DELETE operations
 mcp_aql_execute - EXECUTE operations
+```
+
+An alternate semantic-endpoint profile can expose a different but still semantically legible set:
+
+```text
+mcp_aql_discover - Discovery and inspection operations
+mcp_aql_query    - Retrieval and filtering operations
+mcp_aql_manage   - Mutating and administrative operations
+mcp_aql_operate  - Runtime and lifecycle operations
 ```
 
 **Advantages:**
@@ -167,7 +178,7 @@ The primary motivation for MCP-AQL is reducing the token cost of tool registrati
 | Configuration | Approximate Token Cost | Reduction |
 |--------------|------------------------|-----------|
 | Discrete Tools (50+) | ~30,000 tokens | baseline |
-| CRUDE Mode (5 endpoints) | ~4,500 tokens | ~85% |
+| Semantic Endpoint Mode (CRUDE profile, 5 endpoints) | ~4,300 tokens | ~85% |
 | Single Mode (1 endpoint) | ~1,100 tokens | ~96% |
 
 ### Runtime Discovery
@@ -185,7 +196,7 @@ Instead of parsing many tool schemas at registration time, clients use introspec
 { operation: "introspect", params: { query: "types", name: "EntityType" } }
 ```
 
-Implementations MUST support the `introspect` operation on the READ endpoint.
+Implementations MUST support the `introspect` operation as a READ-category operation on a documented endpoint family.
 
 ---
 
@@ -196,7 +207,8 @@ Implementations MUST support the `introspect` operation on the READ endpoint.
 Operations SHOULD be defined declaratively with:
 
 - **name** - The operation identifier
-- **endpoint** - The CRUDE endpoint classification
+- **semantic_category** - The standard CREATE/READ/UPDATE/DELETE/EXECUTE classification
+- **endpoint** - The exposed endpoint family name
 - **description** - Human-readable description
 - **params** - Required and optional parameter definitions
 - **handler** - Reference to the implementation handler
@@ -303,9 +315,9 @@ When batch operations are supported, implementations:
 
 An MCP-AQL implementation is conformant if it:
 
-1. Implements at least one endpoint mode (CRUDE or Single)
+1. Implements at least one endpoint mode (semantic or Single)
 2. Enforces endpoint classification for all operations
-3. Provides the `introspect` operation on the READ endpoint
+3. Provides the `introspect` operation as a READ-category operation on a documented endpoint family
 4. Returns discriminated responses for all operations
 5. Validates required parameters before dispatching
 

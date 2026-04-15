@@ -5,10 +5,16 @@
   "description": "Schema for MCP-AQL introspection operation responses. Introspection enables runtime discovery of operations, types, and capabilities.",
 
   "$defs": {
-    "EndpointCategory": {
+    "SemanticCategory": {
       "type": "string",
       "enum": ["CREATE", "READ", "UPDATE", "DELETE", "EXECUTE"],
-      "description": "CRUDE endpoint categories for operation classification"
+      "description": "Standard semantic categories for operation classification"
+    },
+
+    "EndpointFamily": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exposed endpoint family name or logical tool grouping for an operation"
     },
 
     "TypeKind": {
@@ -109,16 +115,20 @@
           "type": "string",
           "description": "Operation identifier (e.g., 'create_entity')"
         },
+        "semantic_category": {
+          "$ref": "#/$defs/SemanticCategory",
+          "description": "Standard semantic category for the operation"
+        },
         "endpoint": {
-          "$ref": "#/$defs/EndpointCategory",
-          "description": "CRUDE endpoint this operation belongs to"
+          "$ref": "#/$defs/EndpointFamily",
+          "description": "Exposed endpoint family this operation belongs to"
         },
         "description": {
           "type": "string",
           "description": "Brief description of the operation"
         }
       },
-      "required": ["name", "endpoint", "description"],
+      "required": ["name", "semantic_category", "endpoint", "description"],
       "additionalProperties": false
     },
 
@@ -179,6 +189,106 @@
       "required": ["states"],
       "additionalProperties": false
     },
+    "ComputedFieldInfo": {
+      "type": "object",
+      "description": "Metadata describing an adapter-declared computed field",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Computed field name without the `_computed.` prefix"
+        },
+        "type": {
+          "type": "string",
+          "description": "Computed field type"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable computed field description"
+        },
+        "filterable": {
+          "type": "boolean",
+          "description": "Whether the computed field can be used in filters"
+        },
+        "sortable": {
+          "type": "boolean",
+          "description": "Whether the computed field can be used in sorting"
+        }
+      },
+      "required": ["name", "type"],
+      "additionalProperties": false
+    },
+    "AggregationSupport": {
+      "type": "object",
+      "description": "Metadata describing server-side aggregation support for an operation",
+      "properties": {
+        "supported": {
+          "type": "boolean",
+          "description": "Whether aggregation is supported"
+        },
+        "default_mode": {
+          "type": "string",
+          "enum": ["summary_only", "include_items"],
+          "description": "Default response mode when `aggregate` is present"
+        },
+        "functions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["count", "group_by", "sum", "avg", "min", "max"]
+          },
+          "description": "Supported aggregation functions"
+        },
+        "groupable_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Fields that can be used with `group_by`"
+        },
+        "numeric_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Fields that can be used with numeric aggregations"
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    },
+    "RelationshipCapabilities": {
+      "type": "object",
+      "description": "Metadata describing relationship-query support for an operation",
+      "properties": {
+        "supported": {
+          "type": "boolean",
+          "description": "Whether relationship traversal is supported"
+        },
+        "directions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["incoming", "outgoing", "both"]
+          },
+          "description": "Supported traversal directions"
+        },
+        "relationship_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Supported relationship types"
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum supported traversal depth"
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    },
 
     "OperationDetails": {
       "type": "object",
@@ -188,13 +298,17 @@
           "type": "string",
           "description": "Operation identifier"
         },
+        "semantic_category": {
+          "$ref": "#/$defs/SemanticCategory",
+          "description": "Standard semantic category for the operation"
+        },
         "endpoint": {
-          "$ref": "#/$defs/EndpointCategory",
-          "description": "CRUDE endpoint this operation belongs to"
+          "$ref": "#/$defs/EndpointFamily",
+          "description": "Exposed endpoint family this operation belongs to"
         },
         "mcpTool": {
           "type": "string",
-          "description": "MCP tool name (e.g., 'mcp_aql_create')"
+          "description": "Actual MCP tool name handling the operation (e.g., 'mcp_aql_query')"
         },
         "description": {
           "type": "string",
@@ -234,12 +348,27 @@
           },
           "description": "Example invocations of the operation"
         },
+        "computed_fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ComputedFieldInfo"
+          },
+          "description": "Computed fields that may be requested through `_computed.` field paths"
+        },
+        "aggregation_support": {
+          "$ref": "#/$defs/AggregationSupport",
+          "description": "Aggregation capabilities for this operation"
+        },
+        "relationship_capabilities": {
+          "$ref": "#/$defs/RelationshipCapabilities",
+          "description": "Relationship traversal capabilities for this operation"
+        },
         "lifecycle": {
           "$ref": "#/$defs/LifecycleInfo",
           "description": "Execution lifecycle metadata (for EXECUTE operations that manage long-running processes)"
         }
       },
-      "required": ["name", "endpoint", "mcpTool", "description", "permissions", "parameters", "returns"],
+      "required": ["name", "semantic_category", "endpoint", "mcpTool", "description", "permissions", "parameters", "returns"],
       "additionalProperties": false
     },
 
@@ -356,9 +485,21 @@
           "type": "boolean",
           "description": "Supports field selection in responses"
         },
+        "aggregations": {
+          "type": "boolean",
+          "description": "Supports server-side aggregations on collection operations"
+        },
+        "computed_fields": {
+          "type": "boolean",
+          "description": "Exposes adapter-declared computed fields"
+        },
         "pagination": {
           "type": "boolean",
           "description": "Supports cursor-based pagination"
+        },
+        "relationship_queries": {
+          "type": "boolean",
+          "description": "Supports graph and relationship traversal queries"
         },
         "warnings": {
           "type": "boolean",
@@ -393,7 +534,7 @@
         "mode": {
           "type": "string",
           "description": "Endpoint mode",
-          "enum": ["crude", "single", "all"]
+          "enum": ["semantic", "single", "all"]
         },
         "capabilities": {
           "$ref": "#/$defs/ProtocolCapabilities",
@@ -561,11 +702,14 @@
         "_protocol": {
           "version": "1.0.0-alpha.1",
           "conformance": "level-1",
-          "mode": "crude",
+          "mode": "semantic",
           "capabilities": {
             "batch": false,
             "field_selection": true,
+            "aggregations": true,
+            "computed_fields": true,
             "pagination": true,
+            "relationship_queries": true,
             "warnings": true,
             "confirmation": true,
             "dangerous_operations": true
@@ -574,17 +718,20 @@
         "operations": [
           {
             "name": "create_entity",
-            "endpoint": "CREATE",
+            "semantic_category": "CREATE",
+            "endpoint": "manage",
             "description": "Create a new entity"
           },
           {
             "name": "list_entities",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "query",
             "description": "List entities with filtering"
           },
           {
             "name": "introspect",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "query",
             "description": "Discover available operations and types"
           }
         ]
@@ -595,8 +742,9 @@
       "data": {
         "operation": {
           "name": "create_entity",
-          "endpoint": "CREATE",
-          "mcpTool": "mcp_aql_create",
+          "semantic_category": "CREATE",
+          "endpoint": "manage",
+          "mcpTool": "mcp_aql_manage",
           "description": "Create a new entity of any type",
           "permissions": {
             "readOnly": false,
@@ -640,6 +788,22 @@
             "name": "Entity",
             "kind": "object",
             "description": "Newly created entity"
+          },
+          "computed_fields": [
+            {
+              "name": "age_days",
+              "type": "number",
+              "description": "Days since creation",
+              "filterable": true,
+              "sortable": true
+            }
+          ],
+          "aggregation_support": {
+            "supported": true,
+            "default_mode": "summary_only",
+            "functions": ["count", "group_by"],
+            "groupable_fields": ["entity_type"],
+            "numeric_fields": ["priority"]
           },
           "examples": [
             {

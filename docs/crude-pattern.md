@@ -8,7 +8,7 @@
 
 ## Abstract
 
-This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoint pattern, which extends traditional CRUD semantics with an Execute endpoint for runtime lifecycle operations.
+This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoint pattern, which extends traditional CRUD semantics with an Execute endpoint for runtime lifecycle operations. CRUDE is the standard semantic-endpoint profile in MCP-AQL, not the only allowed endpoint-family design.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoi
 
 ### 1.1 Purpose
 
-The CRUDE pattern provides semantic grouping of operations by their effect on system state. This grouping enables:
+The CRUDE pattern provides a standard semantic grouping of operations by their effect on system state. This grouping enables:
 
 - Permission-based access control at the endpoint level
 - Clear separation of read-only, additive, modifying, and destructive operations
@@ -47,7 +47,9 @@ The EXECUTE endpoint addresses these requirements explicitly.
 Each adapter implementing MCP-AQL:
 - Defines its own operations
 - Classifies each operation into the appropriate CRUDE endpoint
-- Documents its operation-to-endpoint mapping via introspection
+- Documents its operation-to-endpoint mapping via introspection when exposing the CRUDE profile
+
+Adapters MAY instead expose alternate semantic endpoint families when that better matches the target API. See [Endpoint Modes](endpoint-modes.md) and the normative specification for the generalized semantic-endpoint model.
 
 ---
 
@@ -216,9 +218,9 @@ Implementations MAY require explicit confirmation for:
 
 ## 4. Endpoint Modes
 
-### 4.1 CRUDE Mode
+### 4.1 CRUDE Profile Within Semantic Endpoint Mode
 
-Exposes five separate MCP tools, one per endpoint:
+Within semantic endpoint mode, the standard CRUDE profile exposes five separate MCP tools, one per endpoint:
 
 ```
 mcp_aql_create   - CREATE operations
@@ -393,17 +395,17 @@ Adapters MUST document their operation classification via introspection. Each op
 
 ### 7.1 MUST Requirements
 
-Conforming implementations MUST:
+Implementations exposing the CRUDE profile MUST:
 
-1. Implement all five CRUDE endpoints OR the single unified endpoint
+1. Implement all five CRUDE endpoints, or offer a single unified endpoint that preserves the same CRUDE semantic classification internally
 2. Route operations to their correct endpoints according to classification
-3. Return errors for operations sent to incorrect endpoints (CRUDE mode)
+3. Return errors for operations sent to incorrect endpoints in CRUDE mode
 4. Apply permission flags accurately for each endpoint
-5. Implement the `introspect` operation (READ endpoint)
+5. Implement the `introspect` operation as a READ-category operation
 
 ### 7.2 SHOULD Requirements
 
-Conforming implementations SHOULD:
+Implementations exposing the CRUDE profile SHOULD:
 
 1. Support both CRUDE and Single endpoint modes
 2. Provide configuration for mode selection

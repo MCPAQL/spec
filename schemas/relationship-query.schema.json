@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcpaql.org/schemas/relationship-query.schema.json",
+  "title": "MCP-AQL Relationship Query",
+  "description": "Informative helper schema for the preferred MCP-AQL relationship-query request and capability shapes.",
+  "$defs": {
+    "Direction": {
+      "type": "string",
+      "enum": ["incoming", "outgoing", "both"]
+    },
+    "RootReference": {
+      "type": "object",
+      "description": "Portable root reference shape. Adapters MAY include additional root identifier fields in concrete requests.",
+      "properties": {
+        "element_type": {
+          "type": "string"
+        },
+        "element_name": {
+          "type": "string"
+        }
+      },
+      "required": ["element_type", "element_name"],
+      "additionalProperties": true
+    },
+    "RelationshipSection": {
+      "type": "string",
+      "enum": ["root", "relationships", "graph.nodes", "graph.edges"]
+    },
+    "RelationshipRecord": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "target": {
+          "$ref": "#/$defs/RootReference"
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["type", "direction", "target"],
+      "additionalProperties": false
+    },
+    "GraphNode": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "element_type": {
+          "type": "string"
+        },
+        "element_name": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "element_type", "element_name"],
+      "additionalProperties": false
+    },
+    "GraphEdge": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": ["source", "target", "type"],
+      "additionalProperties": false
+    },
+    "RelationshipResponse": {
+      "type": "object",
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/RootReference"
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelationshipRecord"
+          }
+        },
+        "graph": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/GraphNode"
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/GraphEdge"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["root"],
+      "additionalProperties": false
+    },
+    "RelationshipCapabilities": {
+      "type": "object",
+      "properties": {
+        "supported": {
+          "type": "boolean"
+        },
+        "directions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Direction"
+          }
+        },
+        "relationship_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": ["supported"],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "request": {
+      "type": "object",
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/RootReference"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "relationship": {
+          "type": "string"
+        },
+        "depth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RelationshipSection"
+          }
+        },
+        "first": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "after": {
+          "type": "string"
+        }
+      },
+      "required": ["root", "direction"],
+      "additionalProperties": true
+    },
+    "relationship_capabilities": {
+      "$ref": "#/$defs/RelationshipCapabilities"
+    },
+    "response": {
+      "$ref": "#/$defs/RelationshipResponse"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "request": {
+        "root": {
+          "element_type": "agent",
+          "element_name": "code_reviewer"
+        },
+        "direction": "outgoing",
+        "relationship": "uses",
+        "depth": 2,
+        "include": ["root", "relationships", "graph.nodes", "graph.edges"],
+        "first": 25,
+        "after": "cursor_rel_001"
+      }
+    },
+    {
+      "response": {
+        "root": {
+          "element_type": "agent",
+          "element_name": "code_reviewer"
+        },
+        "relationships": [
+          {
+            "type": "uses",
+            "direction": "outgoing",
+            "target": {
+              "element_type": "skill",
+              "element_name": "typescript_analysis"
+            },
+            "depth": 1
+          }
+        ],
+        "graph": {
+          "nodes": [
+            {
+              "id": "agent:code_reviewer",
+              "element_type": "agent",
+              "element_name": "code_reviewer"
+            },
+            {
+              "id": "skill:typescript_analysis",
+              "element_type": "skill",
+              "element_name": "typescript_analysis"
+            }
+          ],
+          "edges": [
+            {
+              "source": "agent:code_reviewer",
+              "target": "skill:typescript_analysis",
+              "type": "uses"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "relationship_capabilities": {
+        "supported": true,
+        "directions": ["incoming", "outgoing", "both"],
+        "relationship_types": ["uses", "extends", "references", "triggers", "composes"],
+        "max_depth": 3
+      }
+    }
+  ]
+}

@@ -47,7 +47,7 @@ This specification covers:
 
 ### 1.4 Relationship to MCP
 
-MCP-AQL adapters are MCP servers that expose operations through the CRUDE endpoint pattern. All MCP transport and lifecycle requirements apply. This specification defines additional requirements specific to MCP-AQL tool registration and error handling.
+MCP-AQL adapters are MCP servers that expose operations through semantic endpoint families or a single unified endpoint. The standard CRUDE profile is one semantic-endpoint pattern, but adapters MAY define alternate semantic endpoint families that better match the target domain. All MCP transport and lifecycle requirements apply. This specification defines additional requirements specific to MCP-AQL tool registration and error handling.
 
 ---
 
@@ -57,9 +57,13 @@ MCP-AQL adapters are MCP servers that expose operations through the CRUDE endpoi
 
 MCP-AQL adapters MUST include the `introspect` operation in their tool descriptions. This solves the bootstrap problem by ensuring agents know how to discover available operations.
 
-#### 2.1.1 CRUDE Mode Tool Descriptions
+#### 2.1.1 Semantic Endpoint Mode Tool Descriptions
 
-In CRUDE mode, each endpoint registers as a separate MCP tool. Tool descriptions MUST follow this template:
+In semantic endpoint mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the semantic-endpoint patterns below.
+
+**Standard CRUDE Profile:**
+
+When the adapter exposes the standard CRUDE profile, tool descriptions SHOULD follow these templates:
 
 **CREATE Endpoint:**
 ```
@@ -149,6 +153,46 @@ Discover required parameters:
 { operation: "introspect", params: { query: "operations", name: "[operation_name]" } }
 ```
 
+**Alternative Semantic Endpoint Profiles:**
+
+When the adapter exposes custom semantic endpoint families, each tool description SHOULD follow this template:
+
+```
+[Endpoint family purpose].
+
+Primary semantic categories: [category_list]
+
+Supported operations: [operation_list]
+
+[Domain notes if applicable]
+
+Quick start example:
+{ operation: "[example_op]", params: { [example_params] } }
+
+Discover all operations and parameters:
+{ operation: "introspect", params: { query: "operations" } }
+```
+
+Adapters SHOULD describe both the family purpose and the kinds of operations it contains so agents can choose between families before calling introspection details.
+
+**Concrete Example (`mcp_aql_query`):**
+
+```text
+Query-oriented operations for retrieval, filtering, aggregation, and field selection.
+
+Primary semantic categories: READ
+
+Supported operations: list_datasets, get_dataset, search_datasets, introspect
+
+Use this endpoint when the task is to look up, inspect, search, or summarize existing data.
+
+Quick start example:
+{ operation: "search_datasets", params: { query: "pricing", limit: 10 } }
+
+Discover all operations and parameters:
+{ operation: "introspect", params: { query: "operations" } }
+```
+
 #### 2.1.2 Single Mode Tool Description
 
 In Single mode, a single MCP tool is registered with this template:
@@ -156,7 +200,7 @@ In Single mode, a single MCP tool is registered with this template:
 ```
 MCP-AQL [domain] adapter. All operations through unified entry point.
 
-Operations are automatically routed based on their semantic category (Create, Read, Update, Delete, Execute).
+Operations are automatically routed based on their documented semantic category and endpoint-family mapping.
 
 Supported operation categories:
 - Create: [brief list]
@@ -177,7 +221,7 @@ Use introspection to discover all available operations and their parameters.
 
 Implementations SHOULD use these standard tool names:
 
-**CRUDE Mode:**
+**Standard CRUDE Profile:**
 | Tool Name | Purpose |
 |-----------|---------|
 | `mcp_aql_create` | CREATE operations |
@@ -185,6 +229,10 @@ Implementations SHOULD use these standard tool names:
 | `mcp_aql_update` | UPDATE operations |
 | `mcp_aql_delete` | DELETE operations |
 | `mcp_aql_execute` | EXECUTE operations |
+
+**Alternative Semantic Endpoint Profiles:**
+
+Adapters MAY use semantically explicit tool names such as `mcp_aql_discover`, `mcp_aql_query`, `mcp_aql_manage`, or `mcp_aql_operate`. These names SHOULD remain stable within an adapter and MUST be discoverable via introspection.
 
 **Single Mode:**
 | Tool Name | Purpose |
@@ -199,7 +247,7 @@ When multiple MCP-AQL adapters are deployed in a single session, tool names MUST
 
 Adapters SHOULD include MCP tool annotations to provide permission hints:
 
-**CRUDE Mode Annotations:**
+**Standard CRUDE Profile Annotations:**
 ```json
 {
   "name": "mcp_aql_read",
@@ -241,6 +289,19 @@ Adapters SHOULD include MCP tool annotations to provide permission hints:
   }
 }
 ```
+
+**Alternative Semantic Endpoint Annotations:**
+```json
+{
+  "name": "mcp_aql_control",
+  "annotations": {
+    "readOnlyHint": false,
+    "destructiveHint": true
+  }
+}
+```
+
+Semantic endpoint families SHOULD set annotations conservatively based on the riskiest operation the family exposes.
 
 **Single Mode Annotations:**
 ```json
@@ -331,19 +392,19 @@ Adapters MAY use dynamic `enum` generation for the `operation` property to provi
 
 > **Note:** Dynamic enumeration increases tool registration token cost. Implementations SHOULD consider the trade-off between discoverability and token efficiency. For large operation sets, prefer introspection over enumeration.
 
-### 3.4 CRUDE Mode Schema Composition
+### 3.4 Semantic Endpoint Mode Schema Composition
 
-In CRUDE mode, each endpoint MAY have a schema that enumerates only operations valid for that endpoint:
+In semantic endpoint mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
 
 ```json
 {
-  "name": "mcp_aql_read",
+  "name": "mcp_aql_query",
   "inputSchema": {
     "type": "object",
     "properties": {
       "operation": {
         "type": "string",
-        "description": "READ operation to execute",
+        "description": "Query-family operation to execute",
         "enum": ["list_elements", "get_element", "search_elements", "introspect"]
       },
       "params": {
@@ -548,7 +609,7 @@ READ, CREATE, UPDATE, and DELETE operations MAY emit progress notifications for 
 
 ### 6.1 The Collision Problem
 
-When multiple MCP-AQL adapters are deployed in a single MCP session, tool names may collide. Two adapters both registering `mcp_aql_read` creates ambiguity.
+When multiple MCP-AQL adapters are deployed in a single MCP session, tool names may collide. Two adapters both registering `mcp_aql_read` or `mcp_aql_query` creates ambiguity.
 
 ### 6.2 Tool Name Prefixing
 
@@ -563,6 +624,7 @@ MCP_AQL_TOOL_PREFIX=github_
 ```
 github_mcp_aql_create
 github_mcp_aql_read
+github_mcp_aql_query
 github_mcp_aql_update
 github_mcp_aql_delete
 github_mcp_aql_execute
@@ -607,8 +669,8 @@ function groupAdapterTools(tools: Tool[]): Map<string, Tool[]> {
 
   for (const tool of tools) {
     // Extract prefix from tool name
-    const match = tool.name.match(/^(.+_)mcp_aql_(create|read|update|delete|execute)$/);
-    const prefix = match ? match[1] : "";
+    const match = tool.name.match(/^(.+_)?mcp_aql(?:_([a-z0-9_]+))?$/);
+    const prefix = match && match[1] ? match[1] : "";
 
     if (!groups.has(prefix)) {
       groups.set(prefix, []);
@@ -652,7 +714,7 @@ Conforming implementations MUST:
 
 Conforming implementations SHOULD:
 
-1. Use the standard tool names (`mcp_aql_create`, etc.)
+1. Use the standard tool names (`mcp_aql_create`, etc.) when exposing the CRUDE profile
 2. Include MCP tool annotations for permission hints
 3. Support the `MCP_AQL_TOOL_PREFIX` environment variable
 4. Emit progress notifications for long-running EXECUTE operations

@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Generalized semantic-endpoint model alongside the standard CRUDE profile
+  - Updated the normative draft to distinguish standardized semantic categories from exposed endpoint families
+  - Reframed `docs/endpoint-modes.md` around semantic endpoint mode versus single mode, with CRUDE as the standard profile inside semantic endpoint mode
+  - Updated introspection docs and schema so operations disclose both `semantic_category` and `endpoint`
+  - Clarified MCP integration, conformance, and top-level docs so CRUDE remains the standard profile rather than the only in-spec semantic-endpoint shape
+  - Breaking draft change: introspection examples and schema guidance now require `semantic_category`, treat `endpoint` as the exposed endpoint-family name, and use `_protocol.mode: "semantic"` for both CRUDE and alternate semantic-endpoint profiles
+- Query-language feature guides for aggregations, computed fields, and relationship traversal (#36, #42, #44)
+  - Added `docs/features/aggregations.md` for the preferred `aggregate` request and `aggregations` response shape
+  - Added `docs/features/computed-fields.md` for the `_computed.` field path convention and metadata pattern
+  - Added `docs/features/relationship-queries.md` for `query_relationships`, graph traversal semantics, and relationship capability discovery
+  - Added non-normative helper schemas for aggregation, computed-field, and relationship-query shapes
+  - Extended `introspection-response.schema.json` and introspection docs with optional metadata for aggregation support, computed fields, and relationship capabilities
+  - Updated collection-querying, field-selection, operations, README, and schema index docs to wire the new query-language features into the existing collection-query surface
+- Fixture-driven conformance runner and semantic evaluation baseline (#10, #56)
+  - Added `scripts/run-conformance-tests.mjs` with `test`, `verify-fixtures`, `report`, and `version` commands
+  - Added `tests/conformance/` evidence bundles covering passing Level 1, passing Level 2, semantic-warning, and failing reference cases
+  - Added CI integration via `.github/workflows/conformance-tests.yml`
+  - Updated conformance, README, and generator docs to reflect the implemented fixture-first runner model and two-tier semantic evaluation flow
+- Cross-domain implementation guide for adapting MCP-AQL beyond the Dollhouse reference profile (#34)
+  - Added `docs/guides/cross-domain-implementation.md` with domain mapping guidance, CRUDE design advice, introspection checklist, four non-Dollhouse examples, and reusable operation templates
+  - Linked the new guide from the root README, docs index, and guides index
 - Pagination response structure guidance for collection operations (#164)
   - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
   - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination

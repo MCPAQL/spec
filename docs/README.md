@@ -16,12 +16,12 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | Document | Description | Status |
 |----------|-------------|--------|
 | [v1.0.0-draft](versions/v1.0.0-draft.md) | Current specification version | Draft |
-| [CRUDE Pattern](crude-pattern.md) | Endpoint semantics and routing | Draft |
-| [Endpoint Modes](endpoint-modes.md) | CRUDE vs Single mode configuration | Draft |
+| [CRUDE Pattern](crude-pattern.md) | Standard semantic-endpoint profile and routing | Draft |
+| [Endpoint Modes](endpoint-modes.md) | Semantic endpoint mode and Single mode configuration | Draft |
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 | [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
-| [Conformance Testing](conformance-testing.md) | Test requirements and evaluation methodology | Draft |
+| [Conformance Testing](conformance-testing.md) | Test requirements plus the fixture-driven runner model used in this repo | Draft |
 
 ### Plugin & Adapter Contracts
 
@@ -37,7 +37,10 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 |----------|-------------|-------------|
 | [Field Selection](features/field-selection.md) | GraphQL-style response filtering | Implemented |
 | [Collection Querying](features/collection-querying.md) | Preferred query contract for list/search/query operations | Draft |
+| [Aggregations](features/aggregations.md) | Server-side summaries for collection queries | Draft |
+| [Computed Fields](features/computed-fields.md) | Adapter-declared derived values and `_computed.` paths | Draft |
 | [Pagination](features/pagination.md) | Cursor-based pagination semantics and response shape | Draft |
+| [Relationship Queries](features/relationship-queries.md) | Graph traversal and relationship query conventions | Draft |
 
 ### Security
 
@@ -59,6 +62,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | Document | Description |
 |----------|-------------|
 | [Protocol Comparison](guides/protocol-comparison.md) | MCP-AQL vs other protocols |
+| [Cross-Domain Implementation](guides/cross-domain-implementation.md) | Step-by-step guide for adapting MCP-AQL to domains beyond Dollhouse-style element management |
 
 ### Roadmap
 
@@ -77,9 +81,7 @@ Future features are tracked as GitHub issues. Key upcoming features:
 - Cursor-based pagination (#37)
 
 **Phase 2+ - Advanced:**
-- Computed fields (#42)
 - Streaming responses (#43)
-- Relationship queries (#44)
 - Schema versioning (#48)
 
 ## Reading Order
@@ -87,7 +89,7 @@ Future features are tracked as GitHub issues. Key upcoming features:
 For newcomers to MCP-AQL:
 
 1. **[v1.0.0-draft](versions/v1.0.0-draft.md)** - Start with the main specification
-2. **[CRUDE Pattern](crude-pattern.md)** - Understand the endpoint semantics
+2. **[CRUDE Pattern](crude-pattern.md)** - Understand the standard semantic-endpoint profile
 3. **[Operations](operations.md)** - Learn operation design patterns
 4. **[Introspection](introspection.md)** - Learn the discovery system
 5. **[Conformance Testing](conformance-testing.md)** - Understand conformance requirements

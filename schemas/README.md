@@ -13,6 +13,9 @@ This directory contains the formal JSON Schema definitions for the MCP-AQL proto
 | [batch-operation.schema.json](./batch-operation.schema.json) | Batch operation request/response format | Yes |
 | [field-selection.schema.json](./field-selection.schema.json) | Field selection parameters and metadata | Yes |
 | [collection-query.schema.json](./collection-query.schema.json) | Preferred collection-query request controls for list/search/query operations | No |
+| [aggregation-query.schema.json](./aggregation-query.schema.json) | Preferred aggregation request and introspection helper shapes | No |
+| [computed-fields.schema.json](./computed-fields.schema.json) | Preferred computed-field request and metadata helper shapes | No |
+| [relationship-query.schema.json](./relationship-query.schema.json) | Preferred relationship-query request and capability helper shapes | No |
 | [adapter-schema.schema.json](./adapter-schema.schema.json) | Adapter definition file validation | Yes |
 | [discovery-bundle.schema.json](./discovery-bundle.schema.json) | MCP server interrogation capture + normalization bundle used by generator pipelines | No |
 
@@ -107,10 +110,9 @@ Fields prefixed with underscore (`_meta`, `_debug`) are reserved for protocol-le
 ### Introspection Response
 
 Responses to `introspect` operation queries:
-- `operations` - List available operations
+- `operations` - List available operations with semantic categories and endpoint families
 - `operation` - Get details for single operation
 - `types` - List adapter-defined types
-- `endpoints` - List CRUDE endpoints
 
 ### Danger Level
 
@@ -134,7 +136,7 @@ Field selection parameters for controlling response payloads:
 - `fields` - Array of field paths or preset name
 - `preset` - Optional compatibility alias for predefined field sets (minimal, standard, full)
 - JSON Schema `deprecated: true` is used as an annotation signal for compatibility aliases such as `preset`; tooling support for surfacing that annotation may vary
-- Metadata for introspection of available fields
+- Metadata for introspection of available fields, including `_computed.*` projections
 
 ### Collection Querying
 
@@ -142,8 +144,28 @@ Preferred collection-query controls for collection-returning READ operations:
 - `query` - Free-text search string or documented structured query object
 - `filter` - Structured filtering criteria
 - `sort` - Sort object with `field` and `order`
+- `aggregate` - Named server-side summary expressions
 - `first`, `after`, `last`, `before` - Preferred cursor-pagination controls
 - `limit`, `offset`, `page`, `page_size` - Compatibility pagination controls when documented
+
+### Aggregation Query
+
+Helper schema for preferred aggregation controls:
+- `aggregate` - Named count/group/sum/avg/min/max expressions
+- `include_items` - Explicit opt-in to return raw records alongside summaries
+- `aggregation_support` - Introspection metadata for supported functions and fields
+
+### Computed Fields
+
+Helper schema for derived values exposed by adapters:
+- `_computed.<name>` - Preferred request path convention
+- `computed_fields` - Introspection metadata for names, types, and filter/sort support
+
+### Relationship Query
+
+Helper schema for graph traversal and relationship discovery:
+- `query_relationships` request parameters such as `root`, `direction`, `relationship`, and `depth`
+- `relationship_capabilities` introspection metadata for directions, types, and depth limits
 
 ### Adapter Schema
 

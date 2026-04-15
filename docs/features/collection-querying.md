@@ -8,7 +8,7 @@
 
 ## Abstract
 
-This document defines the preferred request contract for collection-returning READ operations in MCP-AQL. It aligns `list_*`, `search_*`, and `query_*` operations around a consistent shape for free-text search, structured filtering, sorting, field selection, and pagination.
+This document defines the preferred request contract for collection-returning READ operations in MCP-AQL. It aligns `list_*`, `search_*`, and `query_*` operations around a consistent shape for free-text search, structured filtering, sorting, field selection, aggregation, and pagination.
 
 The goal is not to force every adapter into the same backend implementation. The goal is to give clients, adapter authors, and future spec work a stable query-language surface to build on.
 
@@ -87,9 +87,29 @@ The preferred collection-query shape is:
 - `fields` MAY be either:
   - A preset string such as `minimal`, `standard`, or `full`
   - An array of explicit field paths
+- Computed fields SHOULD use the `_computed.` prefix when they are projected
+  through `fields`, for example `_computed.age_days`.
 - Separate `preset` parameters SHOULD be treated as compatibility aliases only.
 
-### 2.5 Pagination
+### 2.5 Aggregations
+
+- `aggregate` is the preferred summary-computation control for collection
+  operations.
+- The preferred shape is a map of named aggregation expressions:
+
+```javascript
+{
+  aggregate: {
+    total: { count: true },
+    by_status: { group_by: "status", count: true }
+  }
+}
+```
+
+- When `aggregate` is present, adapters SHOULD return summary data by default
+  unless `include_items: true` is explicitly requested.
+
+### 2.6 Pagination
 
 Cursor pagination is the preferred collection-pagination shape:
 
@@ -123,11 +143,11 @@ Adapters MAY expose offset- or page-based variants such as `limit`, `offset`, `p
 
 The following matrix describes the preferred forward direction for collection-returning READ operations:
 
-| Operation Family | `query` | `filter` | `sort` | Pagination | `fields` |
-|------------------|---------|----------|--------|------------|----------|
-| `list_*` | Not required | SHOULD support | SHOULD support | SHOULD support | SHOULD support |
-| `search_*` | SHOULD support as the canonical text parameter | SHOULD support | SHOULD support | SHOULD support | SHOULD support |
-| `query_*` | MUST document grammar | SHOULD document composition rules | SHOULD support when meaningful | SHOULD support | SHOULD support |
+| Operation Family | `query` | `filter` | `sort` | `aggregate` | Pagination | `fields` |
+|------------------|---------|----------|--------|-------------|------------|----------|
+| `list_*` | Not required | SHOULD support | SHOULD support | MAY support | SHOULD support | SHOULD support |
+| `search_*` | SHOULD support as the canonical text parameter | SHOULD support | SHOULD support | SHOULD support for summary-style searches | SHOULD support | SHOULD support |
+| `query_*` | MUST document grammar | SHOULD document composition rules | SHOULD support when meaningful | SHOULD document support when meaningful | SHOULD support | SHOULD support |
 
 This matrix is intentionally phrased in terms of interoperability rather than backend mechanics. An adapter MAY omit a capability, but it SHOULD make the omission explicit in introspection and operation descriptions.
 
@@ -181,6 +201,8 @@ To keep collection querying discoverable for LLM clients, adapters SHOULD expose
 
 - Supported collection-query parameters in `OperationDetails.parameters`
 - Whether the operation supports field selection
+- Whether the operation supports aggregation and which functions are available
+- Which computed fields are available, if any
 - Which pagination style is supported
 - Which filter keys and sort fields are accepted
 - Examples combining multiple controls in one request
@@ -192,6 +214,8 @@ For `query_*` operations with richer grammars, the description SHOULD include a 
 ## 7. Relationship to Other Feature Docs
 
 - [Field Selection](./field-selection.md) defines how `fields` works
+- [Aggregations](./aggregations.md) defines the preferred `aggregate` request and response shape
+- [Computed Fields](./computed-fields.md) defines the `_computed.` projection and metadata pattern
 - [Pagination](./pagination.md) defines cursor pagination response semantics
 - [Operations](../operations.md) defines general parameter conventions and operation schema guidance
 

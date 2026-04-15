@@ -5,7 +5,7 @@
 **Last Updated:** 2026-04-15
 > **Document Status:** This document is an **informative conformance framework specification** aligned to the normative protocol requirements in `docs/versions/v1.0.0-draft.md`.
 >
-> **Implementation Status:** The full `mcpaql-conformance` runner defined here is not yet published in this repository. Current implemented checks are schema/example validation in `scripts/validate-schema-examples.mjs`.
+> **Implementation Status:** This repository now includes a fixture-driven prototype runner in `scripts/run-conformance-tests.mjs` plus reference evidence bundles under `tests/conformance/`. A future packaged `mcpaql-conformance` tool may add live adapter execution on top of this baseline.
 
 ## Abstract
 
@@ -35,6 +35,13 @@ MCP-AQL conformance testing ensures implementations meet the protocol specificat
 - How to evaluate test results
 - How to report conformance levels
 
+The repository implementation currently validates **evidence bundles** instead of
+probing live adapters over the network. Each bundle captures introspection
+responses, accepted parameter sets, representative success and failure results,
+and optional semantic-discoverability examples. This keeps the spec repo
+reviewable and deterministic while a future external runner grows into direct
+adapter execution.
+
 ### 1.2 Terminology
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119).
@@ -62,7 +69,7 @@ Level 1 conformance establishes the minimum viable MCP-AQL implementation.
 |-------------|-------------|
 | Introspect (operations) | `introspect` operation with `query: "operations"` implemented |
 | Introspect (types) | `introspect` operation with `query: "types"` implemented |
-| Endpoint routing | Operations routed to correct CRUDE endpoint |
+| Endpoint routing | Operations routed to the correct documented semantic endpoint family in semantic endpoint mode |
 | Response format | Discriminated union responses (`{ success, data }` or `{ success, error }`) |
 | Error handling | Structured error responses with code and message |
 | Parameter naming | snake_case parameter naming convention |
@@ -82,13 +89,14 @@ Level 2 conformance indicates a complete MCP-AQL implementation with all optiona
 | Requirement | Description |
 |-------------|-------------|
 | Level 1 | All Level 1 requirements |
-| Endpoint modes | Both CRUDE mode and Single-endpoint mode supported |
+| Endpoint modes | `crude` semantic endpoint mode and `single` mode supported |
 | Field selection | `fields` parameter on READ operations, with preset-name support documented where implemented |
 | Batch operations | Multi-operation batching with individual results |
 | Cross-cutting params | Consistent documentation for collection-query controls such as `query`, `filter`, pagination, field selection, and sorting |
 
 **Test Categories Required:**
 - All Level 1 test categories
+- Level 2 Features (SHOULD PASS)
 - Constraint Documentation (SHOULD PASS)
 - Semantic Evaluation (SHOULD PASS)
 
@@ -272,12 +280,12 @@ The following test categories MUST pass for Level 1 conformance:
 
 | Category | Tests | Rationale |
 |----------|-------|-----------|
-| Introspection Fidelity | 2 | LLMs must trust introspection |
-| Parameter Handling | 3 | Consistent behavior across operations |
-| Error Quality | 2 | Usable error messages |
+| Introspection Fidelity | 4 | LLMs must trust introspection |
+| Parameter Handling | 4 | Consistent behavior across operations |
+| Error Quality | 3 | Usable error messages |
 | Round-Trip Integrity | 2 | Data consistency guarantee |
 
-**Total MUST PASS tests:** 9
+**Total MUST PASS tests:** 13
 
 ### 4.2 SHOULD PASS Requirements
 
@@ -286,6 +294,7 @@ The following test categories SHOULD pass for Level 2 conformance:
 | Category | Tests | Rationale |
 |----------|-------|-----------|
 | Constraint Documentation | 2 | Discoverable constraints |
+| Level 2 Features | 3 | Endpoint modes, field selection, and batch operations |
 | Semantic Evaluation | Per implementation | LLM discoverability |
 
 **Failure in SHOULD PASS tests:** Produces WARN, does not block conformance
@@ -353,14 +362,12 @@ TEST: API Discoverability
 ```mermaid
 graph TD
     A[Run Test] --> B{Tier 1 Pass?}
-    B -->|Yes| C{Tier 2 Required?}
+    B -->|Yes| C{Tier 2 Pass?}
     B -->|No| D{Tier 2 Pass?}
-    C -->|No| E[PASS]
-    C -->|Yes| F{Tier 2 Pass?}
+    C -->|Yes| E[PASS]
+    C -->|No| F[FAIL]
     D -->|Yes| G[WARN: Update patterns]
-    D -->|No| H[FAIL]
-    F -->|Yes| E
-    F -->|No| H
+    D -->|No| F
 ```
 
 ---
@@ -376,7 +383,7 @@ Implementations SHOULD generate conformance reports:
   "implementation": "example-adapter",
   "version": "1.0.0",
   "specVersion": "1.0.0-draft",
-  "testDate": "2026-01-29T00:00:00Z",
+  "requestedLevel": 1,
   "conformanceLevel": 1,
   "summary": {
     "total": 11,
@@ -388,7 +395,7 @@ Implementations SHOULD generate conformance reports:
   "categories": [
     {
       "name": "Introspection Fidelity",
-      "required": "MUST",
+      "required": true,
       "result": "PASS",
       "tests": [
         { "name": "Parameter Accuracy", "result": "PASS" },
@@ -424,13 +431,20 @@ Conformance test runners SHOULD provide a command-line interface:
 mcpaql-conformance <command> [options]
 ```
 
+The current repository prototype is invoked as:
+
+```bash
+node scripts/run-conformance-tests.mjs <command> [options]
+```
+
 ### 7.2 Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `test` | Run conformance tests against an adapter | `mcpaql-conformance test ./adapter` |
-| `report` | Generate formatted report from test results file | `mcpaql-conformance report ./results.json` |
-| `version` | Print tool version | `mcpaql-conformance version` |
+| `test` | Run conformance tests against a fixture evidence bundle | `node scripts/run-conformance-tests.mjs test tests/conformance/evidence/reference-level2.json --level 2` |
+| `verify-fixtures` | Verify all repository reference fixtures against their expected exit codes | `node scripts/run-conformance-tests.mjs verify-fixtures` |
+| `report` | Generate formatted output from a JSON results file | `node scripts/run-conformance-tests.mjs report ./results.json --format markdown` |
+| `version` | Print tool version | `node scripts/run-conformance-tests.mjs version` |
 
 **Note:** The `report` command takes a JSON results file (produced by `test --format json --output results.json`) as input and generates human-readable or markdown output.
 
@@ -441,10 +455,10 @@ mcpaql-conformance <command> [options]
 | `--level`, `-l` | Conformance level to test (1 or 2) | `1` |
 | `--output`, `-o` | Output file for results | stdout |
 | `--format`, `-f` | Output format (`json`, `text`, `markdown`) | `text` |
-| `--verbose`, `-v` | Enable verbose output | `false` |
 | `--tier` | Evaluation tier (`1`, `2`, `both`) | `both` |
 | `--category`, `-c` | Run specific test category only | All |
-| `--timeout` | Test timeout in seconds | `30` |
+
+`--tier 2` and `--tier both` currently produce the same semantic-evaluation behavior. The runner reserves the distinction for future live-adapter or split-tier expansion.
 
 ### 7.4 Exit Codes
 
@@ -453,35 +467,50 @@ mcpaql-conformance <command> [options]
 | `0` | All tests passed | Conformance achieved at requested level |
 | `1` | Tests failed | One or more MUST PASS tests failed |
 | `2` | Tests warned | All MUST PASS passed, but SHOULD PASS tests warned |
-| `3` | Configuration error | Invalid adapter path or configuration |
-| `4` | Timeout | Tests exceeded timeout limit |
-| `5` | Internal error | Unexpected error in test runner |
+| `3` | Configuration error | Invalid fixture/report path, malformed JSON, unknown command, or invalid report input |
 
 ### 7.5 Example Usage
 
 **Run Level 1 conformance tests:**
 ```bash
-mcpaql-conformance test ./generated-adapter --level 1
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level1.json \
+  --level 1
 ```
 
 **Run Level 2 tests with JSON output:**
 ```bash
-mcpaql-conformance test ./adapter --level 2 --format json --output results.json
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level2.json \
+  --level 2 \
+  --format json \
+  --output results.json
 ```
 
 **Run specific test category:**
 ```bash
-mcpaql-conformance test ./adapter --category "Introspection Fidelity"
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level2.json \
+  --level 2 \
+  --category "Introspection Fidelity"
 ```
 
-**Verbose output with Tier 2 semantic evaluation:**
+**Tier 2 semantic evaluation:**
 ```bash
-mcpaql-conformance test ./adapter --level 2 --tier both --verbose
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level2.json \
+  --level 2 \
+  --tier both
 ```
 
 **Generate markdown report from results:**
 ```bash
-mcpaql-conformance report ./results.json --format markdown > CONFORMANCE.md
+node scripts/run-conformance-tests.mjs report ./results.json --format markdown > CONFORMANCE.md
+```
+
+**Verify the repository reference fixtures:**
+```bash
+npm run test:conformance
 ```
 
 ### 7.6 Integration with Generator
@@ -492,8 +521,8 @@ The adapter generator (see [Adapter Generator Specification](adapter/generator.m
 # Generate adapter and run conformance tests
 mcpaql-generate --schema adapter.yaml --target typescript --output ./adapter
 
-# Test generated adapter
-mcpaql-conformance test ./adapter --level 1
+# Test generated fixture evidence
+node scripts/run-conformance-tests.mjs test ./adapter/conformance/reference.json --level 1
 ```
 
 ---
@@ -504,5 +533,4 @@ mcpaql-conformance test ./adapter --level 1
 - [Introspection Specification](introspection.md)
 - [Operations Specification](operations.md)
 - [GitHub Issue #10](https://github.com/MCPAQL/spec/issues/10) - Conformance test suite
-- [GitHub Issue #55](https://github.com/MCPAQL/spec/issues/55) - Conformance test requirements
 - [GitHub Issue #56](https://github.com/MCPAQL/spec/issues/56) - LLM semantic evaluation
