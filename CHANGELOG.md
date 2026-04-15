@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `tests/conformance/` evidence bundles covering passing Level 1, passing Level 2, semantic-warning, and failing reference cases
   - Added CI integration via `.github/workflows/conformance-tests.yml`
   - Updated conformance, README, and generator docs to reflect the implemented fixture-first runner model and two-tier semantic evaluation flow
+- Cross-domain implementation guide for adapting MCP-AQL beyond the Dollhouse reference profile (#34)
+  - Added `docs/guides/cross-domain-implementation.md` with domain mapping guidance, CRUDE design advice, introspection checklist, four non-Dollhouse examples, and reusable operation templates
+  - Linked the new guide from the root README, docs index, and guides index
 - Pagination response structure guidance for collection operations (#164)
   - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
   - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination

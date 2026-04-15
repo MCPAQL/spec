@@ -119,6 +119,7 @@ The savings scale with adapter complexity - the more operations your adapter sup
 | [Computed Fields](docs/features/computed-fields.md) | Preferred `_computed.` convention for adapter-declared derived values |
 | [Relationship Queries](docs/features/relationship-queries.md) | Preferred traversal contract for graph-style READ operations |
 | [MCP Server Discovery Bundle](docs/adapter/discovery-bundle.md) | Interrogation bundle contract for MCP-to-MCP-AQL generation |
+| [Cross-Domain Implementation Guide](docs/guides/cross-domain-implementation.md) | Step-by-step guide for adapting MCP-AQL to databases, filesystems, API gateways, IoT, and other domains |
 | [Documentation Index](docs/README.md) | Full documentation structure |
 | [Changelog](CHANGELOG.md) | Version history |
 

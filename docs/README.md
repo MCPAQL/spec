@@ -62,6 +62,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | Document | Description |
 |----------|-------------|
 | [Protocol Comparison](guides/protocol-comparison.md) | MCP-AQL vs other protocols |
+| [Cross-Domain Implementation](guides/cross-domain-implementation.md) | Step-by-step guide for adapting MCP-AQL to domains beyond Dollhouse-style element management |
 
 ### Roadmap
 
