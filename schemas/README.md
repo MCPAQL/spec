@@ -107,10 +107,9 @@ Fields prefixed with underscore (`_meta`, `_debug`) are reserved for protocol-le
 ### Introspection Response
 
 Responses to `introspect` operation queries:
-- `operations` - List available operations
+- `operations` - List available operations with semantic categories and endpoint families
 - `operation` - Get details for single operation
 - `types` - List adapter-defined types
-- `endpoints` - List CRUDE endpoints
 
 ### Danger Level
 

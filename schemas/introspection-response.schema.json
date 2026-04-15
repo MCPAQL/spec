@@ -5,10 +5,16 @@
   "description": "Schema for MCP-AQL introspection operation responses. Introspection enables runtime discovery of operations, types, and capabilities.",
 
   "$defs": {
-    "EndpointCategory": {
+    "SemanticCategory": {
       "type": "string",
       "enum": ["CREATE", "READ", "UPDATE", "DELETE", "EXECUTE"],
-      "description": "CRUDE endpoint categories for operation classification"
+      "description": "Standard semantic categories for operation classification"
+    },
+
+    "EndpointFamily": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exposed endpoint family name or logical tool grouping for an operation"
     },
 
     "TypeKind": {
@@ -109,16 +115,20 @@
           "type": "string",
           "description": "Operation identifier (e.g., 'create_entity')"
         },
+        "semantic_category": {
+          "$ref": "#/$defs/SemanticCategory",
+          "description": "Standard semantic category for the operation"
+        },
         "endpoint": {
-          "$ref": "#/$defs/EndpointCategory",
-          "description": "CRUDE endpoint this operation belongs to"
+          "$ref": "#/$defs/EndpointFamily",
+          "description": "Exposed endpoint family this operation belongs to"
         },
         "description": {
           "type": "string",
           "description": "Brief description of the operation"
         }
       },
-      "required": ["name", "endpoint", "description"],
+      "required": ["name", "semantic_category", "endpoint", "description"],
       "additionalProperties": false
     },
 
@@ -188,13 +198,17 @@
           "type": "string",
           "description": "Operation identifier"
         },
+        "semantic_category": {
+          "$ref": "#/$defs/SemanticCategory",
+          "description": "Standard semantic category for the operation"
+        },
         "endpoint": {
-          "$ref": "#/$defs/EndpointCategory",
-          "description": "CRUDE endpoint this operation belongs to"
+          "$ref": "#/$defs/EndpointFamily",
+          "description": "Exposed endpoint family this operation belongs to"
         },
         "mcpTool": {
           "type": "string",
-          "description": "MCP tool name (e.g., 'mcp_aql_create')"
+          "description": "Actual MCP tool name handling the operation (e.g., 'mcp_aql_query')"
         },
         "description": {
           "type": "string",
@@ -239,7 +253,7 @@
           "description": "Execution lifecycle metadata (for EXECUTE operations that manage long-running processes)"
         }
       },
-      "required": ["name", "endpoint", "mcpTool", "description", "permissions", "parameters", "returns"],
+      "required": ["name", "semantic_category", "endpoint", "mcpTool", "description", "permissions", "parameters", "returns"],
       "additionalProperties": false
     },
 
@@ -393,7 +407,7 @@
         "mode": {
           "type": "string",
           "description": "Endpoint mode",
-          "enum": ["crude", "single", "all"]
+          "enum": ["semantic", "single", "all"]
         },
         "capabilities": {
           "$ref": "#/$defs/ProtocolCapabilities",
@@ -561,7 +575,7 @@
         "_protocol": {
           "version": "1.0.0-alpha.1",
           "conformance": "level-1",
-          "mode": "crude",
+          "mode": "semantic",
           "capabilities": {
             "batch": false,
             "field_selection": true,
@@ -574,17 +588,20 @@
         "operations": [
           {
             "name": "create_entity",
-            "endpoint": "CREATE",
+            "semantic_category": "CREATE",
+            "endpoint": "manage",
             "description": "Create a new entity"
           },
           {
             "name": "list_entities",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "query",
             "description": "List entities with filtering"
           },
           {
             "name": "introspect",
-            "endpoint": "READ",
+            "semantic_category": "READ",
+            "endpoint": "query",
             "description": "Discover available operations and types"
           }
         ]
@@ -595,8 +612,9 @@
       "data": {
         "operation": {
           "name": "create_entity",
-          "endpoint": "CREATE",
-          "mcpTool": "mcp_aql_create",
+          "semantic_category": "CREATE",
+          "endpoint": "manage",
+          "mcpTool": "mcp_aql_manage",
           "description": "Create a new entity of any type",
           "permissions": {
             "readOnly": false,

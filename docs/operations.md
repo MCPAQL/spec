@@ -19,7 +19,7 @@ This document specifies how operations are defined, documented, and invoked in M
 3. [Response Format](#3-response-format)
 4. [Parameter Conventions](#4-parameter-conventions)
 5. [Operation Schema Definition](#5-operation-schema-definition)
-6. [CRUDE Endpoint Assignment](#6-crude-endpoint-assignment)
+6. [Semantic Endpoint Assignment](#6-semantic-endpoint-assignment)
 7. [Batch Operations](#7-batch-operations)
 8. [Error Handling](#8-error-handling)
 9. [The introspect Operation](#9-the-introspect-operation)
@@ -504,7 +504,8 @@ Each operation MUST be defined by a schema that specifies its behavior, paramete
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `endpoint` | string | REQUIRED | CRUDE endpoint: CREATE, READ, UPDATE, DELETE, or EXECUTE |
+| `semantic_category` | string | REQUIRED | Standard semantic category: CREATE, READ, UPDATE, DELETE, or EXECUTE |
+| `endpoint` | string | REQUIRED in semantic endpoint mode | Exposed endpoint family that receives the operation |
 | `description` | string | REQUIRED | Human-readable description |
 | `params` | object | OPTIONAL | Parameter definitions |
 | `handler` | string | OPTIONAL | Internal handler reference |
@@ -584,7 +585,7 @@ Validation failures MUST return an error response (not throw exceptions).
 
 ---
 
-## 6. CRUDE Endpoint Assignment
+## 6. Semantic Endpoint Assignment
 
 ### 6.1 Endpoint Semantics
 
@@ -597,6 +598,18 @@ Operations MUST be assigned to endpoints based on their semantics:
 | **UPDATE** | Modifying | Changes existing resources; may be partially idempotent |
 | **DELETE** | Destructive | Removes resources; potentially irreversible |
 | **EXECUTE** | Lifecycle, non-idempotent | Triggers actions; manages runtime state |
+
+The standard CRUDE profile is the default semantic-endpoint profile for these semantics, but semantic endpoint mode MAY expose alternate semantic-endpoint profiles when the endpoint names still communicate intent clearly to clients.
+
+**Standard and Alternate Semantic-Endpoint Profiles**
+
+| Profile | Endpoint Set | Typical Intent Split |
+|---------|--------------|----------------------|
+| **Standard CRUDE profile** | `create` / `read` / `update` / `delete` / `execute` | Direct alignment to the five standardized semantic categories |
+| **Extended CRUDE-style profile** | `create` / `read` / `update` / `delete` / `execute` / `authorize` | Standard CRUDE plus a dedicated semantic endpoint for permissioning and approval workflows |
+| **Alternative semantic profile** | `discover` / `query` / `manage` / `operate` | Discovery and inspection, retrieval and filtering, mutating and administrative changes, runtime and lifecycle actions |
+
+These alternate profiles remain in-spec because the endpoints are still semantically legible to an LLM or client. What matters is not that every adapter uses CRUDE, but that the chosen endpoint set communicates where an operation belongs.
 
 ### 6.2 Common Verbs by Endpoint
 
@@ -698,10 +711,10 @@ Conformant batch implementations MUST follow these semantics:
 
 ### 7.4 Cross-Endpoint Batching
 
-When using CRUDE mode (separate endpoints), batch operations SHOULD be constrained to a single endpoint:
+When using semantic endpoint mode (separate endpoint families), batch operations SHOULD be constrained to a single endpoint family:
 
-- All CREATE operations together in one batch to the CREATE endpoint
-- All READ operations together in one batch to the READ endpoint
+- All operations assigned to the same endpoint family together in one batch
+- For the CRUDE profile, all CREATE operations together in one batch to the CREATE endpoint, all READ operations together in one batch to the READ endpoint, and so on
 
 Mixing operations across endpoints in a single batch is NOT RECOMMENDED. Implementations MAY reject mixed batches or MAY process them with explicit endpoint routing per operation.
 
@@ -905,7 +918,7 @@ Error messages SHOULD be:
 
 ### 9.1 Required Implementation
 
-Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endpoint. This operation enables runtime discovery of available operations and types.
+Every MCP-AQL adapter MUST implement the `introspect` operation as a READ-category operation on a documented endpoint family. This operation enables runtime discovery of available operations and types.
 
 ### 9.2 Operation Schema
 
@@ -964,27 +977,32 @@ When `query` is "operations" without a `name`:
     "operations": [
       {
         "name": "create_item",
-        "endpoint": "CREATE",
+        "semantic_category": "CREATE",
+        "endpoint": "manage",
         "description": "Create a new item"
       },
       {
         "name": "list_items",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "query",
         "description": "List all items"
       },
       {
         "name": "update_item",
-        "endpoint": "UPDATE",
+        "semantic_category": "UPDATE",
+        "endpoint": "manage",
         "description": "Update item properties"
       },
       {
         "name": "delete_item",
-        "endpoint": "DELETE",
+        "semantic_category": "DELETE",
+        "endpoint": "manage",
         "description": "Delete an item"
       },
       {
         "name": "introspect",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "query",
         "description": "Discover available operations"
       }
     ]
@@ -1002,8 +1020,9 @@ When `query` is "operations" with a `name`:
   "data": {
     "operation": {
       "name": "create_item",
-      "endpoint": "CREATE",
-      "mcpTool": "mcp_aql_create",
+      "semantic_category": "CREATE",
+      "endpoint": "manage",
+      "mcpTool": "mcp_aql_manage",
       "description": "Create a new item",
       "permissions": {
         "readOnly": false,
