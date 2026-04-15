@@ -363,7 +363,7 @@ Operations returning paginated collections SHOULD include explicit pagination me
       "hasPreviousPage": false,
       "startCursor": "cursor_001",
       "endCursor": "cursor_002",
-      "totalCount": 25
+      "totalCount": 142
     }
   }
 }
@@ -420,6 +420,8 @@ Recommended metadata by pagination style:
 | Offset-based | `data.pagination` | `limit`, `offset`, optional `returned`, optional `total_items`, optional `has_more` |
 
 If computing totals is expensive, adapters MAY omit `total_items`, `total_pages`, or `totalCount` and rely on `has_more`, `hasNextPage`, or `hasPreviousPage` instead.
+
+Compatibility metadata examples use snake_case field names to align with MCP-AQL's public naming convention for adapter-facing request and response fields.
 
 #### 4.4.4 Cross-Cutting Parameter Consistency (SHOULD)
 

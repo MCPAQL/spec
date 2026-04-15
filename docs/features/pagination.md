@@ -367,6 +367,8 @@ When per-item cursors are needed (e.g., for deletion during iteration):
 
 Adapters using page- or offset-based compatibility parameters MAY return pagination metadata in a `pagination` object instead of `pageInfo`.
 
+These compatibility metadata examples use snake_case field names to align with MCP-AQL's public naming convention for adapter-facing request and response fields.
+
 **Page-based compatibility response:**
 ```json
 {
@@ -492,6 +494,7 @@ Implementations supporting pagination MAY:
 2. Support cursor expiration/TTL
 3. Implement cursor resumption across sessions
 4. Support sorting parameters alongside pagination
+5. Include compatibility metadata such as `returned` for offset-based responses when that helps clients understand the applied page window
 
 ### 6.4 Cursor Format
 
