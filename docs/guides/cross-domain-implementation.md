@@ -285,7 +285,8 @@ Use this as a pre-release checklist for a new domain adapter:
     }
   },
   "returns": {
-    "ref": "TableList"
+    "name": "TableList",
+    "kind": "object"
   }
 }
 ```
