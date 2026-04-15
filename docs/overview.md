@@ -138,6 +138,15 @@ mcp_aql_delete  - DELETE operations
 mcp_aql_execute - EXECUTE operations
 ```
 
+An alternate semantic-endpoint profile can expose a different but still semantically legible set:
+
+```text
+mcp_aql_discover - Discovery and inspection operations
+mcp_aql_query    - Retrieval and filtering operations
+mcp_aql_manage   - Mutating and administrative operations
+mcp_aql_operate  - Runtime and lifecycle operations
+```
+
 **Advantages:**
 - Clear semantic grouping
 - Endpoint-level permission control

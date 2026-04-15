@@ -175,6 +175,24 @@ Discover all operations and parameters:
 
 Adapters SHOULD describe both the family purpose and the kinds of operations it contains so agents can choose between families before calling introspection details.
 
+**Concrete Example (`mcp_aql_query`):**
+
+```text
+Query-oriented operations for retrieval, filtering, aggregation, and field selection.
+
+Primary semantic categories: READ
+
+Supported operations: list_datasets, get_dataset, search_datasets, introspect
+
+Use this endpoint when the task is to look up, inspect, search, or summarize existing data.
+
+Quick start example:
+{ operation: "search_datasets", params: { query: "pricing", limit: 10 } }
+
+Discover all operations and parameters:
+{ operation: "introspect", params: { query: "operations" } }
+```
+
 #### 2.1.2 Single Mode Tool Description
 
 In Single mode, a single MCP tool is registered with this template:
