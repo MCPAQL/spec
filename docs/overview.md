@@ -28,7 +28,7 @@ MCP-AQL defines a schema-driven operation dispatch protocol that:
 1. **Consolidates Operations** - Many discrete tools into a small number of semantic endpoint families
 2. **Enables Discovery** - GraphQL-style introspection for runtime operation discovery
 3. **Enforces Safety** - Endpoint classification validates operation/endpoint matching
-4. **Supports Flexibility** - Implementations MAY offer semantic endpoints mode with the standard CRUDE profile or alternate semantic endpoint families, or Single mode
+4. **Supports Flexibility** - Implementations MAY offer semantic endpoint mode with the standard CRUDE profile or alternate semantic endpoint families, or Single mode
 
 ```
 +-------------------+
@@ -126,7 +126,7 @@ CRUD (Resource Definitions)          EXECUTE (Runtime Lifecycle)
 
 MCP-AQL supports two operational modes. Implementations MUST support at least one mode and SHOULD support both:
 
-### Semantic Endpoints Mode
+### Semantic Endpoint Mode
 
 The standard CRUDE profile exposes 5 separate endpoints, each with semantic meaning:
 
@@ -169,7 +169,7 @@ The primary motivation for MCP-AQL is reducing the token cost of tool registrati
 | Configuration | Approximate Token Cost | Reduction |
 |--------------|------------------------|-----------|
 | Discrete Tools (50+) | ~30,000 tokens | baseline |
-| Semantic Endpoints Mode (CRUDE profile, 5 endpoints) | ~4,500 tokens | ~85% |
+| Semantic Endpoint Mode (CRUDE profile, 5 endpoints) | ~4,500 tokens | ~85% |
 | Single Mode (1 endpoint) | ~1,100 tokens | ~96% |
 
 ### Runtime Discovery

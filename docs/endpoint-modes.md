@@ -8,7 +8,7 @@
 
 ## Abstract
 
-MCP-AQL supports two operational modes for exposing endpoints to clients: Semantic Endpoints mode and Single mode. The standard CRUDE profile is one semantic-endpoint profile within Semantic Endpoints mode. This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
+MCP-AQL supports two operational modes for exposing endpoints to clients: Semantic Endpoint mode and Single mode. The standard CRUDE profile is one semantic-endpoint profile within Semantic Endpoint mode. This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
 
 ---
 
@@ -17,7 +17,7 @@ MCP-AQL supports two operational modes for exposing endpoints to clients: Semant
 1. [Introduction](#1-introduction)
 2. [Mode Comparison](#2-mode-comparison)
 3. [Configuration](#3-configuration)
-4. [Semantic Endpoints Mode](#4-semantic-endpoints-mode)
+4. [Semantic Endpoint Mode](#4-semantic-endpoint-mode)
 5. [Single Mode](#5-single-mode)
 6. [Security Considerations](#6-security-considerations)
 7. [Tool Registration](#7-tool-registration)
@@ -48,8 +48,8 @@ This specification covers:
 
 | Term | Definition |
 |------|------------|
-| **Semantic Endpoints Mode** | Multiple exposed MCP tools whose names and purposes are semantically legible to clients |
-| **Semantic Endpoint Profile** | A specific semantic set exposed in Semantic Endpoints mode (for example CRUDE) |
+| **Semantic Endpoint Mode** | Multiple exposed MCP tools whose names and purposes are semantically legible to clients |
+| **Semantic Endpoint Profile** | A specific semantic set exposed in Semantic Endpoint mode (for example CRUDE) |
 | **CRUDE Profile** | The standard five-endpoint semantic profile: Create, Read, Update, Delete, Execute |
 | **Single Mode** | One unified MCP tool that routes internally |
 | **Endpoint Family** | A named MCP tool or logical grouping that contains one or more operations |
@@ -62,7 +62,7 @@ This specification covers:
 
 ### 2.1 Summary
 
-| Aspect | Semantic Endpoints Mode | Single Mode |
+| Aspect | Semantic Endpoint Mode | Single Mode |
 |--------|-------------------------|-------------|
 | **Exposed tools** | Multiple semantic endpoint tools | 1 unified tool |
 | **Semantic categories** | Still standardized per operation | Routed internally |
@@ -73,7 +73,7 @@ This specification covers:
 
 ### 2.2 Typical Shapes
 
-Semantic Endpoints mode can expose different semantic profiles. The key requirement is that the endpoint names and descriptions communicate intent clearly enough that a client or LLM can infer where an operation belongs.
+Semantic endpoint mode can expose different semantic profiles. The key requirement is that the endpoint names and descriptions communicate intent clearly enough that a client or LLM can infer where an operation belongs.
 
 **Standard CRUDE profile**
 ```text
@@ -116,7 +116,7 @@ Endpoint consolidation provides significant token reduction compared to fully di
 | Configuration | Typical Token Cost | Reduction |
 |---------------|-------------------|-----------|
 | Discrete tools (e.g., 40+ tools) | ~30,000 tokens | baseline |
-| Semantic endpoints mode (4-8 tools typical) | ~4,300-6,500 tokens | ~78-85% |
+| Semantic endpoint mode (4-8 tools typical) | ~4,300-6,500 tokens | ~78-85% |
 | Single mode (1 tool) | ~1,100 tokens | ~96% |
 
 Note: Actual token costs vary based on operation count, endpoint descriptions, and whether schemas enumerate operations inline.
@@ -162,7 +162,7 @@ If an implementation supports multiple semantic endpoint profiles, it SHOULD doc
 
 ---
 
-## 4. Semantic Endpoints Mode
+## 4. Semantic Endpoint Mode
 
 ### 4.1 Standard CRUDE Profile
 
@@ -220,7 +220,7 @@ Semantic endpoint families MAY mix multiple semantic categories, but each operat
 
 ### 4.5 Client Responsibility
 
-In Semantic Endpoints mode, clients MUST choose the correct exposed endpoint family for each operation. Adapters MUST reject operations sent to the wrong semantic endpoint family.
+In semantic endpoint mode, clients MUST choose the correct exposed endpoint family for each operation. Adapters MUST reject operations sent to the wrong semantic endpoint family.
 
 **Example: Correct Usage**
 ```javascript
@@ -248,7 +248,7 @@ In Semantic Endpoints mode, clients MUST choose the correct exposed endpoint fam
 
 ### 4.6 Route Enforcement
 
-Adapters in Semantic Endpoints mode MUST validate that operations are sent to their assigned endpoint family.
+Adapters in semantic endpoint mode MUST validate that operations are sent to their assigned endpoint family.
 
 **Validation Logic:**
 1. Extract operation name from request
@@ -373,7 +373,7 @@ In Single mode:
 
 1. All operations are accepted through `mcp_aql`
 2. The adapter determines the correct handler based on operation metadata
-3. The same semantic category rules apply as in semantic endpoints mode
+3. The same semantic category rules apply as in semantic endpoint mode
 4. Permission enforcement occurs server-side
 
 ### 5.4 Unified Endpoint Description
@@ -398,9 +398,9 @@ Use introspection to discover available operations:
 
 ## 6. Security Considerations
 
-### 6.1 Semantic Endpoints Mode Security
+### 6.1 Semantic Endpoint Mode Security
 
-Semantic endpoint modes, including the CRUDE profile, provide:
+Semantic endpoint mode, including the CRUDE profile, provides:
 
 - Endpoint-level permission blocking
 - More specific mismatch errors
@@ -429,7 +429,7 @@ Single mode provides:
 
 ### 6.3 Security Trade-offs
 
-| Security Aspect | Semantic Endpoint Modes | Single Mode |
+| Security Aspect | Semantic Endpoint Mode | Single Mode |
 |-----------------|---------------|-------------|
 | Endpoint-level blocking | Yes | No |
 | Client error prevention | Better | Worse |
@@ -523,7 +523,7 @@ Adapters MAY extend this schema with additional common properties such as `resou
 Conforming implementations MUST:
 
 1. Support at least one endpoint mode (`semantic` or `single`)
-2. Enforce operation routing validation in semantic endpoints mode
+2. Enforce operation routing validation in semantic endpoint mode
 3. Return proper error responses for unknown operations
 4. Route operations to correct handlers in Single mode
 5. Apply consistent permission enforcement regardless of mode

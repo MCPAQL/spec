@@ -505,7 +505,7 @@ Each operation MUST be defined by a schema that specifies its behavior, paramete
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `semantic_category` | string | REQUIRED | Standard semantic category: CREATE, READ, UPDATE, DELETE, or EXECUTE |
-| `endpoint` | string | REQUIRED in semantic endpoints mode | Exposed endpoint family that receives the operation |
+| `endpoint` | string | REQUIRED in semantic endpoint mode | Exposed endpoint family that receives the operation |
 | `description` | string | REQUIRED | Human-readable description |
 | `params` | object | OPTIONAL | Parameter definitions |
 | `handler` | string | OPTIONAL | Internal handler reference |
@@ -699,7 +699,7 @@ Conformant batch implementations MUST follow these semantics:
 
 ### 7.4 Cross-Endpoint Batching
 
-When using semantic endpoints mode (separate endpoint families), batch operations SHOULD be constrained to a single endpoint family:
+When using semantic endpoint mode (separate endpoint families), batch operations SHOULD be constrained to a single endpoint family:
 
 - All operations assigned to the same endpoint family together in one batch
 - For the CRUDE profile, all CREATE operations together in one batch to the CREATE endpoint, all READ operations together in one batch to the READ endpoint, and so on

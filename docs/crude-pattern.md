@@ -218,9 +218,9 @@ Implementations MAY require explicit confirmation for:
 
 ## 4. Endpoint Modes
 
-### 4.1 CRUDE Profile Within Semantic Endpoints Mode
+### 4.1 CRUDE Profile Within Semantic Endpoint Mode
 
-Within semantic endpoints mode, the standard CRUDE profile exposes five separate MCP tools, one per endpoint:
+Within semantic endpoint mode, the standard CRUDE profile exposes five separate MCP tools, one per endpoint:
 
 ```
 mcp_aql_create   - CREATE operations

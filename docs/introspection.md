@@ -70,7 +70,7 @@ The introspection system returns information about the adapter's operations and 
 
 ### 2.1 The `introspect` Operation
 
-All introspection is performed through the `introspect` operation as a READ-category operation. In semantic endpoints mode, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
+All introspection is performed through the `introspect` operation as a READ-category operation. In semantic endpoint mode, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
 
 **Request Format:**
 ```javascript

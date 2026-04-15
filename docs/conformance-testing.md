@@ -62,7 +62,7 @@ Level 1 conformance establishes the minimum viable MCP-AQL implementation.
 |-------------|-------------|
 | Introspect (operations) | `introspect` operation with `query: "operations"` implemented |
 | Introspect (types) | `introspect` operation with `query: "types"` implemented |
-| Endpoint routing | Operations routed to the correct documented semantic endpoint family in semantic endpoints mode |
+| Endpoint routing | Operations routed to the correct documented semantic endpoint family in semantic endpoint mode |
 | Response format | Discriminated union responses (`{ success, data }` or `{ success, error }`) |
 | Error handling | Structured error responses with code and message |
 | Parameter naming | snake_case parameter naming convention |
@@ -82,7 +82,7 @@ Level 2 conformance indicates a complete MCP-AQL implementation with all optiona
 | Requirement | Description |
 |-------------|-------------|
 | Level 1 | All Level 1 requirements |
-| Endpoint modes | Semantic endpoints mode and Single mode supported |
+| Endpoint modes | Semantic endpoint mode and Single mode supported |
 | Field selection | `fields` parameter on READ operations, with preset-name support documented where implemented |
 | Batch operations | Multi-operation batching with individual results |
 | Cross-cutting params | Consistent documentation for collection-query controls such as `query`, `filter`, pagination, field selection, and sorting |

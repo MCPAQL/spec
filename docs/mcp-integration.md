@@ -57,9 +57,9 @@ MCP-AQL adapters are MCP servers that expose operations through semantic endpoin
 
 MCP-AQL adapters MUST include the `introspect` operation in their tool descriptions. This solves the bootstrap problem by ensuring agents know how to discover available operations.
 
-#### 2.1.1 Semantic Endpoints Mode Tool Descriptions
+#### 2.1.1 Semantic Endpoint Mode Tool Descriptions
 
-In semantic endpoints mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the semantic-endpoint patterns below.
+In semantic endpoint mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the semantic-endpoint patterns below.
 
 **Standard CRUDE Profile:**
 
@@ -374,9 +374,9 @@ Adapters MAY use dynamic `enum` generation for the `operation` property to provi
 
 > **Note:** Dynamic enumeration increases tool registration token cost. Implementations SHOULD consider the trade-off between discoverability and token efficiency. For large operation sets, prefer introspection over enumeration.
 
-### 3.4 Semantic Endpoints Mode Schema Composition
+### 3.4 Semantic Endpoint Mode Schema Composition
 
-In semantic endpoints mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
+In semantic endpoint mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
 
 ```json
 {
