@@ -107,6 +107,11 @@ one call, it SHOULD use an explicit `include_items: true` flag.
 ## 4. Composition Rules
 
 - Aggregations are applied after `query` and `filter`.
+- `sort` applies to the pre-aggregation record set. In summary-only mode,
+  adapters MAY ignore it when ordering has no effect on the aggregate result.
+- `fields` does not rename or project aggregate result keys. Clients SHOULD use
+  the names defined inside `aggregate` to control which summary values appear in
+  the response.
 - Aggregations SHOULD respect the same access-control and visibility rules as
   ordinary reads.
 - Adapters SHOULD reject unsupported aggregation functions or fields with a

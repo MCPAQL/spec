@@ -69,7 +69,8 @@ can evaluate them efficiently:
 ```
 
 If an adapter does not support computed-field filtering or sorting, it SHOULD
-reject those requests clearly instead of silently ignoring them.
+reject those requests clearly instead of silently ignoring them. See
+[Error Codes](../error-codes.md) for the preferred structured error patterns.
 
 ## 4. Introspection Guidance
 

@@ -41,7 +41,7 @@ The preferred operation name is `query_relationships`:
 | `direction` | `incoming`, `outgoing`, or `both` |
 | `relationship` | Relationship type to match |
 | `depth` | Maximum traversal depth |
-| `include` | Optional response-section selector for `root`, `relationships`, `graph.nodes`, and `graph.edges` |
+| `include` | Optional response-section selector for `root`, `relationships`, `graph.nodes`, and `graph.edges`; all sections returned if omitted |
 | `first` / `after` | Optional pagination controls when traversals are large |
 
 Adapters MAY add domain-specific root identifiers or filter controls, but SHOULD
