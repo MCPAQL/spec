@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0-draft
 **Status:** Draft
-**Last Updated:** 2026-02-25
+**Last Updated:** 2026-04-15
 
 > **Informative Document:** This is an informative specification that provides detailed guidance for the execution safety loop pattern defined normatively in [Section 8.6 of the core specification](../versions/v1.0.0-draft.md#86-execution-safety-loop). In case of conflict, the normative specification takes precedence.
 
