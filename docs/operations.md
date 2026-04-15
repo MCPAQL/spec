@@ -19,7 +19,7 @@ This document specifies how operations are defined, documented, and invoked in M
 3. [Response Format](#3-response-format)
 4. [Parameter Conventions](#4-parameter-conventions)
 5. [Operation Schema Definition](#5-operation-schema-definition)
-6. [CRUDE Endpoint Assignment](#6-crude-endpoint-assignment)
+6. [Semantic Endpoint Assignment](#6-semantic-endpoint-assignment)
 7. [Batch Operations](#7-batch-operations)
 8. [Error Handling](#8-error-handling)
 9. [The introspect Operation](#9-the-introspect-operation)
@@ -585,7 +585,7 @@ Validation failures MUST return an error response (not throw exceptions).
 
 ---
 
-## 6. CRUDE Endpoint Assignment
+## 6. Semantic Endpoint Assignment
 
 ### 6.1 Endpoint Semantics
 
@@ -598,6 +598,18 @@ Operations MUST be assigned to endpoints based on their semantics:
 | **UPDATE** | Modifying | Changes existing resources; may be partially idempotent |
 | **DELETE** | Destructive | Removes resources; potentially irreversible |
 | **EXECUTE** | Lifecycle, non-idempotent | Triggers actions; manages runtime state |
+
+The standard CRUDE profile is the default semantic-endpoint profile for these semantics, but semantic endpoint mode MAY expose alternate semantic-endpoint profiles when the endpoint names still communicate intent clearly to clients.
+
+**Standard and Alternate Semantic-Endpoint Profiles**
+
+| Profile | Endpoint Set | Typical Intent Split |
+|---------|--------------|----------------------|
+| **Standard CRUDE profile** | `create` / `read` / `update` / `delete` / `execute` | Direct alignment to the five standardized semantic categories |
+| **Extended CRUDE-style profile** | `create` / `read` / `update` / `delete` / `execute` / `authorize` | Standard CRUDE plus a dedicated semantic endpoint for permissioning and approval workflows |
+| **Alternative semantic profile** | `discover` / `query` / `manage` / `operate` | Discovery and inspection, retrieval and filtering, mutating and administrative changes, runtime and lifecycle actions |
+
+These alternate profiles remain in-spec because the endpoints are still semantically legible to an LLM or client. What matters is not that every adapter uses CRUDE, but that the chosen endpoint set communicates where an operation belongs.
 
 ### 6.2 Common Verbs by Endpoint
 
