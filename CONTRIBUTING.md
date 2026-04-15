@@ -189,7 +189,7 @@ For authoritative path-based scope rules, see `spec/LICENSING.md`.
 
 ### Commercial Licensing
 
-Organizations requiring a license without AGPL obligations may obtain commercial licensing. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
+Organizations requiring a license without AGPL obligations for MCP-AQL software artifacts may obtain commercial licensing. This does not alter the repository's documentation/specification licensing. See [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) or contact [licensing@mcpaql.org](mailto:licensing@mcpaql.org) for details.
 
 ### Contributor License Agreement
 
