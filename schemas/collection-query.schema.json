@@ -14,6 +14,17 @@
       "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)*$",
       "description": "A field path using dot notation for nested properties."
     },
+    "ComputedFieldPath": {
+      "type": "string",
+      "pattern": "^_computed\\.[a-z][a-z0-9_]*$",
+      "description": "A computed field path using the `_computed.` prefix."
+    },
+    "SelectableFieldPath": {
+      "oneOf": [
+        { "$ref": "#/$defs/FieldPath" },
+        { "$ref": "#/$defs/ComputedFieldPath" }
+      ]
+    },
     "QueryValue": {
       "oneOf": [
         {
@@ -55,11 +66,41 @@
         {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/FieldPath"
+            "$ref": "#/$defs/SelectableFieldPath"
           },
           "description": "Explicit field paths to include."
         }
       ]
+    },
+    "AggregateExpression": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "boolean",
+          "description": "Whether to count matching rows."
+        },
+        "group_by": {
+          "type": "string",
+          "description": "Field used to group results."
+        },
+        "sum": {
+          "type": "string",
+          "description": "Numeric field to sum."
+        },
+        "avg": {
+          "type": "string",
+          "description": "Numeric field to average."
+        },
+        "min": {
+          "type": "string",
+          "description": "Field to minimize."
+        },
+        "max": {
+          "type": "string",
+          "description": "Field to maximize."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "type": "object",
@@ -80,6 +121,17 @@
     "fields": {
       "$ref": "#/$defs/FieldsValue",
       "description": "Preferred field-selection control."
+    },
+    "aggregate": {
+      "type": "object",
+      "description": "Named server-side aggregation expressions.",
+      "additionalProperties": {
+        "$ref": "#/$defs/AggregateExpression"
+      }
+    },
+    "include_items": {
+      "type": "boolean",
+      "description": "Whether to include raw items alongside aggregate summaries."
     },
     "preset": {
       "$ref": "#/$defs/FieldSelectionPreset",
@@ -151,7 +203,12 @@
         "field": "created_at",
         "order": "asc"
       },
-      "fields": ["id", "name"],
+      "fields": ["id", "name", "_computed.age_days"],
+      "aggregate": {
+        "total": {
+          "count": true
+        }
+      },
       "page": 2,
       "page_size": 25
     }

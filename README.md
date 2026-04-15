@@ -115,6 +115,9 @@ The savings scale with adapter complexity - the more operations your adapter sup
 | [Introspection](docs/introspection.md) | Discovery system specification |
 | [Operations Guide](docs/operations.md) | Operation design patterns |
 | [Collection Querying](docs/features/collection-querying.md) | Preferred query contract for list/search/query operations |
+| [Aggregations](docs/features/aggregations.md) | Preferred summary/query shape for server-side aggregations |
+| [Computed Fields](docs/features/computed-fields.md) | Preferred `_computed.` convention for adapter-declared derived values |
+| [Relationship Queries](docs/features/relationship-queries.md) | Preferred traversal contract for graph-style READ operations |
 | [MCP Server Discovery Bundle](docs/adapter/discovery-bundle.md) | Interrogation bundle contract for MCP-to-MCP-AQL generation |
 | [Documentation Index](docs/README.md) | Full documentation structure |
 | [Changelog](CHANGELOG.md) | Version history |

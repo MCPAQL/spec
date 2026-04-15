@@ -179,6 +179,9 @@ interface OperationDetails {
   parameters: ParameterInfo[];     // Parameter definitions (see note below)
   returns: TypeInfo;               // Return type information
   examples: OperationExample[];    // Example invocations
+  computed_fields?: ComputedFieldInfo[];
+  aggregation_support?: AggregationSupport;
+  relationship_capabilities?: RelationshipCapabilities;
 }
 
 interface EndpointPermissions {
@@ -189,6 +192,29 @@ interface EndpointPermissions {
 interface OperationExample {
   description?: string; // Human-readable description of the example
   request: object;      // Example request object
+}
+
+interface ComputedFieldInfo {
+  name: string;
+  type: string;
+  description?: string;
+  filterable?: boolean;
+  sortable?: boolean;
+}
+
+interface AggregationSupport {
+  supported: boolean;
+  default_mode?: "summary_only" | "include_items";
+  functions?: string[];
+  groupable_fields?: string[];
+  numeric_fields?: string[];
+}
+
+interface RelationshipCapabilities {
+  supported: boolean;
+  directions?: Array<"incoming" | "outgoing" | "both">;
+  relationship_types?: string[];
+  max_depth?: number;
 }
 ```
 
@@ -438,7 +464,10 @@ standard profile as `"crude"`, but current introspection metadata SHOULD report
 |------------|-------------|
 | `batch` | Supports batch operations |
 | `field_selection` | Supports field selection in responses |
+| `aggregations` | Supports server-side aggregation controls |
+| `computed_fields` | Exposes adapter-declared computed fields |
 | `pagination` | Supports cursor-based pagination |
+| `relationship_queries` | Supports graph and relationship traversal |
 | `warnings` | Includes warnings array in responses |
 | `confirmation` | Supports confirmation token flow |
 | `dangerous_operations` | Has danger level classification |
@@ -447,6 +476,12 @@ Clients can use protocol metadata to:
 - Adapt behavior to protocol version
 - Detect available features before use
 - Enable graceful degradation for older adapters
+
+Operation detail responses MAY also expose richer query-language metadata:
+
+- `computed_fields` for adapter-declared derived values
+- `aggregation_support` for supported aggregation functions and fields
+- `relationship_capabilities` for traversal vocabulary and depth limits
 
 ### 4.2 Getting Operation Details
 

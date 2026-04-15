@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated introspection docs and schema so operations disclose both `semantic_category` and `endpoint`
   - Clarified MCP integration, conformance, and top-level docs so CRUDE remains the standard profile rather than the only in-spec semantic-endpoint shape
   - Breaking draft change: introspection examples and schema guidance now require `semantic_category`, treat `endpoint` as the exposed endpoint-family name, and use `_protocol.mode: "semantic"` for both CRUDE and alternate semantic-endpoint profiles
+- Query-language feature guides for aggregations, computed fields, and relationship traversal (#36, #42, #44)
+  - Added `docs/features/aggregations.md` for the preferred `aggregate` request and `aggregations` response shape
+  - Added `docs/features/computed-fields.md` for the `_computed.` field path convention and metadata pattern
+  - Added `docs/features/relationship-queries.md` for `query_relationships`, graph traversal semantics, and relationship capability discovery
+  - Added non-normative helper schemas for aggregation, computed-field, and relationship-query shapes
+  - Extended `introspection-response.schema.json` and introspection docs with optional metadata for aggregation support, computed fields, and relationship capabilities
+  - Updated collection-querying, field-selection, operations, README, and schema index docs to wire the new query-language features into the existing collection-query surface
 - Pagination response structure guidance for collection operations (#164)
   - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
   - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination
