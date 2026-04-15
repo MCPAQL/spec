@@ -1,0 +1,361 @@
+{
+  "implementation": "reference-level2",
+  "version": "1.0.0",
+  "spec_version": "1.0.0-draft",
+  "expected_level": 2,
+  "expected_exit_code": 0,
+  "endpoint_modes": ["crude", "single"],
+  "capabilities": {
+    "field_selection": true,
+    "batch_operations": true
+  },
+  "introspection": {
+    "operations_list": {
+      "success": true,
+      "data": {
+        "operations": [
+          {
+            "name": "introspect",
+            "endpoint": "READ",
+            "description": "Discover operations and types."
+          },
+          {
+            "name": "search_widgets",
+            "endpoint": "READ",
+            "description": "Search widgets with filters, fields, and pagination."
+          },
+          {
+            "name": "update_widget",
+            "endpoint": "UPDATE",
+            "description": "Update a widget."
+          }
+        ]
+      }
+    },
+    "types_list": {
+      "success": true,
+      "data": {
+        "types": [
+          {
+            "name": "Widget",
+            "kind": "object",
+            "description": "Widget resource."
+          }
+        ]
+      }
+    },
+    "operation_details": [
+      {
+        "name": "introspect",
+        "endpoint": "READ",
+        "mcpTool": "mcp_aql_read",
+        "description": "Discover operations and types.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "type": "string",
+            "required": true,
+            "description": "Introspection query type.",
+            "enum": ["operations", "types"]
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Optional specific name."
+          }
+        ],
+        "returns": {
+          "name": "IntrospectionData",
+          "kind": "union"
+        }
+      },
+      {
+        "name": "search_widgets",
+        "endpoint": "READ",
+        "mcpTool": "mcp_aql_read",
+        "description": "Search widgets with collection-query controls and computed fields.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "type": "string",
+            "required": false,
+            "description": "Free-text search string."
+          },
+          {
+            "name": "filter",
+            "type": "object",
+            "required": false,
+            "description": "Structured widget filters."
+          },
+          {
+            "name": "sort",
+            "type": "object",
+            "required": false,
+            "description": "Preferred sorting object."
+          },
+          {
+            "name": "fields",
+            "type": "array",
+            "required": false,
+            "description": "Explicit field selection, including `_computed.*` paths."
+          },
+          {
+            "name": "first",
+            "type": "integer",
+            "required": false,
+            "description": "Cursor page size.",
+            "default": 10
+          },
+          {
+            "name": "after",
+            "type": "string",
+            "required": false,
+            "description": "Cursor for forward pagination."
+          }
+        ],
+        "returns": {
+          "name": "WidgetConnection",
+          "kind": "object"
+        }
+      },
+      {
+        "name": "update_widget",
+        "endpoint": "UPDATE",
+        "mcpTool": "mcp_aql_update",
+        "description": "Update a widget with an `input` payload.",
+        "permissions": {
+          "readOnly": false,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "widget_id",
+            "type": "string",
+            "required": true,
+            "description": "Unique widget identifier."
+          },
+          {
+            "name": "input",
+            "type": "object",
+            "required": true,
+            "description": "Fields to update."
+          }
+        ],
+        "returns": {
+          "name": "Widget",
+          "kind": "object"
+        }
+      }
+    ]
+  },
+  "accepted_parameters": {
+    "introspect": ["query", "name"],
+    "search_widgets": ["query", "filter", "sort", "fields", "first", "after"],
+    "update_widget": ["widget_id", "input"]
+  },
+  "parameter_tests": {
+    "missing_required": [
+      {
+        "operation": "introspect",
+        "parameter": "query",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'query'. Expected: string."
+          }
+        }
+      },
+      {
+        "operation": "update_widget",
+        "parameter": "widget_id",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'widget_id'. Expected: string."
+          }
+        }
+      },
+      {
+        "operation": "update_widget",
+        "parameter": "input",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'input'. Expected: object."
+          }
+        }
+      }
+    ],
+    "unknown_parameter": [
+      {
+        "operation": "search_widgets",
+        "parameter": "page_size",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_UNKNOWN_PARAM",
+            "message": "Unknown parameter 'page_size'. Valid parameters: query, filter, sort, fields, first, after."
+          }
+        }
+      }
+    ],
+    "optional_defaults": [
+      {
+        "operation": "search_widgets",
+        "parameter": "first",
+        "expected_value_path": "data.pageInfo.pageSize",
+        "expected_value": 10,
+        "response": {
+          "success": true,
+          "data": {
+            "items": [],
+            "pageInfo": {
+              "hasNextPage": false,
+              "hasPreviousPage": false,
+              "pageSize": 10
+            }
+          }
+        }
+      }
+    ]
+  },
+  "error_tests": [
+    {
+      "name": "unknown-page-size",
+      "must_mention": ["page_size", "fields"],
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_UNKNOWN_PARAM",
+          "message": "Unknown parameter 'page_size'. Valid parameters: query, filter, sort, fields, first, after."
+        }
+      }
+    }
+  ],
+  "round_trip_tests": [
+    {
+      "name": "search-result-round-trip",
+      "expected_fields": {
+        "data.items.0.widget_name": "Atlas Widget",
+        "data.items.0._computed.age_days": 47
+      },
+      "read_response": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "widget_id": "widget_777",
+              "widget_name": "Atlas Widget",
+              "_computed": {
+                "age_days": 47
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "update_preservation_tests": [
+    {
+      "name": "update-preserves-related-count",
+      "preserved_fields": {
+        "data._computed.child_count": 12
+      },
+      "read_response": {
+        "success": true,
+        "data": {
+          "widget_id": "widget_777",
+          "_computed": {
+            "child_count": 12
+          }
+        }
+      }
+    }
+  ],
+  "batch_example": {
+    "success": true,
+    "data": {
+      "batch_id": "batch_123"
+    },
+    "results": [
+      {
+        "index": 0,
+        "operation": "search_widgets",
+        "result": {
+          "success": true,
+          "data": {
+            "items": []
+          }
+        }
+      }
+    ],
+    "summary": {
+      "total": 1,
+      "succeeded": 1,
+      "failed": 0
+    }
+  },
+  "constraint_tests": [
+    {
+      "name": "read-only-created-at",
+      "documented": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_READ_ONLY_FIELD",
+          "message": "Field 'created_at' is read-only and cannot be updated."
+        }
+      }
+    },
+    {
+      "name": "append-only-audit-log",
+      "documented": true,
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_APPEND_ONLY",
+          "message": "Field 'audit_log' is append-only; use add_audit_entry instead."
+        }
+      }
+    }
+  ],
+  "semantic_tests": [
+    {
+      "name": "field-selection-discovery",
+      "response_text": "Yes. search_widgets supports field selection through the fields parameter, and you can request _computed.age_days when you need derived data.",
+      "tool_calls": [
+        {
+          "operation": "introspect",
+          "params": {
+            "query": "operations",
+            "name": "search_widgets"
+          }
+        }
+      ],
+      "structural": {
+        "required_patterns": ["search_widgets", "fields parameter"]
+      },
+      "semantic": {
+        "phrase_groups": [
+          ["field selection", "select fields"],
+          ["fields parameter", "fields"],
+          ["computed", "_computed"]
+        ],
+        "expected_operations": ["introspect"],
+        "expected_parameters": ["fields"]
+      }
+    }
+  ]
+}

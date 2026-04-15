@@ -5,7 +5,7 @@
 **Last Updated:** 2026-04-15
 > **Document Status:** This document is an **informative conformance framework specification** aligned to the normative protocol requirements in `docs/versions/v1.0.0-draft.md`.
 >
-> **Implementation Status:** The full `mcpaql-conformance` runner defined here is not yet published in this repository. Current implemented checks are schema/example validation in `scripts/validate-schema-examples.mjs`.
+> **Implementation Status:** This repository now includes a fixture-driven prototype runner in `scripts/run-conformance-tests.mjs` plus reference evidence bundles under `tests/conformance/`. A future packaged `mcpaql-conformance` tool may add live adapter execution on top of this baseline.
 
 ## Abstract
 
@@ -34,6 +34,13 @@ MCP-AQL conformance testing ensures implementations meet the protocol specificat
 - What implementations MUST test
 - How to evaluate test results
 - How to report conformance levels
+
+The repository implementation currently validates **evidence bundles** instead of
+probing live adapters over the network. Each bundle captures introspection
+responses, accepted parameter sets, representative success and failure results,
+and optional semantic-discoverability examples. This keeps the spec repo
+reviewable and deterministic while a future external runner grows into direct
+adapter execution.
 
 ### 1.2 Terminology
 
@@ -424,13 +431,20 @@ Conformance test runners SHOULD provide a command-line interface:
 mcpaql-conformance <command> [options]
 ```
 
+The current repository prototype is invoked as:
+
+```bash
+node scripts/run-conformance-tests.mjs <command> [options]
+```
+
 ### 7.2 Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `test` | Run conformance tests against an adapter | `mcpaql-conformance test ./adapter` |
-| `report` | Generate formatted report from test results file | `mcpaql-conformance report ./results.json` |
-| `version` | Print tool version | `mcpaql-conformance version` |
+| `test` | Run conformance tests against a fixture evidence bundle | `node scripts/run-conformance-tests.mjs test tests/conformance/evidence/reference-level2.json --level 2` |
+| `verify-fixtures` | Verify all repository reference fixtures against their expected exit codes | `node scripts/run-conformance-tests.mjs verify-fixtures` |
+| `report` | Generate formatted output from a JSON results file | `node scripts/run-conformance-tests.mjs report ./results.json --format markdown` |
+| `version` | Print tool version | `node scripts/run-conformance-tests.mjs version` |
 
 **Note:** The `report` command takes a JSON results file (produced by `test --format json --output results.json`) as input and generates human-readable or markdown output.
 
@@ -461,27 +475,45 @@ mcpaql-conformance <command> [options]
 
 **Run Level 1 conformance tests:**
 ```bash
-mcpaql-conformance test ./generated-adapter --level 1
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level1.json \
+  --level 1
 ```
 
 **Run Level 2 tests with JSON output:**
 ```bash
-mcpaql-conformance test ./adapter --level 2 --format json --output results.json
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level2.json \
+  --level 2 \
+  --format json \
+  --output results.json
 ```
 
 **Run specific test category:**
 ```bash
-mcpaql-conformance test ./adapter --category "Introspection Fidelity"
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level2.json \
+  --level 2 \
+  --category "Introspection Fidelity"
 ```
 
 **Verbose output with Tier 2 semantic evaluation:**
 ```bash
-mcpaql-conformance test ./adapter --level 2 --tier both --verbose
+node scripts/run-conformance-tests.mjs test \
+  tests/conformance/evidence/reference-level2.json \
+  --level 2 \
+  --tier both \
+  --verbose
 ```
 
 **Generate markdown report from results:**
 ```bash
-mcpaql-conformance report ./results.json --format markdown > CONFORMANCE.md
+node scripts/run-conformance-tests.mjs report ./results.json --format markdown > CONFORMANCE.md
+```
+
+**Verify the repository reference fixtures:**
+```bash
+npm run test:conformance
 ```
 
 ### 7.6 Integration with Generator
@@ -492,8 +524,8 @@ The adapter generator (see [Adapter Generator Specification](adapter/generator.m
 # Generate adapter and run conformance tests
 mcpaql-generate --schema adapter.yaml --target typescript --output ./adapter
 
-# Test generated adapter
-mcpaql-conformance test ./adapter --level 1
+# Test generated fixture evidence
+node scripts/run-conformance-tests.mjs test ./adapter/conformance/reference.json --level 1
 ```
 
 ---

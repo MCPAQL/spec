@@ -21,7 +21,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 | [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
-| [Conformance Testing](conformance-testing.md) | Test requirements and evaluation methodology | Draft |
+| [Conformance Testing](conformance-testing.md) | Test requirements plus the fixture-driven runner model used in this repo | Draft |
 
 ### Plugin & Adapter Contracts
 

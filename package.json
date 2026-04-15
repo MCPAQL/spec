@@ -10,7 +10,8 @@
     "validate:examples": "node scripts/validate-schema-examples.mjs",
     "validate:fixtures": "node scripts/validate-schema-examples.mjs --fixtures",
     "validate": "node scripts/validate-schema-examples.mjs --fixtures",
-    "test": "node scripts/validate-schema-examples.mjs --fixtures"
+    "test:conformance": "node scripts/run-conformance-tests.mjs verify-fixtures",
+    "test": "node scripts/validate-schema-examples.mjs --fixtures && node scripts/run-conformance-tests.mjs verify-fixtures"
   },
   "repository": {
     "type": "git",

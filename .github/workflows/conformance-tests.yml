@@ -1,0 +1,42 @@
+name: Run Conformance Fixtures
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'docs/conformance-testing.md'
+      - 'package.json'
+      - 'scripts/run-conformance-tests.mjs'
+      - 'tests/conformance/**/*.json'
+      - 'tests/conformance/**/*.md'
+      - '.github/workflows/conformance-tests.yml'
+  pull_request:
+    paths:
+      - 'docs/conformance-testing.md'
+      - 'package.json'
+      - 'scripts/run-conformance-tests.mjs'
+      - 'tests/conformance/**/*.json'
+      - 'tests/conformance/**/*.md'
+      - '.github/workflows/conformance-tests.yml'
+
+jobs:
+  conformance-fixtures:
+    name: Conformance Fixture Runner
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run conformance fixtures
+        run: npm run test:conformance

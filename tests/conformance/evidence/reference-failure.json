@@ -1,0 +1,90 @@
+{
+  "implementation": "reference-failure",
+  "version": "1.0.0",
+  "spec_version": "1.0.0-draft",
+  "expected_level": 1,
+  "expected_exit_code": 1,
+  "endpoint_modes": ["crude"],
+  "capabilities": {
+    "field_selection": false,
+    "batch_operations": false
+  },
+  "introspection": {
+    "operations_list": {
+      "success": true,
+      "data": {
+        "operations": [
+          {
+            "name": "get_widget",
+            "endpoint": "READ",
+            "description": "Fetch a widget by ID."
+          }
+        ]
+      }
+    },
+    "types_list": {
+      "success": true,
+      "data": {
+        "types": []
+      }
+    },
+    "operation_details": [
+      {
+        "name": "get_widget",
+        "endpoint": "READ",
+        "mcpTool": "mcp_aql_read",
+        "description": "Fetch a widget by ID.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "widgetId",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "returns": {
+          "name": "Widget",
+          "kind": "object"
+        }
+      }
+    ]
+  },
+  "accepted_parameters": {
+    "get_widget": ["widget_id", "include_deleted"]
+  },
+  "parameter_tests": {
+    "missing_required": [
+      {
+        "operation": "get_widget",
+        "parameter": "widgetId",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "TypeError at /src/widget.ts: missing widgetId"
+          }
+        }
+      }
+    ],
+    "unknown_parameter": [],
+    "optional_defaults": []
+  },
+  "error_tests": [
+    {
+      "name": "leaky-error",
+      "must_mention": ["widgetId"],
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_MISSING_PARAM",
+          "message": "TypeError at /src/widget.ts: missing widgetId"
+        }
+      }
+    }
+  ],
+  "round_trip_tests": [],
+  "update_preservation_tests": []
+}

@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added non-normative helper schemas for aggregation, computed-field, and relationship-query shapes
   - Extended `introspection-response.schema.json` and introspection docs with optional metadata for aggregation support, computed fields, and relationship capabilities
   - Updated collection-querying, field-selection, operations, README, and schema index docs to wire the new query-language features into the existing collection-query surface
+- Fixture-driven conformance runner and semantic evaluation baseline (#10, #56)
+  - Added `scripts/run-conformance-tests.mjs` with `test`, `verify-fixtures`, `report`, and `version` commands
+  - Added `tests/conformance/` evidence bundles covering passing Level 1, passing Level 2, semantic-warning, and failing reference cases
+  - Added CI integration via `.github/workflows/conformance-tests.yml`
+  - Updated conformance, README, and generator docs to reflect the implemented fixture-first runner model and two-tier semantic evaluation flow
 - Pagination response structure guidance for collection operations (#164)
   - Added `docs/operations.md` guidance for cursor-native, page-based, and offset-based pagination metadata in responses
   - Clarified `pageInfo` as the preferred response shape for MCP-AQL-native cursor pagination

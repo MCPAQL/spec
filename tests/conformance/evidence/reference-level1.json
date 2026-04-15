@@ -1,0 +1,389 @@
+{
+  "implementation": "reference-level1",
+  "version": "1.0.0",
+  "spec_version": "1.0.0-draft",
+  "expected_level": 1,
+  "expected_exit_code": 0,
+  "endpoint_modes": ["crude"],
+  "capabilities": {
+    "field_selection": false,
+    "batch_operations": false
+  },
+  "introspection": {
+    "operations_list": {
+      "success": true,
+      "data": {
+        "operations": [
+          {
+            "name": "introspect",
+            "endpoint": "READ",
+            "description": "Discover available operations and types."
+          },
+          {
+            "name": "create_widget",
+            "endpoint": "CREATE",
+            "description": "Create a widget."
+          },
+          {
+            "name": "get_widget",
+            "endpoint": "READ",
+            "description": "Fetch a widget by ID."
+          },
+          {
+            "name": "list_widgets",
+            "endpoint": "READ",
+            "description": "List widgets."
+          },
+          {
+            "name": "update_widget",
+            "endpoint": "UPDATE",
+            "description": "Update a widget."
+          },
+          {
+            "name": "delete_widget",
+            "endpoint": "DELETE",
+            "description": "Delete a widget."
+          }
+        ]
+      }
+    },
+    "types_list": {
+      "success": true,
+      "data": {
+        "types": [
+          {
+            "name": "Widget",
+            "kind": "object",
+            "description": "Widget resource."
+          }
+        ]
+      }
+    },
+    "operation_details": [
+      {
+        "name": "introspect",
+        "endpoint": "READ",
+        "mcpTool": "mcp_aql_read",
+        "description": "Discover operations and types.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "type": "string",
+            "required": true,
+            "description": "Introspection query type.",
+            "enum": ["operations", "types"]
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "Optional specific name."
+          }
+        ],
+        "returns": {
+          "name": "IntrospectionData",
+          "kind": "union"
+        }
+      },
+      {
+        "name": "create_widget",
+        "endpoint": "CREATE",
+        "mcpTool": "mcp_aql_create",
+        "description": "Create a widget.",
+        "permissions": {
+          "readOnly": false,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "widget_name",
+            "type": "string",
+            "required": true,
+            "description": "Display name for the widget."
+          },
+          {
+            "name": "category",
+            "type": "string",
+            "required": false,
+            "description": "Optional widget category.",
+            "default": "general"
+          }
+        ],
+        "returns": {
+          "name": "Widget",
+          "kind": "object"
+        }
+      },
+      {
+        "name": "get_widget",
+        "endpoint": "READ",
+        "mcpTool": "mcp_aql_read",
+        "description": "Fetch a widget by ID.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "widget_id",
+            "type": "string",
+            "required": true,
+            "description": "Unique widget identifier."
+          }
+        ],
+        "returns": {
+          "name": "Widget",
+          "kind": "object"
+        }
+      },
+      {
+        "name": "list_widgets",
+        "endpoint": "READ",
+        "mcpTool": "mcp_aql_read",
+        "description": "List widgets with a default page size.",
+        "permissions": {
+          "readOnly": true,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "type": "integer",
+            "required": false,
+            "description": "Maximum number of widgets to return.",
+            "default": 25,
+            "minimum": 1,
+            "maximum": 100
+          }
+        ],
+        "returns": {
+          "name": "WidgetList",
+          "kind": "object"
+        }
+      },
+      {
+        "name": "update_widget",
+        "endpoint": "UPDATE",
+        "mcpTool": "mcp_aql_update",
+        "description": "Update a widget by ID.",
+        "permissions": {
+          "readOnly": false,
+          "destructive": false
+        },
+        "parameters": [
+          {
+            "name": "widget_id",
+            "type": "string",
+            "required": true,
+            "description": "Unique widget identifier."
+          },
+          {
+            "name": "input",
+            "type": "object",
+            "required": true,
+            "description": "Fields to update."
+          }
+        ],
+        "returns": {
+          "name": "Widget",
+          "kind": "object"
+        }
+      },
+      {
+        "name": "delete_widget",
+        "endpoint": "DELETE",
+        "mcpTool": "mcp_aql_delete",
+        "description": "Delete a widget.",
+        "permissions": {
+          "readOnly": false,
+          "destructive": true
+        },
+        "parameters": [
+          {
+            "name": "widget_id",
+            "type": "string",
+            "required": true,
+            "description": "Unique widget identifier."
+          }
+        ],
+        "returns": {
+          "name": "DeleteResult",
+          "kind": "object"
+        }
+      }
+    ]
+  },
+  "accepted_parameters": {
+    "introspect": ["query", "name"],
+    "create_widget": ["widget_name", "category"],
+    "get_widget": ["widget_id"],
+    "list_widgets": ["limit"],
+    "update_widget": ["widget_id", "input"],
+    "delete_widget": ["widget_id"]
+  },
+  "parameter_tests": {
+    "missing_required": [
+      {
+        "operation": "introspect",
+        "parameter": "query",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'query'. Expected: string (introspection query type)."
+          }
+        }
+      },
+      {
+        "operation": "create_widget",
+        "parameter": "widget_name",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'widget_name'. Expected: string."
+          }
+        }
+      },
+      {
+        "operation": "get_widget",
+        "parameter": "widget_id",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'widget_id'. Expected: string."
+          }
+        }
+      },
+      {
+        "operation": "update_widget",
+        "parameter": "widget_id",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'widget_id'. Expected: string."
+          }
+        }
+      },
+      {
+        "operation": "update_widget",
+        "parameter": "input",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'input'. Expected: object."
+          }
+        }
+      },
+      {
+        "operation": "delete_widget",
+        "parameter": "widget_id",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_MISSING_PARAM",
+            "message": "Missing required parameter 'widget_id'. Expected: string."
+          }
+        }
+      }
+    ],
+    "unknown_parameter": [
+      {
+        "operation": "get_widget",
+        "parameter": "widget_slug",
+        "response": {
+          "success": false,
+          "error": {
+            "code": "VALIDATION_UNKNOWN_PARAM",
+            "message": "Unknown parameter 'widget_slug'. Valid parameters: widget_id."
+          }
+        }
+      }
+    ],
+    "optional_defaults": [
+      {
+        "operation": "list_widgets",
+        "parameter": "limit",
+        "expected_value_path": "data.applied.limit",
+        "expected_value": 25,
+        "response": {
+          "success": true,
+          "data": {
+            "items": [],
+            "applied": {
+              "limit": 25
+            }
+          }
+        }
+      }
+    ]
+  },
+  "error_tests": [
+    {
+      "name": "missing-widget-id",
+      "must_mention": ["widget_id"],
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_MISSING_PARAM",
+          "message": "Missing required parameter 'widget_id'. Expected: string."
+        }
+      }
+    },
+    {
+      "name": "unknown-widget-slug",
+      "must_mention": ["widget_slug", "widget_id"],
+      "response": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_UNKNOWN_PARAM",
+          "message": "Unknown parameter 'widget_slug'. Valid parameters: widget_id."
+        }
+      }
+    }
+  ],
+  "round_trip_tests": [
+    {
+      "name": "widget-create-read",
+      "expected_fields": {
+        "data.widget_name": "Alpha Widget",
+        "data.category": "general",
+        "data.status": "active"
+      },
+      "read_response": {
+        "success": true,
+        "data": {
+          "widget_id": "widget_123",
+          "widget_name": "Alpha Widget",
+          "category": "general",
+          "status": "active"
+        }
+      }
+    }
+  ],
+  "update_preservation_tests": [
+    {
+      "name": "widget-update-preserves-category",
+      "preserved_fields": {
+        "data.category": "general",
+        "data.created_at": "2026-04-01T12:00:00Z"
+      },
+      "read_response": {
+        "success": true,
+        "data": {
+          "widget_id": "widget_123",
+          "widget_name": "Renamed Widget",
+          "category": "general",
+          "created_at": "2026-04-01T12:00:00Z"
+        }
+      }
+    }
+  ]
+}
