@@ -372,8 +372,9 @@ interface TypeDetails extends TypeInfo {
 }
 ```
 
-For adapters using the standard CRUDE profile, the `endpoint` field SHOULD use
-the lowercase endpoint-family name rather than the MCP tool name:
+For the standard CRUDE profile, which remains the default when no alternate
+semantic-endpoint profile is configured, the `endpoint` field SHOULD use the
+lowercase endpoint-family name rather than the MCP tool name:
 
 ```json
 {
@@ -391,6 +392,18 @@ the lowercase endpoint-family name rather than the MCP tool name:
         "semantic_category": "READ",
         "endpoint": "read",
         "description": "List entities with filtering and pagination"
+      },
+      {
+        "name": "update_entity",
+        "semantic_category": "UPDATE",
+        "endpoint": "update",
+        "description": "Update entity properties"
+      },
+      {
+        "name": "delete_entity",
+        "semantic_category": "DELETE",
+        "endpoint": "delete",
+        "description": "Delete an entity"
       },
       {
         "name": "execute_workflow",
