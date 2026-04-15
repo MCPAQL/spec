@@ -16,8 +16,8 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 | Document | Description | Status |
 |----------|-------------|--------|
 | [v1.0.0-draft](versions/v1.0.0-draft.md) | Current specification version | Draft |
-| [CRUDE Pattern](crude-pattern.md) | Standard grouped endpoint profile and routing | Draft |
-| [Endpoint Modes](endpoint-modes.md) | CRUDE, grouped, and Single mode configuration | Draft |
+| [CRUDE Pattern](crude-pattern.md) | Standard semantic-endpoint profile and routing | Draft |
+| [Endpoint Modes](endpoint-modes.md) | CRUDE, semantic-endpoint, and Single mode configuration | Draft |
 | [Introspection](introspection.md) | Runtime discovery system | Draft |
 | [Operations](operations.md) | Operation design guide | Draft |
 | [Error Codes](error-codes.md) | Structured error code system | Draft (MVP) |
@@ -87,7 +87,7 @@ Future features are tracked as GitHub issues. Key upcoming features:
 For newcomers to MCP-AQL:
 
 1. **[v1.0.0-draft](versions/v1.0.0-draft.md)** - Start with the main specification
-2. **[CRUDE Pattern](crude-pattern.md)** - Understand the standard grouped endpoint profile
+2. **[CRUDE Pattern](crude-pattern.md)** - Understand the standard semantic-endpoint profile
 3. **[Operations](operations.md)** - Learn operation design patterns
 4. **[Introspection](introspection.md)** - Learn the discovery system
 5. **[Conformance Testing](conformance-testing.md)** - Understand conformance requirements

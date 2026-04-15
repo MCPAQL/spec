@@ -8,7 +8,7 @@
 
 ## Abstract
 
-This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoint pattern, which extends traditional CRUD semantics with an Execute endpoint for runtime lifecycle operations. CRUDE is the standard grouped endpoint profile in MCP-AQL, not the only allowed endpoint-family design.
+This document specifies the CRUDE (Create, Read, Update, Delete, Execute) endpoint pattern, which extends traditional CRUD semantics with an Execute endpoint for runtime lifecycle operations. CRUDE is the standard semantic-endpoint profile in MCP-AQL, not the only allowed endpoint-family design.
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ Each adapter implementing MCP-AQL:
 - Classifies each operation into the appropriate CRUDE endpoint
 - Documents its operation-to-endpoint mapping via introspection when exposing the CRUDE profile
 
-Adapters MAY instead expose alternate grouped endpoint families when that better matches the target API. See [Endpoint Modes](endpoint-modes.md) and the normative specification for the generalized grouped-mode model.
+Adapters MAY instead expose alternate semantic endpoint families when that better matches the target API. See [Endpoint Modes](endpoint-modes.md) and the normative specification for the generalized semantic-endpoint model.
 
 ---
 

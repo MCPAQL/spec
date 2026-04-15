@@ -407,7 +407,7 @@
         "mode": {
           "type": "string",
           "description": "Endpoint mode",
-          "enum": ["crude", "grouped", "single", "all"]
+          "enum": ["crude", "semantic", "single", "all"]
         },
         "capabilities": {
           "$ref": "#/$defs/ProtocolCapabilities",
@@ -575,7 +575,7 @@
         "_protocol": {
           "version": "1.0.0-alpha.1",
           "conformance": "level-1",
-          "mode": "grouped",
+          "mode": "semantic",
           "capabilities": {
             "batch": false,
             "field_selection": true,

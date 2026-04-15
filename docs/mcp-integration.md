@@ -47,7 +47,7 @@ This specification covers:
 
 ### 1.4 Relationship to MCP
 
-MCP-AQL adapters are MCP servers that expose operations through grouped semantic endpoint families or a single unified endpoint. The standard CRUDE profile is one grouped endpoint-family pattern, but adapters MAY define alternate grouped families that better match the target domain. All MCP transport and lifecycle requirements apply. This specification defines additional requirements specific to MCP-AQL tool registration and error handling.
+MCP-AQL adapters are MCP servers that expose operations through semantic endpoint families or a single unified endpoint. The standard CRUDE profile is one semantic-endpoint pattern, but adapters MAY define alternate semantic endpoint families that better match the target domain. All MCP transport and lifecycle requirements apply. This specification defines additional requirements specific to MCP-AQL tool registration and error handling.
 
 ---
 
@@ -57,9 +57,9 @@ MCP-AQL adapters are MCP servers that expose operations through grouped semantic
 
 MCP-AQL adapters MUST include the `introspect` operation in their tool descriptions. This solves the bootstrap problem by ensuring agents know how to discover available operations.
 
-#### 2.1.1 Grouped Mode Tool Descriptions
+#### 2.1.1 Semantic Endpoint Mode Tool Descriptions
 
-In Grouped mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the grouped-mode patterns below.
+In Semantic Endpoint mode, each exposed endpoint family registers as a separate MCP tool. Tool descriptions MUST follow one of the semantic-endpoint patterns below.
 
 **Standard CRUDE Profile:**
 
@@ -153,9 +153,9 @@ Discover required parameters:
 { operation: "introspect", params: { query: "operations", name: "[operation_name]" } }
 ```
 
-**Adapter-Defined Grouped Profiles:**
+**Adapter-Defined Semantic Endpoint Profiles:**
 
-When the adapter exposes custom grouped endpoint families, each tool description SHOULD follow this template:
+When the adapter exposes custom semantic endpoint families, each tool description SHOULD follow this template:
 
 ```
 [Endpoint family purpose].
@@ -212,7 +212,7 @@ Implementations SHOULD use these standard tool names:
 | `mcp_aql_delete` | DELETE operations |
 | `mcp_aql_execute` | EXECUTE operations |
 
-**Adapter-Defined Grouped Mode:**
+**Adapter-Defined Semantic Endpoint Mode:**
 
 Adapters MAY use domain-shaped tool names such as `mcp_aql_catalog`, `mcp_aql_data`, or `mcp_aql_jobs`. These names SHOULD remain stable within an adapter and MUST be discoverable via introspection.
 
@@ -272,7 +272,7 @@ Adapters SHOULD include MCP tool annotations to provide permission hints:
 }
 ```
 
-**Adapter-Defined Grouped Mode Annotations:**
+**Adapter-Defined Semantic Endpoint Annotations:**
 ```json
 {
   "name": "mcp_aql_jobs",
@@ -283,7 +283,7 @@ Adapters SHOULD include MCP tool annotations to provide permission hints:
 }
 ```
 
-Grouped endpoint families SHOULD set annotations conservatively based on the riskiest operation the family exposes.
+Semantic endpoint families SHOULD set annotations conservatively based on the riskiest operation the family exposes.
 
 **Single Mode Annotations:**
 ```json
@@ -374,9 +374,9 @@ Adapters MAY use dynamic `enum` generation for the `operation` property to provi
 
 > **Note:** Dynamic enumeration increases tool registration token cost. Implementations SHOULD consider the trade-off between discoverability and token efficiency. For large operation sets, prefer introspection over enumeration.
 
-### 3.4 Grouped Mode Schema Composition
+### 3.4 Semantic Endpoint Mode Schema Composition
 
-In Grouped mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
+In Semantic Endpoint mode, each exposed endpoint family MAY have a schema that enumerates only operations valid for that family:
 
 ```json
 {

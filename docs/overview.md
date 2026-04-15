@@ -3,8 +3,9 @@
 > **MCP-AQL** (Model Context Protocol - Agent Query Language) is a protocol that
 > consolidates discrete MCP tools into a small number of semantic endpoint
 > families, providing significant token reduction while maintaining full
-> functionality. The standard grouped profile is CRUDE (Create, Read, Update,
-> Delete, Execute), but adapters MAY define alternate grouped families.
+> functionality. The standard semantic-endpoint profile is CRUDE (Create, Read,
+> Update, Delete, Execute), but adapters MAY define alternate semantic endpoint
+> families.
 >
 > **Document Status:** This document is **informative**. For normative requirements, see [MCP-AQL Specification v1.0.0](./versions/v1.0.0-draft.md).
 
@@ -27,7 +28,7 @@ MCP-AQL defines a schema-driven operation dispatch protocol that:
 1. **Consolidates Operations** - Many discrete tools into a small number of semantic endpoint families
 2. **Enables Discovery** - GraphQL-style introspection for runtime operation discovery
 3. **Enforces Safety** - Endpoint classification validates operation/endpoint matching
-4. **Supports Flexibility** - Implementations MAY offer the standard CRUDE profile, adapter-defined grouped families, or Single mode
+4. **Supports Flexibility** - Implementations MAY offer the standard CRUDE profile, adapter-defined semantic endpoint families, or Single mode
 
 ```
 +-------------------+
@@ -305,7 +306,7 @@ When batch operations are supported, implementations:
 
 An MCP-AQL implementation is conformant if it:
 
-1. Implements at least one endpoint mode (CRUDE, adapter-defined grouped, or Single)
+1. Implements at least one endpoint mode (CRUDE, adapter-defined semantic, or Single)
 2. Enforces endpoint classification for all operations
 3. Provides the `introspect` operation as a READ-category operation on a documented endpoint family
 4. Returns discriminated responses for all operations

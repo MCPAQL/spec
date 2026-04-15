@@ -70,7 +70,7 @@ The introspection system returns information about the adapter's operations and 
 
 ### 2.1 The `introspect` Operation
 
-All introspection is performed through the `introspect` operation as a READ-category operation. In grouped modes, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
+All introspection is performed through the `introspect` operation as a READ-category operation. In semantic-endpoint modes, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
 
 **Request Format:**
 ```javascript
@@ -317,7 +317,7 @@ interface TypeDetails extends TypeInfo {
     "_protocol": {
       "version": "1.0.0-alpha.1",
       "conformance": "level-1",
-      "mode": "grouped",
+      "mode": "semantic",
       "capabilities": {
         "batch": false,
         "field_selection": true,
@@ -380,7 +380,7 @@ The `_protocol` object in operations list responses provides version and capabil
 |-------|------|----------|-------------|
 | `version` | string | MUST | MCP-AQL spec version (semver format) |
 | `conformance` | string | SHOULD | Conformance level ("level-1", "level-2") |
-| `mode` | string | SHOULD | Endpoint mode ("crude", "grouped", "single", "all") |
+| `mode` | string | SHOULD | Endpoint mode ("crude", "semantic", "single", "all") |
 | `capabilities` | object | MAY | Feature flags for optional capabilities |
 
 **Capabilities flags:**
