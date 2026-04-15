@@ -8,7 +8,7 @@
 
 ## Abstract
 
-MCP-AQL supports two operational modes for exposing endpoints to clients: CRUDE mode (5 semantic endpoints) and Single mode (1 unified endpoint). This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
+MCP-AQL supports three operational modes for exposing endpoints to clients: the standard CRUDE grouped profile, adapter-defined Grouped mode, and Single mode. This document specifies configuration, routing behavior, security implications, and trade-offs for each mode.
 
 ---
 
@@ -17,11 +17,12 @@ MCP-AQL supports two operational modes for exposing endpoints to clients: CRUDE 
 1. [Introduction](#1-introduction)
 2. [Mode Comparison](#2-mode-comparison)
 3. [Configuration](#3-configuration)
-4. [CRUDE Mode](#4-crude-mode)
-5. [Single Mode](#5-single-mode)
-6. [Security Considerations](#6-security-considerations)
-7. [Tool Registration](#7-tool-registration)
-8. [Conformance Requirements](#8-conformance-requirements)
+4. [Standard CRUDE Profile](#4-standard-crude-profile)
+5. [Grouped Mode](#5-grouped-mode)
+6. [Single Mode](#6-single-mode)
+7. [Security Considerations](#7-security-considerations)
+8. [Tool Registration](#8-tool-registration)
+9. [Conformance Requirements](#9-conformance-requirements)
 
 ---
 
@@ -48,10 +49,12 @@ This specification covers:
 
 | Term | Definition |
 |------|------------|
-| **CRUDE Mode** | Five separate MCP tools, one per semantic endpoint |
+| **CRUDE Profile** | The standard five-family grouped profile: Create, Read, Update, Delete, Execute |
+| **Grouped Mode** | Multiple exposed endpoint families, either the CRUDE profile or adapter-defined semantic families |
 | **Single Mode** | One unified MCP tool that routes internally |
-| **Endpoint** | An MCP tool registered with the client |
-| **Operation** | A named action within an endpoint |
+| **Endpoint Family** | A named MCP tool or logical grouping that contains one or more operations |
+| **Semantic Category** | One of the standardized effect categories: CREATE, READ, UPDATE, DELETE, EXECUTE |
+| **Operation** | A named action exposed by the adapter |
 
 ---
 
@@ -59,45 +62,39 @@ This specification covers:
 
 ### 2.1 Summary
 
-| Aspect | CRUDE Mode (5 Endpoints) | Single Mode (1 Endpoint) |
-|--------|--------------------------|--------------------------|
-| **Endpoints** | 5 semantic endpoints | 1 unified endpoint |
-| **Typical Token Cost** | ~4,300 tokens | ~1,100 tokens |
-| **Routing** | Client chooses endpoint | Server routes internally |
-| **Permission Control** | Endpoint-level granularity | Operation-level only |
-| **Client Complexity** | Client MUST select correct endpoint | Simple single entry point |
-| **Error Messages** | Semantic endpoint mismatch errors | Generic routing errors |
+| Aspect | CRUDE Profile | Adapter-Defined Grouped Mode | Single Mode |
+|--------|---------------|------------------------------|-------------|
+| **Exposed tools** | 5 grouped tools | Adapter-defined grouped tools | 1 unified tool |
+| **Semantic categories** | Explicitly aligned to CRUDE tools | Still standardized per operation | Routed internally |
+| **Routing** | Client chooses CRUDE tool | Client chooses endpoint family | Server routes internally |
+| **Permission control** | Strong endpoint-level granularity | Endpoint-level granularity by family | Operation-level only |
+| **Token cost** | Low | Low to medium | Lowest |
+| **Best fit** | General-purpose profile | Domain-shaped adapters | Minimal tool surface |
 
-### 2.2 Visual Comparison
+### 2.2 Typical Shapes
 
-```
-CRUDE Mode                          Single Mode
-============                        ===========
+```text
+CRUDE Profile                     Adapter-Defined Grouped Mode          Single Mode
+================                  ============================          ===========
 
-Client                              Client
-  |                                   |
-  +---> mcp_aql_create                +---> mcp_aql
-  |                                         |
-  +---> mcp_aql_read                        v
-  |                                   [Internal Router]
-  +---> mcp_aql_update                      |
-  |                                   +-----+-----+-----+-----+
-  +---> mcp_aql_delete                |     |     |     |     |
-  |                                   C     R     U     D     E
-  +---> mcp_aql_execute
+mcp_aql_create                    mcp_aql_catalog                       mcp_aql
+mcp_aql_read                      mcp_aql_data                            |
+mcp_aql_update                    mcp_aql_jobs                            v
+mcp_aql_delete                                                           [Internal Router]
+mcp_aql_execute
 ```
 
 ### 2.3 Token Efficiency
 
-Endpoint consolidation provides significant token reduction compared to discrete tools:
+Endpoint consolidation provides significant token reduction compared to fully discrete tools:
 
 | Configuration | Typical Token Cost | Reduction |
 |---------------|-------------------|-----------|
 | Discrete tools (e.g., 40+ tools) | ~30,000 tokens | baseline |
-| CRUDE mode (5 endpoints) | ~4,300 tokens | ~85% |
-| Single mode (1 endpoint) | ~1,100 tokens | ~96% |
+| Grouped mode (5-8 tools typical) | ~4,300-6,500 tokens | ~78-85% |
+| Single mode (1 tool) | ~1,100 tokens | ~96% |
 
-Note: Actual token costs vary based on operation count and description length.
+Note: Actual token costs vary based on operation count, endpoint descriptions, and whether schemas enumerate operations inline.
 
 ---
 
@@ -108,20 +105,27 @@ Note: Actual token costs vary based on operation count and description length.
 Implementations SHOULD provide runtime configuration for endpoint mode selection.
 
 **Recommended Environment Variable:**
+```text
+MCP_AQL_ENDPOINT_MODE=crude|grouped|single|all
 ```
-MCP_AQL_ENDPOINT_MODE=crude|single|all
+
+**Optional Grouped Profile Selection:**
+```text
+MCP_AQL_ENDPOINT_PROFILE=crude|<adapter_profile_name>
 ```
 
 **Values:**
+
 | Value | Behavior |
 |-------|----------|
-| `crude` | Register 5 semantic endpoints |
+| `crude` | Register the standard 5-family CRUDE grouped profile |
+| `grouped` | Register the adapter's documented grouped endpoint families |
 | `single` | Register 1 unified endpoint |
-| `all` | Register all 6 endpoints |
+| `all` | Register the active grouped profile plus the unified endpoint |
 
 ### 3.2 Default Mode
 
-If no configuration is provided, implementations SHOULD default to CRUDE mode, which provides the best balance of token efficiency and permission granularity.
+If no configuration is provided, implementations SHOULD default to the standard CRUDE profile, which provides a strong balance of token efficiency, discoverability, and permission granularity.
 
 ### 3.3 Runtime Configuration
 
@@ -130,25 +134,27 @@ Implementations MAY support additional configuration methods:
 - Programmatic API
 - Environment-specific defaults
 
+If an implementation supports multiple grouped profiles, it SHOULD document which profile is active and expose that via introspection.
+
 ---
 
-## 4. CRUDE Mode
+## 4. Standard CRUDE Profile
 
 ### 4.1 Endpoint Registration
 
-In CRUDE mode, five MCP tools are registered:
+In the standard CRUDE profile, five MCP tools are registered:
 
 | Tool Name | Semantic Category | Operations |
 |-----------|-------------------|------------|
-| `mcp_aql_create` | Additive, non-destructive | Create, add, register |
-| `mcp_aql_read` | Safe, read-only | List, get, search, introspect |
-| `mcp_aql_update` | Modifying | Edit, modify, update |
-| `mcp_aql_delete` | Destructive | Delete, remove, clear |
-| `mcp_aql_execute` | Runtime lifecycle | Run, start, stop, cancel |
+| `mcp_aql_create` | CREATE | Create, add, register |
+| `mcp_aql_read` | READ | List, get, search, introspect |
+| `mcp_aql_update` | UPDATE | Edit, modify, update |
+| `mcp_aql_delete` | DELETE | Delete, remove, clear |
+| `mcp_aql_execute` | EXECUTE | Run, start, stop, cancel |
 
 ### 4.2 Client Responsibility
 
-In CRUDE mode, clients MUST select the correct endpoint for each operation. If a client sends an operation to the wrong endpoint, the adapter MUST reject the request.
+In the CRUDE profile, clients MUST select the correct endpoint family for each operation. If a client sends an operation to the wrong tool, the adapter MUST reject the request.
 
 **Example: Correct Usage**
 ```javascript
@@ -174,55 +180,111 @@ In CRUDE mode, clients MUST select the correct endpoint for each operation. If a
 }
 ```
 
-### 4.3 Route Enforcement
+### 4.3 Why Use CRUDE
 
-Adapters MUST validate that operations are sent to their assigned endpoint.
+The CRUDE profile is the recommended general-purpose grouping because it:
+
+- Preserves standardized safety boundaries
+- Produces predictable tool names across adapters
+- Works well when the target system does not already imply a better domain partition
+
+---
+
+## 5. Grouped Mode
+
+### 5.1 Endpoint Registration
+
+In adapter-defined Grouped mode, implementations expose a small number of semantic endpoint families that fit the target API or domain model.
+
+**Example grouped families:**
+
+| Tool Name | Typical Contents |
+|-----------|------------------|
+| `mcp_aql_catalog` | Resource discovery, listing, creation |
+| `mcp_aql_data` | Querying, fetching, field selection, exports |
+| `mcp_aql_jobs` | Long-running tasks and execution lifecycle |
+
+Grouped endpoint families MAY mix multiple semantic categories, but each operation MUST still have exactly one standardized semantic category documented via introspection.
+
+### 5.2 Client Responsibility
+
+In Grouped mode, clients MUST choose the correct exposed endpoint family for each operation. Adapters MUST reject operations sent to the wrong grouped endpoint family.
+
+**Example: Correct Usage**
+```javascript
+// Via mcp_aql_data endpoint
+{
+  operation: "search_documents",
+  params: { query: "pricing", limit: 10 }
+}
+```
+
+**Example: Incorrect Usage**
+```javascript
+// Via mcp_aql_jobs endpoint (WRONG - search_documents belongs to the data family)
+{
+  operation: "search_documents",
+  params: { query: "pricing", limit: 10 }
+}
+
+// Response:
+{
+  success: false,
+  error: "Operation 'search_documents' must be called via mcp_aql_data, not mcp_aql_jobs"
+}
+```
+
+### 5.3 Route Enforcement
+
+Adapters in Grouped mode MUST validate that operations are sent to their assigned endpoint family.
 
 **Validation Logic:**
 1. Extract operation name from request
-2. Look up the correct endpoint for that operation
-3. Compare with the endpoint that received the request
-4. If mismatch, return an error specifying the correct endpoint
+2. Look up the documented endpoint family for that operation
+3. Compare with the endpoint family that received the request
+4. If mismatch, return an error specifying the correct endpoint family
 
-### 4.4 Endpoint Descriptions
+### 5.4 Endpoint Descriptions
 
-Each endpoint SHOULD include a description listing:
-- The semantic category
+Each grouped endpoint family SHOULD include a description listing:
+
+- The family purpose
+- The semantic categories commonly found in that family
 - Available operations (or a sample with introspection guidance)
 - Quick-start examples
 
 **Example Description Format:**
-```
-Additive, non-destructive operations.
+```text
+Catalog-oriented operations for resources and definitions.
 
-Supported operations: create_item, add_entry, register_callback
+Primary semantic categories: CREATE, READ, UPDATE
 
-These operations add new data without removing or overwriting existing content.
+Supported operations: create_dataset, list_datasets, update_dataset
 
 Quick start example:
-{ operation: "create_item", params: { name: "example" } }
+{ operation: "list_datasets", params: { limit: 10 } }
 
-Use introspection to discover all available operations:
-{ operation: "introspect", params: { query: "operations" } }
+Discover required parameters:
+{ operation: "introspect", params: { query: "operations", name: "list_datasets" } }
 ```
 
 ---
 
-## 5. Single Mode
+## 6. Single Mode
 
-### 5.1 Endpoint Registration
+### 6.1 Endpoint Registration
 
 In Single mode, one MCP tool is registered:
 
 | Tool Name | Purpose |
 |-----------|---------|
-| `mcp_aql` | All operations through unified entry point |
+| `mcp_aql` | All operations through a unified entry point |
 
-### 5.2 Server-Side Routing
+### 6.2 Server-Side Routing
 
-The adapter routes operations internally based on their classification:
+The adapter routes operations internally based on each operation's semantic category and handler mapping.
 
-```
+```text
 Client Request
      |
      v
@@ -231,7 +293,7 @@ mcp_aql endpoint
      v
 [Operation Router]
      |
-     +---> Determines correct CRUDE category
+     +---> Resolves endpoint family + semantic category
      |
      v
 [Appropriate Handler]
@@ -240,37 +302,28 @@ mcp_aql endpoint
 Response
 ```
 
-### 5.3 Routing Behavior
+### 6.3 Routing Behavior
 
 In Single mode:
+
 1. All operations are accepted through `mcp_aql`
-2. The adapter determines the correct handler based on operation classification
-3. The same semantic rules apply as CRUDE mode
+2. The adapter determines the correct handler based on operation metadata
+3. The same semantic category rules apply as in grouped modes
 4. Permission enforcement occurs server-side
 
-### 5.4 Unknown Operations
-
-If an operation is not recognized:
-
-```javascript
-{
-  success: false,
-  error: "Unknown operation: 'invalid_op'. Use introspect to discover available operations."
-}
-```
-
-### 5.5 Endpoint Description
+### 6.4 Unified Endpoint Description
 
 The unified endpoint SHOULD provide:
-- Overview of available operation categories
+
+- Overview of available endpoint families or semantic categories
 - Guidance to use introspection for discovery
 - Quick-start examples
 
 **Example Description:**
-```
+```text
 Unified MCP-AQL endpoint for all operations.
 
-Operations are automatically routed based on their semantic category (Create, Read, Update, Delete, Execute).
+Operations are automatically routed based on their documented semantic category and endpoint-family mapping.
 
 Use introspection to discover available operations:
 { operation: "introspect", params: { query: "operations" } }
@@ -278,60 +331,65 @@ Use introspection to discover available operations:
 
 ---
 
-## 6. Security Considerations
+## 7. Security Considerations
 
-### 6.1 CRUDE Mode Security
+### 7.1 Grouped Mode Security
 
-**Advantages:**
-- Endpoint-level permission blocking (e.g., disable `mcp_aql_delete` entirely)
-- Semantic errors help clients self-correct
-- Platform-level permission hints via MCP annotations
-- Clear audit separation by operation category
+Grouped modes, including the CRUDE profile, provide:
+
+- Endpoint-level permission blocking
+- More specific mismatch errors
+- MCP annotation hints that may vary by exposed family
+- Clearer audit separation by exposed family
 
 **Characteristics:**
-- Client is responsible for endpoint selection
+
+- Client is responsible for endpoint-family selection
 - Adapter enforces route validation
-- Dangerous operations isolated to DELETE/EXECUTE endpoints
+- Risk can be isolated into smaller families
 
-### 6.2 Single Mode Security
+### 7.2 Single Mode Security
 
-**Advantages:**
+Single mode provides:
+
 - Smaller attack surface (one endpoint)
-- Server-side routing prevents endpoint bypass
-- Simpler client implementation reduces error risk
+- Server-side routing that prevents endpoint bypass
+- Simpler client integration
 
 **Characteristics:**
-- Cannot block operations by endpoint
-- All routing decisions made server-side
-- Audit logging requires operation-level granularity
 
-### 6.3 Security Trade-offs
+- Cannot block operations by endpoint family alone
+- All routing decisions are server-side
+- Audit logging relies more heavily on operation-level metadata
 
-| Security Aspect | CRUDE Mode | Single Mode |
-|-----------------|------------|-------------|
+### 7.3 Security Trade-offs
+
+| Security Aspect | Grouped Modes | Single Mode |
+|-----------------|---------------|-------------|
 | Endpoint-level blocking | Yes | No |
-| Client error prevention | Better (semantic errors) | Worse (generic errors) |
-| Attack surface | Larger (5 endpoints) | Smaller (1 endpoint) |
-| Audit granularity | Endpoint + Operation | Operation only |
-| Bypass resistance | Client-dependent | Server-enforced |
+| Client error prevention | Better | Worse |
+| Attack surface | Larger | Smaller |
+| Audit granularity | Endpoint family + operation | Operation only |
+| Bypass resistance | Adapter-enforced | Adapter-enforced |
 
-### 6.4 Common Security Enforcement
+### 7.4 Common Security Enforcement
 
-Both modes MUST:
+All modes MUST:
+
 - Validate operation parameters
 - Enforce the same permission model
 - Apply safety tier classifications
-- Support confirmation for destructive operations (if implemented)
+- Support confirmation for destructive operations when implemented
 
 ---
 
-## 7. Tool Registration
+## 8. Tool Registration
 
-### 7.1 MCP Tool Annotations
+### 8.1 MCP Tool Annotations
 
-Adapters SHOULD include MCP tool annotations to hint at operation safety:
+Adapters SHOULD include MCP tool annotations to hint at operation safety.
 
-**CRUDE Mode Annotations:**
+**CRUDE Profile Example:**
 ```json
 {
   "name": "mcp_aql_read",
@@ -340,9 +398,12 @@ Adapters SHOULD include MCP tool annotations to hint at operation safety:
     "destructiveHint": false
   }
 }
+```
 
+**Adapter-Defined Grouped Example:**
+```json
 {
-  "name": "mcp_aql_delete",
+  "name": "mcp_aql_jobs",
   "annotations": {
     "readOnlyHint": false,
     "destructiveHint": true
@@ -350,7 +411,9 @@ Adapters SHOULD include MCP tool annotations to hint at operation safety:
 }
 ```
 
-**Single Mode Annotations:**
+Grouped endpoint families SHOULD set annotations conservatively based on the riskiest operation that family exposes.
+
+**Single Mode Example:**
 ```json
 {
   "name": "mcp_aql",
@@ -363,9 +426,9 @@ Adapters SHOULD include MCP tool annotations to hint at operation safety:
 
 Note: Single mode uses `destructiveHint: true` because it can route to destructive operations.
 
-### 7.2 Input Schema
+### 8.2 Input Schema
 
-Both modes use the same input schema:
+All modes use the same base input schema:
 
 ```json
 {
@@ -384,37 +447,37 @@ Both modes use the same input schema:
 }
 ```
 
-Adapters MAY extend this schema with additional common properties (e.g., `resource_type`, `fields`).
+Adapters MAY extend this schema with additional common properties such as `resource_type`, `fields`, or `_meta`.
 
 ---
 
-## 8. Conformance Requirements
+## 9. Conformance Requirements
 
-### 8.1 MUST Requirements
+### 9.1 MUST Requirements
 
 Conforming implementations MUST:
 
-1. Support at least one endpoint mode (CRUDE or Single)
-2. Enforce operation routing validation in CRUDE mode
+1. Support at least one endpoint mode (`crude`, adapter-defined `grouped`, or `single`)
+2. Enforce operation routing validation in grouped modes
 3. Return proper error responses for unknown operations
 4. Route operations to correct handlers in Single mode
 5. Apply consistent permission enforcement regardless of mode
 
-### 8.2 SHOULD Requirements
+### 9.2 SHOULD Requirements
 
 Conforming implementations SHOULD:
 
-1. Support both CRUDE and Single endpoint modes
+1. Support both a grouped endpoint mode and Single mode
 2. Provide runtime configuration for mode selection
 3. Include MCP tool annotations for permission hints
 4. Provide helpful error messages that guide clients to correct usage
-5. Document available operations via introspection
+5. Document operation-to-endpoint-family mapping via introspection
 
-### 8.3 MAY Requirements
+### 9.3 MAY Requirements
 
 Conforming implementations MAY:
 
-1. Support "all" mode exposing all 6 endpoints simultaneously
+1. Support `all` mode exposing both grouped and single surfaces simultaneously
 2. Implement per-endpoint access control
 3. Provide mode-specific audit logging
 4. Support dynamic mode switching without restart

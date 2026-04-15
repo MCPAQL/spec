@@ -70,7 +70,7 @@ The introspection system returns information about the adapter's operations and 
 
 ### 2.1 The `introspect` Operation
 
-All introspection is performed through the `introspect` operation on the READ endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
+All introspection is performed through the `introspect` operation as a READ-category operation. In grouped modes, adapters expose it on a documented READ-oriented endpoint family; in Single mode, it is available through the unified endpoint. This is the only operation that MCP-AQL REQUIRES all adapters to implement.
 
 **Request Format:**
 ```javascript
@@ -157,9 +157,10 @@ Summary information for an operation in list responses:
 
 ```typescript
 interface OperationInfo {
-  name: string;        // Operation identifier (e.g., "create_entity")
-  endpoint: string;    // CRUDE endpoint (e.g., "CREATE")
-  description: string; // Brief description
+  name: string;               // Operation identifier (e.g., "create_entity")
+  semantic_category: string;  // Standard category (e.g., "CREATE")
+  endpoint: string;           // Exposed endpoint family (e.g., "catalog", "create")
+  description: string;        // Brief description
 }
 ```
 
@@ -170,8 +171,9 @@ Complete information for a specific operation:
 ```typescript
 interface OperationDetails {
   name: string;                    // Operation identifier
-  endpoint: string;                // CRUDE endpoint
-  mcpTool: string;                 // MCP tool name (e.g., "mcp_aql_create")
+  semantic_category: string;       // Standard category
+  endpoint: string;                // Exposed endpoint family
+  mcpTool: string;                 // Actual MCP tool name (e.g., "mcp_aql_catalog")
   description: string;             // Detailed description
   permissions: EndpointPermissions;
   parameters: ParameterInfo[];     // Parameter definitions (see note below)
@@ -315,7 +317,7 @@ interface TypeDetails extends TypeInfo {
     "_protocol": {
       "version": "1.0.0-alpha.1",
       "conformance": "level-1",
-      "mode": "crude",
+      "mode": "grouped",
       "capabilities": {
         "batch": false,
         "field_selection": true,
@@ -325,37 +327,44 @@ interface TypeDetails extends TypeInfo {
     "operations": [
       {
         "name": "create_entity",
-        "endpoint": "CREATE",
+        "semantic_category": "CREATE",
+        "endpoint": "catalog",
         "description": "Create a new entity"
       },
       {
         "name": "list_entities",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "data",
         "description": "List entities with filtering and pagination"
       },
       {
         "name": "get_entity",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "data",
         "description": "Get an entity by identifier"
       },
       {
         "name": "update_entity",
-        "endpoint": "UPDATE",
+        "semantic_category": "UPDATE",
+        "endpoint": "catalog",
         "description": "Update entity properties"
       },
       {
         "name": "delete_entity",
-        "endpoint": "DELETE",
+        "semantic_category": "DELETE",
+        "endpoint": "catalog",
         "description": "Delete an entity"
       },
       {
         "name": "execute_workflow",
-        "endpoint": "EXECUTE",
+        "semantic_category": "EXECUTE",
+        "endpoint": "jobs",
         "description": "Start execution of a workflow"
       },
       {
         "name": "introspect",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "data",
         "description": "Discover available operations and types"
       }
     ]
@@ -371,7 +380,7 @@ The `_protocol` object in operations list responses provides version and capabil
 |-------|------|----------|-------------|
 | `version` | string | MUST | MCP-AQL spec version (semver format) |
 | `conformance` | string | SHOULD | Conformance level ("level-1", "level-2") |
-| `mode` | string | SHOULD | Endpoint mode ("crude", "single", "all") |
+| `mode` | string | SHOULD | Endpoint mode ("crude", "grouped", "single", "all") |
 | `capabilities` | object | MAY | Feature flags for optional capabilities |
 
 **Capabilities flags:**
@@ -407,8 +416,9 @@ Clients can use protocol metadata to:
   "data": {
     "operation": {
       "name": "create_entity",
-      "endpoint": "CREATE",
-      "mcpTool": "mcp_aql_create",
+      "semantic_category": "CREATE",
+      "endpoint": "catalog",
+      "mcpTool": "mcp_aql_catalog",
       "description": "Create a new entity of any type",
       "permissions": {
         "readOnly": false,
@@ -525,9 +535,9 @@ When querying for an operation that does not exist, implementations MUST return 
         "description": "Available entity types"
       },
       {
-        "name": "CRUDEndpoint",
+        "name": "SemanticCategory",
         "kind": "enum",
-        "description": "CRUDE endpoint categories for operation classification"
+        "description": "Standard semantic categories for operation classification"
       },
       {
         "name": "OperationInput",
@@ -656,7 +666,7 @@ MCP-AQL defines these protocol-level types that adapters SHOULD include in their
 
 | Type Name | Kind | Description |
 |-----------|------|-------------|
-| `CRUDEndpoint` | enum | Endpoints: CREATE, READ, UPDATE, DELETE, EXECUTE |
+| `SemanticCategory` | enum | Standard categories: CREATE, READ, UPDATE, DELETE, EXECUTE |
 | `OperationInput` | object | Standard input structure |
 | `OperationResult` | union | Success or failure result |
 | `OperationSuccess` | object | Successful result with data |
@@ -697,7 +707,8 @@ classDiagram
         -getOperationDetails(name) OperationDetails
         -listTypes() TypeInfo[]
         -getTypeDetails(name) TypeDetails
-        +getOperationsByEndpoint() Record
+        +getOperationsByEndpointFamily() Record
+        +getOperationsBySemanticCategory() Record
         +getSummary() string
     }
 
@@ -721,10 +732,16 @@ classDiagram
 
 Implementations MAY provide utility methods for documentation and tooling:
 
-**Operations by Endpoint:**
+**Operations by Endpoint Family:**
 ```typescript
-// Returns operations grouped by CRUDE endpoint
-getOperationsByEndpoint(): Record<CRUDEndpoint, OperationInfo[]>
+// Returns operations grouped by exposed endpoint family
+getOperationsByEndpointFamily(): Record<string, OperationInfo[]>
+```
+
+**Operations by Semantic Category:**
+```typescript
+// Returns operations grouped by standard semantic category
+getOperationsBySemanticCategory(): Record<SemanticCategory, OperationInfo[]>
 ```
 
 **Summary Generation:**
@@ -734,13 +751,18 @@ getSummary(): string
 
 // Example output:
 // MCP-AQL Operations:
-//   CREATE: create_entity, import_entity
+//   catalog: create_entity, update_entity, delete_entity
+//   data: list_entities, get_entity, introspect
+//   jobs: execute_workflow
+//
+// Semantic Categories:
+//   CREATE: create_entity
 //   READ: list_entities, get_entity, introspect
 //   UPDATE: update_entity
 //   DELETE: delete_entity
 //   EXECUTE: execute_workflow
 //
-// Types: EntityType, CRUDEndpoint, OperationInput, OperationResult
+// Types: EntityType, SemanticCategory, OperationInput, OperationResult
 //
 // Use introspect with name parameter for details.
 ```
@@ -789,7 +811,7 @@ Implementations SHOULD:
 
 Conforming implementations MUST:
 
-1. Implement the `introspect` operation on the READ endpoint
+1. Implement the `introspect` operation as a READ-category operation on a documented endpoint family
 2. Support both `operations` and `types` query types
 3. Return `OperationInfo` for all supported operations when listing
 4. Return `OperationDetails` when querying a specific operation by name
@@ -845,8 +867,8 @@ Conforming implementations SHOULD:
 1. Include usage examples for all operations
 2. Provide meaningful descriptions for all parameters
 3. Document default values in parameter info
-4. Return operations grouped by endpoint in list responses
-5. Include the protocol types (`CRUDEndpoint`, `OperationResult`, etc.)
+4. Return each operation's endpoint family and semantic category in list responses
+5. Include the protocol types (`SemanticCategory`, `OperationResult`, etc.)
 6. Implement caching for introspection responses
 7. Include the `introspect` operation in the operations list
 8. Derive introspection data from a single source of truth (operation schema)

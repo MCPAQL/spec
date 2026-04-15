@@ -9,7 +9,7 @@
 
 ## Overview
 
-MCP-AQL is a protocol specification that consolidates multiple MCP (Model Context Protocol) tools into semantic endpoints, providing approximately **96% token reduction** while maintaining full functionality. It enables structured communication between AI models and context-providing services through a unified query language.
+MCP-AQL is a protocol specification that consolidates multiple MCP (Model Context Protocol) tools into semantic endpoint families, providing approximately **96% token reduction** while maintaining full functionality. It enables structured communication between AI models and context-providing services through a unified query language.
 
 ## Preliminary Draft Positioning
 
@@ -23,9 +23,9 @@ This draft is intended to:
 
 This draft is not yet a final certification baseline. Some conformance automation and ecosystem hardening work is still in progress.
 
-## The CRUDE Pattern
+## Endpoint Families
 
-MCP-AQL extends traditional CRUD with an **Execute** endpoint, creating the CRUDE pattern:
+MCP-AQL supports grouped endpoint families or a single unified endpoint. The standard grouped profile extends traditional CRUD with an **Execute** endpoint, creating the CRUDE pattern:
 
 | Endpoint | Safety | Description |
 |----------|--------|-------------|
@@ -34,6 +34,8 @@ MCP-AQL extends traditional CRUD with an **Execute** endpoint, creating the CRUD
 | **Update** | Modifying | Operations that modify existing state |
 | **Delete** | Destructive | Operations that remove state |
 | **Execute** | Stateful | Runtime lifecycle operations (non-idempotent) |
+
+Adapters MAY also define alternate grouped endpoint families when the target API is better represented by domain-specific groupings such as `catalog`, `data`, or `jobs`. Operations still retain standardized semantic categories for CREATE, READ, UPDATE, DELETE, and EXECUTE.
 
 ## Token Efficiency
 
@@ -45,7 +47,7 @@ MCP-AQL dramatically reduces token consumption for LLM interactions.
 |--------------|------------|------------|-----------|
 | Discrete Tools | ~30 tools | ~18,000 | Baseline |
 | Discrete Tools | ~50 tools | ~30,000 | Baseline |
-| **CRUDE Mode** | 5 endpoints | ~4,000 | ~80-85% |
+| **Grouped Mode (CRUDE profile)** | 5 endpoints | ~4,000 | ~80-85% |
 | **Single Mode** | 1 endpoint | ~1,000 | **~95%+** |
 
 The savings scale with adapter complexity - the more operations your adapter supports, the greater the benefit of consolidation.
@@ -98,7 +100,8 @@ The savings scale with adapter complexity - the more operations your adapter sup
 | Document | Description |
 |----------|-------------|
 | [Specification v1.0.0-draft](docs/versions/v1.0.0-draft.md) | Current working draft |
-| [CRUDE Pattern](docs/crude-pattern.md) | Detailed endpoint semantics |
+| [CRUDE Pattern](docs/crude-pattern.md) | Standard grouped endpoint profile |
+| [Endpoint Modes](docs/endpoint-modes.md) | CRUDE, grouped, and single endpoint configuration |
 | [Introspection](docs/introspection.md) | Discovery system specification |
 | [Operations Guide](docs/operations.md) | Operation design patterns |
 | [Collection Querying](docs/features/collection-querying.md) | Preferred query contract for list/search/query operations |
@@ -117,7 +120,7 @@ It demonstrates the protocol in a large, production-oriented server, including s
 Implementations claiming MCP-AQL conformance MUST:
 
 1. Implement the `introspect` operation for runtime discovery
-2. Use the CRUDE endpoint pattern (or single endpoint mode)
+2. Use a grouped endpoint mode or single endpoint mode
 3. Return discriminated union responses (`{ success, data }` or `{ success, error }`)
 4. Document supported operations via introspection
 

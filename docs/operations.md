@@ -504,7 +504,8 @@ Each operation MUST be defined by a schema that specifies its behavior, paramete
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `endpoint` | string | REQUIRED | CRUDE endpoint: CREATE, READ, UPDATE, DELETE, or EXECUTE |
+| `semantic_category` | string | REQUIRED | Standard semantic category: CREATE, READ, UPDATE, DELETE, or EXECUTE |
+| `endpoint` | string | REQUIRED in grouped modes | Exposed endpoint family that receives the operation |
 | `description` | string | REQUIRED | Human-readable description |
 | `params` | object | OPTIONAL | Parameter definitions |
 | `handler` | string | OPTIONAL | Internal handler reference |
@@ -698,10 +699,10 @@ Conformant batch implementations MUST follow these semantics:
 
 ### 7.4 Cross-Endpoint Batching
 
-When using CRUDE mode (separate endpoints), batch operations SHOULD be constrained to a single endpoint:
+When using grouped modes (separate endpoint families), batch operations SHOULD be constrained to a single endpoint family:
 
-- All CREATE operations together in one batch to the CREATE endpoint
-- All READ operations together in one batch to the READ endpoint
+- All operations assigned to the same endpoint family together in one batch
+- For the CRUDE profile, all CREATE operations together in one batch to the CREATE endpoint, all READ operations together in one batch to the READ endpoint, and so on
 
 Mixing operations across endpoints in a single batch is NOT RECOMMENDED. Implementations MAY reject mixed batches or MAY process them with explicit endpoint routing per operation.
 
@@ -905,7 +906,7 @@ Error messages SHOULD be:
 
 ### 9.1 Required Implementation
 
-Every MCP-AQL adapter MUST implement the `introspect` operation on the READ endpoint. This operation enables runtime discovery of available operations and types.
+Every MCP-AQL adapter MUST implement the `introspect` operation as a READ-category operation on a documented endpoint family. This operation enables runtime discovery of available operations and types.
 
 ### 9.2 Operation Schema
 
@@ -964,27 +965,32 @@ When `query` is "operations" without a `name`:
     "operations": [
       {
         "name": "create_item",
-        "endpoint": "CREATE",
+        "semantic_category": "CREATE",
+        "endpoint": "catalog",
         "description": "Create a new item"
       },
       {
         "name": "list_items",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "data",
         "description": "List all items"
       },
       {
         "name": "update_item",
-        "endpoint": "UPDATE",
+        "semantic_category": "UPDATE",
+        "endpoint": "catalog",
         "description": "Update item properties"
       },
       {
         "name": "delete_item",
-        "endpoint": "DELETE",
+        "semantic_category": "DELETE",
+        "endpoint": "catalog",
         "description": "Delete an item"
       },
       {
         "name": "introspect",
-        "endpoint": "READ",
+        "semantic_category": "READ",
+        "endpoint": "data",
         "description": "Discover available operations"
       }
     ]
@@ -1002,8 +1008,9 @@ When `query` is "operations" with a `name`:
   "data": {
     "operation": {
       "name": "create_item",
-      "endpoint": "CREATE",
-      "mcpTool": "mcp_aql_create",
+      "semantic_category": "CREATE",
+      "endpoint": "catalog",
+      "mcpTool": "mcp_aql_catalog",
       "description": "Create a new item",
       "permissions": {
         "readOnly": false,
