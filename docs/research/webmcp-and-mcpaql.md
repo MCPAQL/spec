@@ -1,16 +1,18 @@
 ---
 title: "WebMCP and MCP-AQL: Structural Analysis and Adapter Surface"
-version: 1.0.0
+version: 1.1.0
 status: research
 date: 2026-05-19
 ---
 
 ## WebMCP and MCP-AQL: Structural Analysis and Adapter Surface
 
-> A first-pass structural read of WebMCP — the W3C Web Machine Learning Community
-> Group draft announced at Google I/O 2026 (early preview shipped in Chrome 146,
-> February 2026) — against MCP-AQL's CRUDE pattern, with an assessment of where an
-> adapter is worth building and where it isn't.
+> A structural read of WebMCP — the W3C Web Machine Learning Community Group
+> draft announced at Google I/O 2026 (early preview shipped in Chrome 146,
+> February 2026) — against MCP-AQL's CRUDE pattern, with an assessment of where
+> an adapter is worth building and where it isn't. Includes a comparison to
+> Drawing Room (Auto-Dollhouse's AQL-over-HTTP browser surface) as prior art for
+> the page-side half of the same problem.
 
 ## Table of Contents
 
@@ -25,6 +27,7 @@ date: 2026-05-19
 - [8. Where an Adapter Is Useful](#8-where-an-adapter-is-useful)
 - [9. Where an Adapter Is Not Useful](#9-where-an-adapter-is-not-useful)
 - [10. Open Questions](#10-open-questions)
+- [11. Drawing Room as Prior Art](#11-drawing-room-as-prior-art)
 - [Sources](#sources)
 
 ---
@@ -51,12 +54,24 @@ context window. WebMCP doesn't have a catalog-bloat problem because tool lists a
 small (one page's worth) and lazy. The two are not in tension; they address
 different layers of the same problem.
 
-**The high-value adapter is MCP-AQL → WebMCP, not the reverse.** A small JS shim
-that introspects an MCP-AQL adapter and re-registers each operation via
-`navigator.modelContext.registerTool` lets any MCP-AQL adapter become consumable by
-Gemini in Chrome and other in-page browser agents — without rewriting per-tool
-wrappers. The reverse direction (WebMCP → MCP-AQL) is technically possible via a
-headless browser substrate but has narrow utility.
+**Two adapter directions, both small.** (a) **MCP-AQL → WebMCP**: a JS shim that
+introspects an MCP-AQL adapter and re-registers each operation via
+`navigator.modelContext.registerTool` so any MCP-AQL adapter becomes consumable by
+Gemini in Chrome. (b) **WebMCP → MCP-AQL**: an AQL adapter that attaches to the
+user's running Chrome via the Chrome DevTools Protocol, enumerates each tab's
+`navigator.modelContextTesting.listTools()`, and runs the result through the
+existing `adapter-generator` pipeline (CRUDE classification, danger tagging,
+description enrichment, introspection synthesis). The discovery and invocation
+surfaces are already exposed — no browser extension or Playwright fork required.
+
+**WebMCP's surface is intentionally bare; MCP-AQL's job is to make it pedagogical.**
+WebMCP gives an agent a name, a description, and an input schema. That's enough
+for a frontier model; it isn't enough for a small one. AQL's contribution —
+introspection, discriminated `{success | error}` responses, error suggestions,
+CRUDE verb semantics carrying destructive/idempotency information — is exactly
+the scaffolding that lets a weak model recover from a wrong first call. The
+WebMCP → MCP-AQL adapter is the generator pattern with a CDP-based discovery
+front-end; no new architecture, just a new input source.
 
 ---
 
@@ -289,7 +304,8 @@ WebMCP governs the live-page tier.
 
 ## 7. Adapter Surface
 
-Three plausible adapter shapes:
+Two adapters in opposite directions. Both are small because the discovery and
+execution surfaces already exist on each side.
 
 ### 7.1 MCP-AQL → WebMCP (page-side shim)
 
@@ -339,42 +355,75 @@ Design decisions to make:
   than a separate prompt UI.
 
 This adapter is small, mostly mechanical, and reuses MCP-AQL's introspection
-end-to-end. It's the highest-leverage WebMCP work for the project.
+end-to-end.
 
-### 7.2 WebMCP → MCP-AQL (headless substrate)
+### 7.2 WebMCP → MCP-AQL (CDP-attached, generator-backed)
 
-A headless-browser-backed MCP-AQL adapter that visits a target page, observes
-its `navigator.modelContext` tool map, and re-exposes those tools as MCP-AQL
-operations. Verb assignment heuristic:
+The reverse direction is also small once two facts are pinned down:
 
-- `readOnlyHint: true` → `read`
-- otherwise → `execute` (safe default; CRUDE's catch-all)
+1. **WebMCP already exposes an outside-the-page enumeration surface.** The
+   `navigator.modelContextTesting` interface, gated behind the
+   `WebMCP for testing` flag (`chrome://flags`), provides `listTools()` and
+   `executeTool(name, input)`. This is the production hook for external
+   consumers — it's what the Model Context Tool Inspector uses internally.
+   Chrome 149 additionally adds a `DevToolsWebMCPSupport` flag that surfaces
+   WebMCP through CDP directly.
+2. **The Chrome DevTools Protocol gives external processes that surface for
+   free.** Start Chrome with `--remote-debugging-port=9222`, attach over
+   WebSocket, and `Runtime.evaluate` against any tab — no browser extension
+   required, no Playwright fork required, no headless variant required. The
+   user's *own* browser session (cookies, login, payment instruments) is the
+   substrate.
+3. **`WebMCP-org/chrome-devtools-quickstart`** is a fork of Google's
+   `chrome-devtools-mcp` that already wraps this as the MCP tools
+   `list_webmcp_tools` and `call_webmcp_tool`. So an MCP server exposing WebMCP
+   pages to any MCP client already exists; the adapter only needs to wrap *it*.
 
-Costs:
+The adapter shape collapses to:
 
-- A real browser process per session.
-- Loses the WebMCP value proposition (in-page session, cookies, DOM) unless the
-  headless browser is configured with the user's profile — and at that point
-  you're shipping a security surface.
-- `requestUserInteraction` is awkward to route — does it become an AQL
-  Gatekeeper prompt? A separate channel?
+- **Discovery front-end**: a thin call to `list_webmcp_tools` (or direct CDP
+  `Runtime.evaluate('navigator.modelContextTesting.listTools()')`) producing a
+  `DiscoveryBundle` of `DiscoveryOperation[]` — the same shape the
+  `adapter-generator` already consumes.
+- **Classification heuristic**: WebMCP's `annotations.readOnlyHint = true`
+  maps to `endpoint: "READ"` with `endpoint_confidence: "high"`; everything
+  else falls to `endpoint: "EXECUTE"` with `endpoint_confidence: "low"` and
+  `needs_review: true`. `annotations.untrustedContentHint` raises
+  `danger_level`. This is the only genuinely new code.
+- **Pipeline reuse**: `buildToolDescription`, `buildIntrospectionOperations`,
+  `buildOperationDetails`, `buildServerSource` — all of the
+  `adapter-generator`'s existing passes — run unchanged on the resulting
+  bundle. This is where the pedagogy layer comes from. The agent sees the
+  AQL introspect surface, not the bare WebMCP tool list.
+- **Runtime shim**: the generated adapter's `handle*` methods dispatch to
+  `call_webmcp_tool` (or CDP `Runtime.evaluate(executeTool(...))`) instead of
+  the upstream MCP server's `tools/call`.
 
-Useful in narrow cases: pulling page-scoped tools into a headless agent pipeline
-(e.g., "use Shopify's WebMCP `add_to_cart` tool from a Python pipeline"). For
-most uses, the same site's server-side MCP is the better entry point.
+No Playwright. No browser extension. No new transport. Existing generator
+pipeline does the heavy lifting; WebMCP is just a new front-end on top of the
+same `DiscoveryBundle` schema that already drives apple-mail-mcpaql et al.
+
+The one piece the existing generator does not yet handle is **per-page
+dynamism**: a WebMCP page can swap its tool set via `provideContext` or
+`registerTool`/`unregisterTool` mid-session, and the user navigating between
+tabs changes the catalog entirely. The adapter needs to listen on CDP
+`Page.frameNavigated` and re-run discovery per active tab, with an in-process
+cache keyed by `(origin, document_url)`. The generator pipeline runs lazily on
+cache misses. AQL `introspect` responses reflect the current tab's enriched
+catalog.
 
 ### 7.3 Inline (browser-resident MCP-AQL adapter)
 
-A page hosts an MCP-AQL adapter in a worker and exposes it through WebMCP. Mostly
-a curiosity; valid if the adapter genuinely belongs in-page (e.g., a local
-PWA-style tool surface), but in that case it's simpler to register tools
+A page hosts an MCP-AQL adapter in a worker and exposes it through WebMCP.
+Mostly a curiosity; valid if the adapter genuinely belongs in-page (e.g., a
+local PWA-style tool surface), but in that case it's simpler to register tools
 directly without an AQL intermediate.
 
 ---
 
 ## 8. Where an Adapter Is Useful
 
-**Concrete wins for shipping MCP-AQL → WebMCP:**
+**For MCP-AQL → WebMCP (the page-side shim):**
 
 - **Reach.** Every MCP-AQL adapter (apple-mail-mcpaql, shortcut-remote,
   whatever's next) becomes consumable by Gemini in Chrome with one drop-in
@@ -388,6 +437,25 @@ directly without an AQL intermediate.
 - **Hybrid pages.** A site that already has MCP-AQL for headless callers can
   reuse the same adapter for in-page agent flows. Single source of truth for
   the operation catalog.
+
+**For WebMCP → MCP-AQL (the CDP-attached adapter):**
+
+- **Pedagogy on top of bare metal.** WebMCP gives a weak model `{name,
+  description, inputSchema}` and expects it to figure things out. AQL gives
+  the same model an introspect surface, a CRUDE verb that encodes
+  destructive/idempotency semantics, a discriminated error response with
+  suggested next operations, and a stable per-verb dispatch. The adapter is
+  the pedagogy layer that makes WebMCP usable by models that aren't frontier.
+- **Reuse of the existing generator pipeline.** This is not a parallel build;
+  it's a new discovery front-end (CDP-driven, ~one new file) feeding the same
+  `adapter-generator` that already produces apple-mail-mcpaql. The
+  classification, enrichment, introspection synthesis, and server emission
+  are unchanged.
+- **Composes with the user's real session.** Because CDP attaches to the
+  user's existing Chrome, the WebMCP page operates against real cookies,
+  real login state, and real DOM — preserving the value proposition that
+  makes WebMCP interesting in the first place. A headless variant would have
+  thrown that away.
 
 ---
 
@@ -407,8 +475,13 @@ directly without an AQL intermediate.
   adapter comes from any of these, it doesn't translate. Tools-only adapters
   translate cleanly; resource-heavy adapters don't.
 - **Cross-page state.** WebMCP tools vanish on navigation. An MCP-AQL adapter
-  that assumes session continuity across "pages" needs the headless substrate,
-  not the page-side shim.
+  that assumes session continuity across "pages" needs explicit per-page
+  catalog management, not a static schema.
+- **Server-side or headless contexts.** A WebMCP page only exists when a real
+  browser is rendering it. The CDP-attached adapter exists to bridge into the
+  user's *running* browser. Running a headless variant in CI or on a server
+  loses the WebMCP session-context value prop — at that point you're just
+  scraping a page, which a normal MCP server does better.
 
 ---
 
@@ -432,6 +505,110 @@ These are worth tracking before committing to an adapter implementation:
    Test before shipping.
 5. **Origin trial timing.** Chrome 149 ships the origin trial. A pilot
    MCP-AQL → WebMCP adapter ready around 149 is good timing for a writeup.
+6. **CDP attach UX.** The WebMCP → AQL adapter requires the user to start
+   Chrome with `--remote-debugging-port=N` *and* enable the
+   `WebMCP for testing` flag. Chrome 149's `DevToolsWebMCPSupport` flag may
+   make this cleaner. Test the path; document the flag set.
+7. **Per-tab catalog scope.** The adapter's introspect surface should reflect
+   the *active* tab, but a CDP attach sees all tabs. Decide: per-target AQL
+   adapter instances, or a single adapter that scopes introspect by active
+   target? The latter matches user intuition but complicates caching.
+8. **`chrome-devtools-quickstart` as backend vs. CDP-direct.** Wrapping the
+   existing fork is faster to ship; speaking CDP directly avoids a transitive
+   dependency. Pick one. Wrapping is the right first move; the surface
+   (`list_webmcp_tools`, `call_webmcp_tool`) is small enough to swap later.
+
+---
+
+## 11. Drawing Room as Prior Art
+
+Auto-Dollhouse already ships the inverse half of this pattern, and the choices
+it made are directly informative for the WebMCP → MCP-AQL adapter.
+
+### What Drawing Room is
+
+A browser-rendered chat-and-canvas surface (HTML/JS at
+`~/.dollhouse/pages/the-drawing-room.html`) driven by an Express web server
+that exposes the same `MCPAQLHandler` used by the stdio MCP transport. The page
+is a *render target with structured events*. The LLM doesn't discover per-page
+tools; it uses a stable AQL operation alphabet (`send_page_event`,
+`wait_for_page_events`, plus a small allowlist of read/create operations) and
+the page dispatches the typed payloads as DOM actions
+(`chat-response | page-command | inject-html | inject-css | confirm-dialog`).
+
+Key files (in `DollhouseMCP/active/auto-dollhouse/`):
+
+| File | Role |
+|---|---|
+| `docs/architecture/drawing-room.md` | Authoritative architecture writeup |
+| `src/web/routes/mcpAqlGatewayRoutes.ts` | `POST /api/mcp-aql` HTTP gateway with CSRF + rate-limit + operation allowlist |
+| `src/handlers/mcp-aql/MCPAQLHandler.ts` | Shared AQL handler — same instance serves stdio and HTTP |
+| `src/web/PageEventDispatcher.ts` | Classifies browser events as wake (notify LLM) or background (write to memory) |
+| `src/web/routes/pageStreamRoutes.ts` | SSE push channel for LLM → browser |
+| `src/web/routes/pageEventRoutes.ts` | `POST /api/page-event` for browser → LLM |
+| `src/web/routes/permissionRoutes.ts` | PreToolUse hook → Gatekeeper → browser confirmation dialog |
+| `src/web/console/LeaderForwardingSink.ts` | `LeaderPageEventProxy` — follower sessions HTTP-proxy to the leader that owns port 3939 |
+
+### The architectural inversion
+
+| | Drawing Room | WebMCP |
+|---|---|---|
+| **Who owns the tool catalog** | The LLM-side AQL handler | The page |
+| **What the page does** | Renders + emits events | Registers tools |
+| **What the LLM does** | Calls `send_page_event` with typed payloads; page dispatches | Discovers per-page tools and calls them |
+| **Surface stability** | Small stable alphabet; pedagogy in handler's introspect | One bespoke catalog per page; pedagogy on page author |
+| **What scales** | One AQL handler, N pages of any shape | N pages × M tools, each separately documented |
+| **Transport** | HTTP gateway (`/api/mcp-aql`) + SSE | `navigator.modelContext` + browser-internal IPC |
+
+Both are valid; they solve different problems. Drawing Room is right when the
+LLM wants to *drive* an open-ended canvas (chat, dashboards, ad-hoc UI).
+WebMCP is right when a site wants to *publish* its own structured action
+surface (checkout, add-to-cart, filter-search).
+
+### What Drawing Room teaches the WebMCP adapter
+
+1. **One handler, many transports.** Drawing Room runs the same
+   `MCPAQLHandler` over stdio and over HTTP without modification. The
+   WebMCP → AQL adapter can follow the same pattern: a `MCPAQLHandler`
+   instance whose handlers dispatch into a CDP-backed runtime instead of an
+   `osascript`-backed one. No fork of the handler is needed.
+2. **HTTP-with-allowlist is the right shape for a browser-facing AQL surface.**
+   `mcpAqlGatewayRoutes.ts` shows the production-grade pattern: CSRF header
+   (`X-Dollhouse-Request: true`), sliding-window rate limiter, unicode
+   normalization, explicit operation allowlist, discriminated `{success,
+   data | error}` responses. Reuse the pattern shape for any future
+   WebMCP-adjacent gateway.
+3. **Long-poll + SSE beats keep-alive WebSocket for zero idle cost.** Drawing
+   Room's `wait_for_page_events` is a server-resolved long-poll;
+   `send_page_event` pushes via SSE. The LLM consumes no tokens while
+   waiting. The same pattern fits a WebMCP adapter that watches for CDP
+   `Page.frameNavigated` or `navigator.modelContext` change events and
+   invalidates its enriched-catalog cache — long-poll the change, SSE the
+   notification.
+4. **Gatekeeper round-trips through any UI surface.** The PreToolUse hook →
+   `/api/evaluate_permission` → SSE `confirm-dialog` → browser button →
+   `/api/submit-confirmation` flow shows that the AQL Gatekeeper doesn't
+   care what renders the prompt. A WebMCP adapter can route `permission_prompt`
+   responses through `requestUserInteraction` on the active WebMCP page using
+   the same hook contract, no Gatekeeper changes required.
+5. **Leader/follower already exists for multi-session.** The
+   `LeaderPageEventProxy` pattern (port 3939 owned by one process; others
+   HTTP-proxy in) directly solves "what if two Claude Code sessions both try
+   to drive the same Chrome." Port allocation, leader election, and HTTP
+   proxying are written and tested.
+
+### The gap Drawing Room doesn't fill
+
+Drawing Room has no concept of per-page tool catalogs — the page is just a
+canvas the LLM paints on. If a site wants to publish its own AQL-grade
+operations (rich descriptions, examples, error suggestions) over a local
+gateway in the Drawing Room style — rather than the bare-bones
+`navigator.modelContext` surface WebMCP offers — there's no spec for it yet.
+The Drawing Room gateway pattern (`POST /api/mcp-aql` with CSRF) is the
+right shape for such a thing: a *page* could speak to a local AQL adapter on
+a discovered port, publishing a richer catalog than WebMCP allows. That's a
+real spec hole and a plausible MCP-AQL-side proposal — call it "WebAQL" —
+worth filing once the WebMCP adapter exists to compare against.
 
 ---
 
@@ -447,6 +624,10 @@ These are worth tracking before committing to an adapter implementation:
 - Chrome for Developers — [Chrome at I/O 2026][chrome-io]
 - Patrick Brosset — [WebMCP updates, clarifications, and next steps][brosset]
   (Feb 23, 2026)
+- `beaufortfrancois/model-context-tool-inspector` — [Inspector extension source][inspector]
+  (canonical reference for `navigator.modelContextTesting`)
+- `GoogleChromeLabs/webmcp-tools` — [WebMCP tooling][gcl-tools]
+- Chrome DevTools team — [Chrome DevTools Protocol reference][cdp]
 
 **Secondary / triangulation:**
 
@@ -455,6 +636,13 @@ These are worth tracking before committing to an adapter implementation:
 - MCP-B — [WebMCP vs MCP architectural comparison][mcpb]
 - SD Times — [Google I/O 2026 introduces the 'Agentic Web' era][sdtimes]
 - The New Stack — [Google wants to make the web agent-ready][tns]
+- `WebMCP-org/chrome-devtools-quickstart` — [CDP+WebMCP MCP server][cdp-qs]
+- Simon Willison — [WebMCP + Chrome DevTools Protocol demo][simon] (Feb 22, 2026)
+
+**Prior art (internal):**
+
+- `DollhouseMCP/active/auto-dollhouse/docs/architecture/drawing-room.md` —
+  authoritative Drawing Room architecture
 
 [spec]: https://webmachinelearning.github.io/webmcp/
 [proposal]: https://webmachinelearning.github.io/webmcp/docs/proposal.html
@@ -463,8 +651,13 @@ These are worth tracking before committing to an adapter implementation:
 [chrome-when]: https://developer.chrome.com/blog/webmcp-mcp-usage
 [chrome-io]: https://developer.chrome.com/blog/chrome-at-io26
 [brosset]: https://patrickbrosset.com/articles/2026-02-23-webmcp-updates-clarifications-and-next-steps/
+[inspector]: https://github.com/beaufortfrancois/model-context-tool-inspector
+[gcl-tools]: https://github.com/GoogleChromeLabs/webmcp-tools
+[cdp]: https://chromedevtools.github.io/devtools-protocol/
 [bug0]: https://bug0.com/blog/webmcp-chrome-146-guide
 [alpic]: https://alpic.ai/blog/webmcp-explained-what-it-is-how-it-works-and-how-to-use-your-existing-mcp-server-as-an-entry-point
 [mcpb]: https://docs.mcp-b.ai/explanation/webmcp-vs-mcp
 [sdtimes]: https://sdtimes.com/ai/google-i-o-2026-introduces-the-agentic-web-era-with-major-chrome-updates/
 [tns]: https://thenewstack.io/google-agent-ready-web/
+[cdp-qs]: https://github.com/WebMCP-org/chrome-devtools-quickstart
+[simon]: https://simonwillison.net/2026/Feb/22/webmcp-chrome-demo/
