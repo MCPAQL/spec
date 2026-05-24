@@ -1,4 +1,4 @@
-# Financial Transaction Mapping Guide
+# Financial Adapter Safety Configuration Guide
 
 **Version:** 1.0.0-draft
 **Status:** Draft
@@ -14,15 +14,40 @@ Financial APIs often describe money-movement operations as resource creation:
 `create_outbound_transfer`. In MCP-AQL, endpoint classification is based on
 the user-visible economic effect, not the provider's HTTP verb or resource name.
 
+This guide defines domain-specific configuration guidance for the existing
+[Gatekeeper](../security/gatekeeper.md) and
+[Danger Zone](../versions/v1.0.0-draft.md#88-out-of-band-verification)
+machinery when an MCP-AQL adapter targets financial APIs, or when a safety
+dongle evaluates actions against financial MCP servers. It does not add a new
+Gatekeeper, redefine Danger Zone, or make bank-grade friction mandatory for
+every adapter category.
+
 The central rule for financial adapters is:
 
 > A money movement may create a transaction record, but the user-impacting
 > operation modifies account balances, holds, limits, obligations, settlement
 > state, or payment-network state.
 
-This guide maps common banking, treasury, card, ledger, and payment operations
-to the CRUDE endpoint profile and identifies the extra safety controls financial
-adapters need.
+Transaction mapping is included because financial Gatekeeper and Danger Zone
+rules depend on economic effect. A Notepad-style adapter and a treasury adapter
+can both use MCP-AQL, but they should not have the same default Gatekeeper or
+Danger Zone posture.
+
+## Scope
+
+This document is best-practice configuration guidance for a specific adapter
+category:
+
+| Adapter category | Typical safety posture |
+|------------------|------------------------|
+| Low-risk content tools such as notes or draft text | Reads are usually low confidentiality, creates/updates are often reversible, and Danger Zone is mostly reserved for bulk deletion, permanent deletion, or external publication/disclosure |
+| Financial adapters and safety dongles evaluating financial MCP servers | Reads can expose sensitive account history, setup records can enable later money movement, and updates may move value, create obligations, consume limits, or alter payment finality |
+
+The financial profile therefore needs additional policy dimensions that a
+low-risk content adapter often does not need: amount, currency, source account,
+destination trust state, rail finality, settlement timing, idempotency binding,
+recent control-plane changes, cumulative movement, and out-of-band verification
+rules.
 
 ## 1. Classification Principle
 
@@ -210,10 +235,11 @@ include in operation descriptions or future schema extensions.
 
 ## 6. Financial Gatekeeper Profiles
 
-Financial adapters should provide a domain-specific Gatekeeper policy profile.
-The generic MCP-AQL danger defaults are useful, but they do not know whether an
-`UPDATE` is a harmless metadata edit, a same-day external transfer, or a
-recipient-bank-detail change immediately followed by a payment.
+Financial adapters should provide a domain-specific configuration profile for
+the existing MCP-AQL Gatekeeper. The generic MCP-AQL danger defaults are useful,
+but they do not know whether an `UPDATE` is a harmless metadata edit, a same-day
+external transfer, or a recipient-bank-detail change immediately followed by a
+payment.
 
 Recommended profile names:
 
@@ -297,10 +323,11 @@ MCP-AQL adapter.
 
 ## 7. Financial Danger Zone
 
-Financial Danger Zone triggers are not identical to generic destructive
-operations. The highest-risk financial actions may not delete anything; they
-may irrevocably move value, weaken controls, or expose complete financial
-history.
+Financial Danger Zone guidance configures when the existing `verify` and
+`danger_zone` tiers should trigger for financial adapters. The triggers are not
+identical to generic destructive operations. The highest-risk financial actions
+may not delete anything; they may irrevocably move value, weaken controls, or
+expose complete financial history.
 
 Adapters should distinguish three gates:
 

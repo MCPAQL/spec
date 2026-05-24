@@ -63,7 +63,7 @@ Implementation architecture documentation is maintained in the [mcpaql-adapter](
 |----------|-------------|
 | [Protocol Comparison](guides/protocol-comparison.md) | MCP-AQL vs other protocols |
 | [Cross-Domain Implementation](guides/cross-domain-implementation.md) | Step-by-step guide for adapting MCP-AQL to domains beyond Dollhouse-style element management |
-| [Financial Transaction Mapping](guides/financial-transaction-mapping.md) | Domain mapping and safety controls for banking, treasury, ledger, and payment adapters |
+| [Financial Adapter Safety Configuration](guides/financial-adapter-safety-configuration.md) | Gatekeeper and Danger Zone configuration guidance for banking, treasury, ledger, and payment adapters |
 
 ### Roadmap
 
