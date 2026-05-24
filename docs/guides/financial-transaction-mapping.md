@@ -208,7 +208,148 @@ Some of these fields are already covered by existing MCP-AQL danger and
 confirmation metadata. Others are domain-specific extensions that adapters can
 include in operation descriptions or future schema extensions.
 
-## 6. Confirmation and Idempotency
+## 6. Financial Gatekeeper Profiles
+
+Financial adapters should provide a domain-specific Gatekeeper policy profile.
+The generic MCP-AQL danger defaults are useful, but they do not know whether an
+`UPDATE` is a harmless metadata edit, a same-day external transfer, or a
+recipient-bank-detail change immediately followed by a payment.
+
+Recommended profile names:
+
+| Profile | Use for | Baseline behavior |
+|---------|---------|-------------------|
+| `default` | Human-supervised production and normal business use | Sensitive reads are allowed with redaction/minimization; payment-enabled setup requires confirmation; every balance- or obligation-changing `UPDATE` requires confirmation and idempotency |
+| `strict` | Production treasury, regulated workflows, admin sessions, high-risk tenants, or incident response | Out-of-band verification for external money movement and recipient changes; short-lived or single-use confirmations; stronger approval for high amount, batch, new recipient, instant, wire, or irreversible rails |
+| `automation` | Pre-approved recurring jobs, reconciliation, sandbox workflows, or low-risk internal operations | No new recipients or credential changes; operations must stay inside explicit source, destination, amount, rail, time, and cumulative-budget limits; anything outside the envelope escalates or is denied |
+
+Financial Gatekeeper evaluation should consider:
+
+- MCP-AQL endpoint and declared danger level
+- `economic_effect`
+- response and parameter sensitivity
+- environment
+- amount and currency
+- source account
+- destination recipient/account and trust state
+- whether bank details, mandates, or recipient metadata changed recently
+- rail and settlement finality
+- batch size, cumulative amount, and execution frequency
+- idempotency key presence and parameter binding
+- provider risk/review status
+- whether the action is human-directed, scheduled, or agent-initiated
+
+An illustrative adapter policy shape:
+
+```yaml
+financial_gatekeeper:
+  profile: default
+  environment: production
+  require_idempotency_for:
+    - ledger_movement
+    - external_transfer
+    - authorization
+    - hold
+    - refund
+    - reversal
+  confirmation:
+    require_for_economic_effects:
+      - authorization
+      - hold
+      - ledger_movement
+      - external_transfer
+      - obligation
+    bind_fields:
+      - operation
+      - source_account_id
+      - destination_recipient_id
+      - destination_fingerprint
+      - amount_minor
+      - currency
+      - rail
+      - execution_date
+      - idempotency_key
+      - environment
+  automation_limits:
+    trusted_recipients_only: true
+    allow_new_recipients: false
+    max_transaction_amount_minor: 100000
+    max_daily_amount_minor: 500000
+    allowed_rails:
+      - internal_transfer
+      - standard_ach
+```
+
+These profiles are policy templates, not permission grants. An adapter should
+still apply the most restrictive applicable rule. For example, an operation
+inside an `automation` profile may proceed without per-call human confirmation
+only if it matches the pre-approved automation envelope exactly. If the amount,
+recipient, rail, schedule, or idempotency binding changes, the operation should
+fall back to `default`/`strict` handling or be denied.
+
+When the [Execution Safety Loop](../security/execution-safety-loop.md) is
+active, the same financial profile should be applied to `nextActionHint`
+evaluation. The Gatekeeper should treat phrases such as "send", "wire",
+"transfer", "refund", "reverse", "change bank details", "approve payment",
+"run payroll", "sweep funds", "retry with a new key", or "use --yes" as
+financially significant even when the target MCP server is not itself an
+MCP-AQL adapter.
+
+## 7. Financial Danger Zone
+
+Financial Danger Zone triggers are not identical to generic destructive
+operations. The highest-risk financial actions may not delete anything; they
+may irrevocably move value, weaken controls, or expose complete financial
+history.
+
+Adapters should distinguish three gates:
+
+| Gate | Meaning for financial adapters | Typical response |
+|------|--------------------------------|------------------|
+| Confirmation | Human must review the exact economic effect | Issue a confirmation token bound to the critical fields |
+| Verification | Human must approve through an AI-inaccessible channel | Pause the action with `verify_challenge` |
+| Danger Zone | Action is outside normal financial safety bounds | Hard block with `danger_zone` notification until out-of-band verification or admin override |
+
+Recommended default triggers:
+
+| Trigger | Suggested tier | Notes |
+|---------|----------------|-------|
+| Any production money movement without an idempotency key | `danger_zone` or deny | Missing idempotency can create duplicate payments on retry |
+| Confirmation token replay with changed amount, currency, rail, source, destination, schedule, or idempotency key | `danger_zone` or deny | Treat as parameter tampering |
+| External transfer to a new or recently modified recipient | `verify` by default, `danger_zone` above threshold | Recipient trust age should be policy-configurable |
+| Wire, instant, same-day, irreversible, or final-settlement rail | `verify` by default, `danger_zone` above threshold | Rail finality matters more than provider verb |
+| Batch payroll, payout, sweep, refund, or transfer above count or amount limits | `danger_zone` | Require preview, summary, and approval of aggregate totals |
+| Recipient bank-detail change followed by money movement in the same session | `danger_zone` | Classic account-takeover risk pattern |
+| Updating limits, approvals, spend controls, API-token scopes, or Gatekeeper policy to permit money movement | `verify` or `danger_zone` | Control-plane changes can be equivalent to future money movement |
+| Retrying an unknown-outcome payment with a new idempotency key | `danger_zone` | Must first reconcile provider status |
+| Cancelling, reversing, refunding, returning, or stopping payment after a cutoff window or for a large amount | `verify` or `danger_zone` | These are financial lifecycle modifications, not deletes |
+| Exporting complete account, balance, transaction, statement, or recipient data to an external channel | `verify` or `danger_zone` | Sensitive financial data exfiltration is a financial safety event |
+| Using non-interactive bypass flags such as `--yes` to skip provider CLI confirmation | `danger_zone` or deny | MCP-AQL confirmation must replace, not bypass, the human review step |
+| Agent self-approval of financial confirmations or verification challenges | deny | The approving party must be distinct from the executing agent |
+
+The `strict` profile should move more rows from `verify` to `danger_zone`.
+The `automation` profile should do the opposite only inside explicit
+pre-approved envelopes; outside that envelope it should hard-block rather than
+silently ask for broader authority.
+
+Financial Danger Zone challenges should show the human:
+
+- source account
+- destination recipient/account and trust state
+- destination account fingerprint when available
+- amount and currency
+- rail, finality, and expected settlement timing
+- execution date or schedule
+- idempotency key
+- provider request ID if available
+- batch count and aggregate totals for bulk operations
+- reason the action entered Danger Zone
+
+The verification code must remain outside all AI-visible channels, as required
+by the out-of-band verification protocol. The AI should see only the challenge
+ID and a human-readable reason.
+
+## 8. Confirmation and Idempotency
 
 Financial `UPDATE` operations should require confirmation in production when
 they can affect balances, obligations, recipient trust, or payment rails.
@@ -241,7 +382,7 @@ If an adapter retries after a timeout, it should reuse the same idempotency key
 and surface unknown-outcome states to the user. It should never silently
 generate a new key and risk duplicate payment initiation.
 
-## 7. Mercury Adapter Sketch
+## 9. Mercury Adapter Sketch
 
 Mercury's public CLI is generated from the Mercury OpenAPI/SDK surface, with
 human-authored command overrides for payment descriptions and confirmation
@@ -273,7 +414,7 @@ money-movement execution, require confirmation tokens for all payment `UPDATE`
 operations, and preserve the CLI's confirmation posture rather than bypassing it
 with non-interactive flags.
 
-## 8. Prepare/Commit Pattern
+## 10. Prepare/Commit Pattern
 
 Financial adapters should expose multi-step flows explicitly:
 
@@ -294,7 +435,7 @@ Endpoint mapping depends on what prepare does:
   future transfer is `UPDATE`.
 - The committed money movement is `UPDATE`.
 
-## 9. Adapter Review Checklist
+## 11. Adapter Review Checklist
 
 Before publishing a financial adapter, review every operation against this
 checklist:
@@ -313,11 +454,16 @@ checklist:
 - Are new or recently modified recipients subject to stronger verification?
 - Are production rails, wire/instant rails, high amounts, bulk operations, and
   autonomous workflows gated as `dangerous` or `forbidden` by policy?
+- Does the adapter expose or document `default`, `strict`, and `automation`
+  Gatekeeper profiles?
+- Are financial Danger Zone triggers defined for new recipients, control-plane
+  changes, high-risk rails, missing idempotency, parameter tampering, and bulk
+  movement?
 - Are audit records immutable enough to investigate who authorized what?
 - Does introspection make the endpoint classification and danger posture visible
   to clients?
 
-## 10. References
+## 12. References
 
 - [Mercury API Getting Started](https://docs.mercury.com/docs/getting-started)
 - [Mercury MCP supported tools](https://docs.mercury.com/docs/supported-tools-on-mercury-mcp)

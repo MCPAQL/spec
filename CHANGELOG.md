@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Financial transaction mapping guide for banking, treasury, ledger, and payment adapters
   - Added `docs/guides/financial-transaction-mapping.md` with CRUDE endpoint guidance based on economic effect rather than provider operation names
   - Clarified that money movement, holds, approvals, funding, cancellation, reversal, refund, return, and settlement operations should map to `UPDATE`
-  - Added Mercury CLI/API notes, provider-pattern references, confirmation/idempotency guidance, and a financial-adapter review checklist
+  - Added financial Gatekeeper profiles, financial Danger Zone trigger guidance, Mercury CLI/API notes, provider-pattern references, confirmation/idempotency guidance, and a financial-adapter review checklist
 - Generalized semantic-endpoint model alongside the standard CRUDE profile
   - Updated the normative draft to distinguish standardized semantic categories from exposed endpoint families
   - Reframed `docs/endpoint-modes.md` around semantic endpoint mode versus single mode, with CRUDE as the standard profile inside semantic endpoint mode
