@@ -95,8 +95,8 @@ Use `UPDATE` for any operation that modifies economic state.
 
 Examples:
 
-- initiate a payment, transfer, wire, ACH, RTP, FedNow, check, payout, sweep, or
-  card settlement
+- initiate a payment, transfer, wire, ACH, real-time payment, FedNow, check,
+  payout, sweep, or card settlement
 - request money movement that enters an approval queue
 - approve, submit, release, fund, capture, post, settle, or retry a payment
 - cancel, reverse, return, refund, stop, or recall a payment
@@ -173,7 +173,7 @@ economic effect instead of provider verb.
 | [Stripe Treasury outbound transfers](https://docs.stripe.com/treasury/connect/moving-money/out-of/outbound-transfers) | Creating an outbound transfer sends funds over ACH or wire, creates a transaction, and holds funds immediately. Cancellation is a POST to a cancel endpoint that changes status. | `POST /outbound_transfers` is `UPDATE`, not `CREATE`. Cancel is `UPDATE`, not `DELETE`. The transaction object is audit evidence of the balance effect. |
 | [Plaid Transfer](https://plaid.com/docs/transfer/creating-transfers/) | Transfer authorization runs risk and compliance checks, may be cancelled, can consume limits, and is followed by `/transfer/create`. Plaid strongly recommends idempotency keys to avoid duplicate transfer authorizations. | Authorization and transfer creation are `UPDATE` because they control payment capability and initiation. Get/list/event/sweep retrieval are `READ`. Cancel authorization or transfer is `UPDATE`. |
 | [Modern Treasury Payment Orders](https://docs.moderntreasury.com/platform/reference/create-payment-order) and [Ledgers](https://docs.moderntreasury.com/ledgers/docs/ledgers-guarantees) | Payment orders include amount, direction, originating account, receiving account, rail, and settlement metadata. Ledgers enforce balanced entries, immutability after posting, archival instead of deletion, idempotency, and reversing transactions. | Create payment order is `UPDATE`. Ledger setup may be `CREATE`, but posted ledger effects are `UPDATE`; correction uses reversal/archival flows, not `DELETE`. |
-| [Dwolla transfers](https://developers.dwolla.com/docs/connect/api-reference/transfers/initiate-a-transfer) | The transfer endpoint initiates movement between funding sources across ACH, RTP/FedNow, push-to-debit, and wire rails, with idempotency support. | Transfer initiation is `UPDATE`; funding-source and customer setup are separate `CREATE`/`UPDATE` surfaces. |
+| [Dwolla transfers](https://developers.dwolla.com/docs/connect/api-reference/transfers/initiate-a-transfer) | The transfer endpoint initiates movement between funding sources across ACH, real-time payment/FedNow, push-to-debit, and wire rails, with idempotency support. | Transfer initiation is `UPDATE`; funding-source and customer setup are separate `CREATE`/`UPDATE` surfaces. |
 | [Wise transfers](https://docs.wise.com/api-reference/transfer) | A transfer is a payment order based on a quote. Funding a transfer starts payout processing. Wise uses customer-provided IDs for idempotency, limits one transfer per quote, and treats cancellation as final when allowed. | Quote creation may be `READ`/`CREATE` if non-binding. Transfer creation, funding, and cancellation are `UPDATE`. Receipts and transfer lookup are `READ`. |
 | [Unit ACH and wire payments](https://www.unit.co/docs/api/payments/ach/originating/) | ACH payments have pending, review, rejected, clearing, sent, and canceled states. Wires move funds from the Unit account to a counterparty and process immediately; canceling a wire creates a cancellation transaction. | Payment creation and cancellation are `UPDATE`. Manual review, limits, and same-day rails raise the danger level. |
 
@@ -190,8 +190,8 @@ Recommended review fields:
 - **sensitivity**: response and parameter confidentiality independent of
   mutation danger
 - **environment**: `sandbox`, `test`, `production`, or provider equivalent
-- **rail**: ACH, same-day ACH, wire, RTP, FedNow, card, check, internal transfer,
-  ledger-only, FX, stablecoin, or provider-specific rail
+- **rail**: ACH, same-day ACH, wire, real-time payment, FedNow, card, check,
+  internal transfer, ledger-only, FX, stablecoin, or provider-specific rail
 - **amount and currency**: normalized minor units plus display units
 - **source and destination**: account IDs, recipient IDs, external account
   fingerprints, and whether a destination is new or trusted
