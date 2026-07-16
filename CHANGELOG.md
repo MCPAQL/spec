@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Zenodo deposit metadata for DOI-archived releases
+  - Added `.zenodo.json` with deposit metadata (creator ORCID, Dollhouse Research affiliation, CC-BY-4.0 documentation license) for Zenodo's GitHub-release archiving
+  - Enriched `CITATION.cff` with ORCID, affiliation, and spec version
+
 - Generalized semantic-endpoint model alongside the standard CRUDE profile
   - Updated the normative draft to distinguish standardized semantic categories from exposed endpoint families
   - Reframed `docs/endpoint-modes.md` around semantic endpoint mode versus single mode, with CRUDE as the standard profile inside semantic endpoint mode
