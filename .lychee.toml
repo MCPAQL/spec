@@ -75,8 +75,8 @@ exclude_path = [
     "CHANGELOG.md",
 ]
 
-# Include fragment checking (anchors)
-include_fragments = true
+# Fragment (anchor) checking disabled: lychee >= 0.24 changed this option's type
+# and the old boolean form breaks config parsing under lychee-action@v2.
 
 # Fallback extensions for extensionless URLs
 fallback_extensions = ["html", "htm"]
