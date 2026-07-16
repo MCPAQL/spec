@@ -1,0 +1,24 @@
+{
+  "title": "MCP-AQL Specification",
+  "upload_type": "publication",
+  "publication_type": "technicalnote",
+  "description": "<p>MCP-AQL is a protocol specification that consolidates Model Context Protocol (MCP) tools into semantic endpoints, providing large token reductions while maintaining full functionality. It defines a unified query language for structured communication between AI models and context-providing services, with five semantic operations (Create, Read, Update, Delete, Execute), runtime introspection, schema-driven dispatch, and conformance testing. The repository includes the formal specification, JSON schemas, and reference tooling. The specification documents are licensed CC BY 4.0; reference code in the repository is licensed AGPL 3.0.</p>",
+  "creators": [
+    {
+      "name": "Darling, Mick",
+      "orcid": "0009-0008-7116-1393",
+      "affiliation": "Dollhouse Research"
+    }
+  ],
+  "license": "cc-by-4.0",
+  "keywords": [
+    "Model Context Protocol",
+    "MCP",
+    "protocol specification",
+    "query language",
+    "AI agents",
+    "interoperability",
+    "API design",
+    "MCP-AQL"
+  ]
+}
