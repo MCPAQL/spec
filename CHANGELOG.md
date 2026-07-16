@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Zenodo DOI badge in the README (concept DOI 10.5281/zenodo.21398630)
 - Zenodo deposit metadata for DOI-archived releases
   - Added `.zenodo.json` with deposit metadata (creator ORCID, Dollhouse Research affiliation, CC-BY-4.0 documentation license) for Zenodo's GitHub-release archiving
   - Enriched `CITATION.cff` with ORCID, affiliation, and spec version
