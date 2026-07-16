@@ -1,8 +1,14 @@
 {
   "version": "0.2",
   "language": "en",
-  "words": [],
-  "dictionaries": ["project-words"],
+  "words": [
+    "DOI",
+    "ORCID",
+    "Zenodo"
+  ],
+  "dictionaries": [
+    "project-words"
+  ],
   "dictionaryDefinitions": [
     {
       "name": "project-words",
