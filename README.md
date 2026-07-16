@@ -6,6 +6,7 @@
 
 [![Spec Version](https://img.shields.io/badge/spec-v1.0.0--draft-blue)](docs/versions/v1.0.0-draft.md)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21398630.svg)](https://doi.org/10.5281/zenodo.21398630)
 
 ## Overview
 
