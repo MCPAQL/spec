@@ -184,6 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `schemas/batch-operation.schema.json`: a successful per-entry result may carry `_meta`, as `operation-result.schema.json` already allows (#280). Batch entries that reported how an adapter shaped their result failed validation
 - Synced stale documentation date metadata after the `develop` to `main` release merge
   - Updated `Last Updated` / `updated` fields for docs changed by the release merge so the documentation date policy passes on `main`
 - `get_execution_status` misclassified as EXECUTE instead of READ (#161)

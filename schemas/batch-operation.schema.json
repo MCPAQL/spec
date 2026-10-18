@@ -32,7 +32,12 @@
           "title": "Success Result",
           "properties": {
             "success": { "const": true },
-            "data": { "description": "Operation result data" }
+            "data": { "description": "Operation result data" },
+            "_meta": {
+              "type": "object",
+              "description": "Response metadata, as in operation-result.schema.json (for example, how an adapter shaped this result)",
+              "additionalProperties": true
+            }
           },
           "required": ["success", "data"],
           "additionalProperties": false
@@ -304,6 +309,22 @@
         { "index": 2, "operation": "send_notification", "params": { "user_id": "alice", "message": "Account deleted" } }
       ],
       "summary": { "total": 3, "succeeded": 1, "failed": 0, "halted": 1, "pending": 1 }
+    },
+    {
+      "success": true,
+      "data": null,
+      "results": [
+        {
+          "index": 0,
+          "operation": "get_item",
+          "result": {
+            "success": true,
+            "data": { "id": "item_1" },
+            "_meta": { "shaped": { "omitted": ["content text blocks that repeat structured_content exactly"] } }
+          }
+        }
+      ],
+      "summary": { "total": 1, "succeeded": 1, "failed": 0 }
     },
     {
       "success": false,
